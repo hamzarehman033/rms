@@ -1,0 +1,15 @@
+<article class="stat">
+  <div class="row">
+    <span class="label">{{ label }}</span>
+    <span *ngIf="icon" class="icon" [class]="iconColor">
+      <ng-content select="[icon]"></ng-content>
+    </span>
+  </div>
+  <div class="content">
+    <span class="value">{{ value }}</span>
+    <span *ngIf="delta" class="delta" [class.up]="isDeltaUp" [class.down]="!isDeltaUp">
+      {{ delta }}
+    </span>
+  </div>
+  <div class="hint">{{ hint }}</div>
+</article>

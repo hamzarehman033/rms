@@ -1,0 +1,10 @@
+<section class="page-header">
+  <div>
+    <h1>{{ title }}</h1>
+    <p *ngIf="description">{{ description }}</p>
+  </div>
+  <span *ngIf="tag" class="tag">
+    <span *ngIf="showPulse" class="pulse-dot"></span>
+    {{ tag }}
+  </span>
+</section>

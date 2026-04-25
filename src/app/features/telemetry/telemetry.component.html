@@ -1,0 +1,60 @@
+<main class="content">
+      <div class="page-header">
+        <div><h1>Telemetry</h1><p>Live and historical sensor readings across your fleet.</p></div>
+        
+      </div>
+      <div class="hstack" style="justify-content:space-between">
+        <div class="tabs">
+          <button class="active">Live</button><button>1h</button><button>24h</button><button>7d</button><button>30d</button>
+        </div>
+        <select class="select" style="width:auto">
+          <option>All devices</option><option>DV-001 · Boiler-Room Temp</option><option>DV-003 · Cold Storage</option>
+        </select>
+      </div>
+
+      <div class="grid cols-4">
+        <div class="stat"><div class="row"><span class="label">Avg Temp</span><span class="icon primary"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span></div><div><span class="value">68.2°F</span></div><div class="hint">across 86 sensors</div></div>
+        <div class="stat"><div class="row"><span class="label">Avg Humidity</span><span class="icon info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span></div><div><span class="value">42%</span></div><div class="hint">within range</div></div>
+        <div class="stat"><div class="row"><span class="label">Pressure</span><span class="icon success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span></div><div><span class="value">1.02 bar</span></div><div class="hint">stable</div></div>
+        <div class="stat"><div class="row"><span class="label">Anomalies</span><span class="icon warning"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span></div><div><span class="value">3</span></div><div class="hint">in last hour</div></div>
+      </div>
+
+      <div class="card">
+        <div class="hstack" style="justify-content:space-between">
+          <div><h3>Multi-metric stream</h3><div class="sub">Real-time aggregated telemetry · 24h window</div></div>
+          <div class="legend">
+            <span><span class="dot-color" style="background:var(--primary)"></span>Temperature</span>
+            <span><span class="dot-color" style="background:var(--info)"></span>Humidity</span>
+            <span><span class="dot-color" style="background:var(--success)"></span>Pressure</span>
+          </div>
+        </div>
+        <div class="chart" style="height:340px">
+          <svg viewBox="0 0 600 340" preserveAspectRatio="none">
+            <path d="M0,200 C50,180 100,140 150,150 C200,160 250,110 300,100 C350,90 400,130 450,120 C500,110 550,150 600,160" stroke="#5b6cff" stroke-width="2" fill="none"/>
+            <path d="M0,240 C50,230 100,250 150,235 C200,220 250,230 300,210 C350,195 400,210 450,230 C500,245 550,225 600,215" stroke="#38bdf8" stroke-width="2" fill="none"/>
+            <path d="M0,270 C50,265 100,275 150,268 C200,260 250,272 300,265 C350,258 400,268 450,260 C500,255 550,270 600,262" stroke="#22c55e" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card"><h3>Top sensors by activity</h3><div class="sub">Last hour</div>
+          <table class="table" style="margin-top:10px">
+            <thead><tr><th>Device</th><th>Reads</th><th>Avg</th></tr></thead>
+            <tbody>
+              <tr><td>DV-001 Boiler Temp</td><td class="mono">3,420</td><td class="mono">71.4°F</td></tr>
+              <tr><td>DV-007 Smart Meter</td><td class="mono">2,884</td><td class="mono">238 V</td></tr>
+              <tr><td>DV-008 Pressure Valve</td><td class="mono">2,312</td><td class="mono">1.04 bar</td></tr>
+              <tr><td>DV-003 Cold Storage</td><td class="mono">1,940</td><td class="mono">38.6°F</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card"><h3>Anomaly events</h3><div class="sub">Detected in last 24h</div>
+          <div style="margin-top:12px">
+            <div class="alert-item"><div class="sev-bar critical"></div><div><div style="font-weight:500">Temperature spike +12°F</div><div class="meta">DV-001 · 9 min ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar major"></div><div><div style="font-weight:500">Pressure variance 4σ</div><div class="meta">DV-008 · 47 min ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar minor"></div><div><div style="font-weight:500">Humidity drop -18%</div><div class="meta">DV-009 · 2h ago</div></div></div>
+          </div>
+        </div>
+      </div>
+</main>

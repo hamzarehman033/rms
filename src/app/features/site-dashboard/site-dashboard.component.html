@@ -1,0 +1,56 @@
+<main class="content">
+      <div class="hstack" style="font-size:12px;color:var(--muted-foreground)">
+        <a href="locations.html" class="muted">← All locations</a>
+      </div>
+      <div class="page-header">
+        <div><h1>Plant A · Detroit, MI</h1><p>Site-specific telemetry, devices, and alerts.</p></div>
+        <span class="tag"><span class="pulse-dot"></span>LOC-001</span>
+      </div>
+      <div class="grid cols-4">
+        <div class="stat"><div class="row"><span class="label">Devices</span><span class="icon primary"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg></span></div><div><span class="value">42</span></div><div class="hint">38 online · 3 warn · 1 off</div></div>
+        <div class="stat"><div class="row"><span class="label">Uptime</span><span class="icon success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span></div><div><span class="value">98.2%</span></div><div class="hint">last 30 days</div></div>
+        <div class="stat"><div class="row"><span class="label">Active Alerts</span><span class="icon warning"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span></div><div><span class="value">2</span></div><div class="hint">1 critical · 1 minor</div></div>
+        <div class="stat"><div class="row"><span class="label">Avg Temp</span><span class="icon info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span></div><div><span class="value">71.4°F</span></div><div class="hint">across plant sensors</div></div>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="card span-2"><h3>Site Telemetry</h3><div class="sub">Last 24 hours</div>
+          <div class="chart">
+            <svg viewBox="0 0 600 280" preserveAspectRatio="none">
+              <defs><linearGradient id="gS" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5b6cff" stop-opacity=".5"/><stop offset="100%" stop-color="#5b6cff" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0,180 C40,160 80,120 120,130 C160,140 200,90 240,80 C280,70 320,110 360,100 C400,90 440,140 480,150 C520,160 560,130 600,140 L600,280 L0,280 Z" fill="url(#gS)"/>
+              <path d="M0,180 C40,160 80,120 120,130 C160,140 200,90 240,80 C280,70 320,110 360,100 C400,90 440,140 480,150 C520,160 560,130 600,140" stroke="#5b6cff" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card"><h3>Device Health</h3><div class="sub">By status</div>
+          <div class="bar-row" style="height:180px">
+            <div class="bar-col"><div class="bar-stack"><div class="bar online" style="height:140px"></div></div><span class="bar-label">Online · 38</span></div>
+            <div class="bar-col"><div class="bar-stack"><div class="bar online" style="height:30px;background:var(--warning)"></div></div><span class="bar-label">Warn · 3</span></div>
+            <div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:14px"></div></div><span class="bar-label">Off · 1</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card" style="padding:0">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border)"><h3>Devices at this site</h3></div>
+          <table class="table">
+            <thead><tr><th>Device</th><th>Status</th><th>Battery</th></tr></thead>
+            <tbody>
+              <tr><td>DV-001 Boiler-Room Temp</td><td><span class="badge online">● Online</span></td><td class="mono">87%</td></tr>
+              <tr><td>DV-006 Vibration Mon. M-7</td><td><span class="badge offline">● Offline</span></td><td class="mono">0%</td></tr>
+              <tr><td>DV-011 Compressor C-2</td><td><span class="badge online">● Online</span></td><td class="mono">94%</td></tr>
+              <tr><td>DV-014 Conveyor Sensor</td><td><span class="badge warning">● Warning</span></td><td class="mono">31%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card"><h3>Recent Alerts at site</h3>
+          <div style="margin-top:12px">
+            <div class="alert-item"><div class="sev-bar critical"></div><div><div style="font-weight:500">Temperature spike +12°F</div><div class="meta">DV-001 · 9 min ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar major"></div><div><div style="font-weight:500">Vibration M-7 offline</div><div class="meta">DV-006 · 2h ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar minor"></div><div><div style="font-weight:500">Battery below 35%</div><div class="meta">DV-014 · 1h ago</div></div></div>
+          </div>
+        </div>
+      </div>
+</main>

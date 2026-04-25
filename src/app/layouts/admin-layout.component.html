@@ -1,0 +1,13 @@
+<div class="app">
+  <aside class="sidebar">
+    <app-sidebar></app-sidebar>
+  </aside>
+  <div class="main">
+    <app-topbar
+      (toggleTheme)="onToggleTheme()"
+      (notificationClick)="onNotificationClick()"
+      (avatarClick)="onAvatarClick()"
+    ></app-topbar>
+    <router-outlet></router-outlet>
+  </div>
+</div>

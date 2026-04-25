@@ -1,0 +1,102 @@
+<main class="content">
+      <div class="page-header">
+        <div><h1>Operations Overview</h1><p>Real-time fleet health, telemetry, and incidents at a glance.</p></div>
+        <span class="tag"><span class="pulse-dot"></span>Updated just now</span>
+      </div>
+
+      <div class="grid cols-4">
+        <div class="stat">
+          <div class="row"><span class="label">Total Devices</span><span class="icon primary"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg></span></div>
+          <div><span class="value">150</span><span class="delta up">+2.4%</span></div>
+          <div class="hint">+3 added this week</div>
+        </div>
+        <div class="stat">
+          <div class="row"><span class="label">Online</span><span class="icon success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M2 8.5a16 16 0 0 1 20 0"/><path d="M8.5 16.5a6 6 0 0 1 7 0"/><path d="M12 20h.01"/></svg></span></div>
+          <div><span class="value">142</span><span class="delta up">+1.1%</span></div>
+          <div class="hint">94.6% uptime</div>
+        </div>
+        <div class="stat">
+          <div class="row"><span class="label">Active Alerts</span><span class="icon warning"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span></div>
+          <div><span class="value">7</span><span class="delta down">-12.5%</span></div>
+          <div class="hint">2 critical · 5 minor</div>
+        </div>
+        <div class="stat">
+          <div class="row"><span class="label">Msgs / min</span><span class="icon info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span></div>
+          <div><span class="value">2,847</span><span class="delta up">+5.8%</span></div>
+          <div class="hint">ingestion rate</div>
+        </div>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="card span-2">
+          <div class="hstack" style="justify-content:space-between">
+            <div><h3>Live Telemetry</h3><div class="sub">Aggregate readings · last 24 hours</div></div>
+            <div class="legend">
+              <span><span class="dot-color" style="background:var(--primary)"></span>Temperature °F</span>
+              <span><span class="dot-color" style="background:var(--info)"></span>Humidity %</span>
+            </div>
+          </div>
+          <div class="chart">
+            <svg viewBox="0 0 600 280" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gT" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5b6cff" stop-opacity=".5"/><stop offset="100%" stop-color="#5b6cff" stop-opacity="0"/></linearGradient>
+                <linearGradient id="gH" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#38bdf8" stop-opacity=".4"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
+              </defs>
+              <path d="M0,180 C40,160 80,120 120,130 C160,140 200,90 240,80 C280,70 320,110 360,100 C400,90 440,140 480,150 C520,160 560,130 600,140 L600,280 L0,280 Z" fill="url(#gT)"/>
+              <path d="M0,180 C40,160 80,120 120,130 C160,140 200,90 240,80 C280,70 320,110 360,100 C400,90 440,140 480,150 C520,160 560,130 600,140" stroke="#5b6cff" stroke-width="2" fill="none"/>
+              <path d="M0,210 C40,200 80,220 120,205 C160,190 200,200 240,180 C280,165 320,180 360,200 C400,215 440,200 480,190 C520,180 560,210 600,200 L600,280 L0,280 Z" fill="url(#gH)"/>
+              <path d="M0,210 C40,200 80,220 120,205 C160,190 200,200 240,180 C280,165 320,180 360,200 C400,215 440,200 480,190 C520,180 560,210 600,200" stroke="#38bdf8" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Device Breakdown</h3>
+          <div class="sub">By type · 150 total</div>
+          <svg class="donut" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#1f2533" stroke-width="6"/>
+            <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#5b6cff" stroke-width="6" stroke-dasharray="57 100" transform="rotate(-90 21 21)"/>
+            <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#8a7bff" stroke-width="6" stroke-dasharray="16 100" stroke-dashoffset="-57" transform="rotate(-90 21 21)"/>
+            <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#38bdf8" stroke-width="6" stroke-dasharray="19 100" stroke-dashoffset="-73" transform="rotate(-90 21 21)"/>
+            <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#22c55e" stroke-width="6" stroke-dasharray="8 100" stroke-dashoffset="-92" transform="rotate(-90 21 21)"/>
+          </svg>
+          <div class="donut-legend">
+            <div class="row"><span><span class="dot-color" style="background:#5b6cff"></span>Sensors</span><span class="mono">86</span></div>
+            <div class="row"><span><span class="dot-color" style="background:#8a7bff"></span>Gateways</span><span class="mono">24</span></div>
+            <div class="row"><span><span class="dot-color" style="background:#38bdf8"></span>Actuators</span><span class="mono">28</span></div>
+            <div class="row"><span><span class="dot-color" style="background:#22c55e"></span>Cameras</span><span class="mono">12</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="card span-2" style="padding:0">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h3>Recent Devices</h3><div class="sub">Latest fleet status</div></div>
+          <table class="table">
+            <thead><tr><th>Device</th><th>Status</th><th>Location</th><th>Battery</th><th>Last seen</th></tr></thead>
+            <tbody>
+              <tr><td><div style="font-weight:500">Boiler-Room Temp Sensor</div><div class="muted mono" style="font-size:11px">DV-001</div></td><td><span class="badge online">● Online</span></td><td>Plant A · Sector 3</td><td class="mono">87%</td><td class="muted">2s ago</td></tr>
+              <tr><td><div style="font-weight:500">North Gate Camera</div><div class="muted mono" style="font-size:11px">DV-002</div></td><td><span class="badge online">● Online</span></td><td>Perimeter · North</td><td class="mono">100%</td><td class="muted">5s ago</td></tr>
+              <tr><td><div style="font-weight:500">Cold Storage Unit 4</div><div class="muted mono" style="font-size:11px">DV-003</div></td><td><span class="badge warning">● Warning</span></td><td>Warehouse B</td><td class="mono">22%</td><td class="muted">1m ago</td></tr>
+              <tr><td><div style="font-weight:500">HVAC Controller</div><div class="muted mono" style="font-size:11px">DV-004</div></td><td><span class="badge online">● Online</span></td><td>Floor 2 · East</td><td class="mono">100%</td><td class="muted">3s ago</td></tr>
+              <tr><td><div style="font-weight:500">Vibration Mon. M-7</div><div class="muted mono" style="font-size:11px">DV-006</div></td><td><span class="badge offline">● Offline</span></td><td>Plant A · Sector 1</td><td class="mono">0%</td><td class="muted">2h ago</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="vstack" style="gap:16px">
+          <div class="card">
+            <h3>Weekly Activity</h3>
+            <div class="sub">Online vs offline counts</div>
+            <div class="bar-row"><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:6px"></div><div class="bar online" style="height:140px"></div></div><span class="bar-label">Mon</span></div><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:4px"></div><div class="bar online" style="height:150px"></div></div><span class="bar-label">Tue</span></div><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:8px"></div><div class="bar online" style="height:135px"></div></div><span class="bar-label">Wed</span></div><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:3px"></div><div class="bar online" style="height:160px"></div></div><span class="bar-label">Thu</span></div><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:5px"></div><div class="bar online" style="height:148px"></div></div><span class="bar-label">Fri</span></div><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:10px"></div><div class="bar online" style="height:130px"></div></div><span class="bar-label">Sat</span></div><div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:4px"></div><div class="bar online" style="height:155px"></div></div><span class="bar-label">Sun</span></div></div>
+          </div>
+          <div class="card">
+            <h3>Recent Alerts</h3>
+            <div class="sub" style="margin-bottom:12px">Last 24h</div>
+            <div class="alert-item"><div class="sev-bar critical"></div><div><div style="font-weight:500;font-size:13px">Temperature exceeds threshold</div><div class="meta">DV-003 · 2 min ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar major"></div><div><div style="font-weight:500;font-size:13px">Device offline > 1h</div><div class="meta">DV-006 · 1 hr ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar minor"></div><div><div style="font-weight:500;font-size:13px">Battery below 30%</div><div class="meta">DV-009 · 12 min ago</div></div></div>
+          </div>
+        </div>
+      </div>
+</main>

@@ -1,0 +1,57 @@
+<main class="content">
+      <div class="page-header">
+        <div><h1>Data Sources</h1><p>Manage ingestion streams feeding your console.</p></div>
+        
+      </div>
+      <div class="grid cols-4">
+        <div class="stat"><div class="row"><span class="label">Sources</span><span class="icon primary"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></span></div><div><span class="value">5</span></div><div class="hint">4 healthy</div></div>
+        <div class="stat"><div class="row"><span class="label">Throughput</span><span class="icon info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span></div><div><span class="value">4.2k/s</span></div><div class="hint">aggregate ingestion</div></div>
+        <div class="stat"><div class="row"><span class="label">Errors 24h</span><span class="icon warning"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span></div><div><span class="value">12</span></div><div class="hint">retried + recovered</div></div>
+        <div class="stat"><div class="row"><span class="label">Storage</span><span class="icon success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span></div><div><span class="value">8.2 TB</span></div><div class="hint">across all sinks</div></div>
+      </div>
+      <div class="hstack" style="justify-content:space-between">
+        <div class="search"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="Search sources…"></div>
+        <button class="btn primary"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Add source</span></button>
+      </div>
+      <div class="grid cols-2"><div class="tile">
+      <div class="head">
+        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div><div><h4>Production MQTT</h4><div class="meta mono" style="font-size:11px">DS-01 · MQTT</div></div></div>
+        <span class="badge online">● Healthy</span>
+      </div>
+      <div class="meta mono" style="font-size:11px">mqtt://broker.prod:1883</div>
+      <div class="stats"><div><span>Throughput</span><strong>2,840 msgs/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Sync now</span></button></div>
+    </div><div class="tile">
+      <div class="head">
+        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div><div><h4>Telemetry HTTP</h4><div class="meta mono" style="font-size:11px">DS-02 · HTTP</div></div></div>
+        <span class="badge online">● Healthy</span>
+      </div>
+      <div class="meta mono" style="font-size:11px">https://api.pulse.io/ingest</div>
+      <div class="stats"><div><span>Throughput</span><strong>920 msgs/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Sync now</span></button></div>
+    </div><div class="tile">
+      <div class="head">
+        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div><div><h4>Kafka Stream</h4><div class="meta mono" style="font-size:11px">DS-03 · Kafka</div></div></div>
+        <span class="badge warning">● Degraded</span>
+      </div>
+      <div class="meta mono" style="font-size:11px">kafka.cluster:9092</div>
+      <div class="stats"><div><span>Throughput</span><strong>412 msgs/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Sync now</span></button></div>
+    </div><div class="tile">
+      <div class="head">
+        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div><div><h4>Postgres CDC</h4><div class="meta mono" style="font-size:11px">DS-04 · Postgres</div></div></div>
+        <span class="badge online">● Healthy</span>
+      </div>
+      <div class="meta mono" style="font-size:11px">db.warehouse:5432</div>
+      <div class="stats"><div><span>Throughput</span><strong>78 events/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Sync now</span></button></div>
+    </div><div class="tile">
+      <div class="head">
+        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg></div><div><h4>S3 Cold Archive</h4><div class="meta mono" style="font-size:11px">DS-05 · S3</div></div></div>
+        <span class="badge online">● Healthy</span>
+      </div>
+      <div class="meta mono" style="font-size:11px">s3://pulse-archive</div>
+      <div class="stats"><div><span>Throughput</span><strong>sync 4h</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Sync now</span></button></div>
+    </div></div>
+</main>

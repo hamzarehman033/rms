@@ -1,0 +1,7 @@
+<div class="card" [style.grid-column]="'span ' + span">
+  <div *ngIf="title" class="card-header" [style.padding-bottom]="subtitle ? '12px' : '0'">
+    <h3>{{ title }}</h3>
+    <div *ngIf="subtitle" class="sub">{{ subtitle }}</div>
+  </div>
+  <ng-content></ng-content>
+</div>
