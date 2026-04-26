@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ========== PulseGrid — shared design system ========== */
 :root {
   --background: #0b0d12;
