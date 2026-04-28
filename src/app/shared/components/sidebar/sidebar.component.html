@@ -1,82 +1,134 @@
-
-  <div class="brand">
-    <span class="brand-mark"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg></span>
-    <div>
-      <div class="brand-name">PulseGrid</div>
-      <div class="brand-sub">IoT Console</div>
+<aside class="sidebar" data-state="expanded" aria-label="Primary">
+  <!-- Header / brand -->
+  <div class="sidebar-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <!-- Activity icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">PulseGrid</div>
+        <div class="brand-sub">IoT Console</div>
+      </div>
     </div>
   </div>
-  <div class="nav-group">
-    <div class="nav-label">Monitor</div>
-    <a class="nav-link" [routerLink]="'/dashboard'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="9" />
-        <rect x="14" y="3" width="7" height="5" />
-        <rect x="14" y="12" width="7" height="9" />
-        <rect x="3" y="16" width="7" height="5" />
-      </svg><span>Overview</span></a>
-    <a class="nav-link" [routerLink]="'/devices'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="4" y="4" width="16" height="16" rx="2" />
-        <path d="M9 9h6v6H9z" />
-      </svg><span>Devices</span></a>
-    <a class="nav-link" [routerLink]="'/telemetry'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg><span>Telemetry</span></a>
-    <a class="nav-link" [routerLink]="'/alarm'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-        <path d="M10 21a2 2 0 0 0 4 0" />
-      </svg><span>Alarms</span></a>
+
+  <!-- Content / scrollable -->
+  <div class="sidebar-content">
+
+    <section class="group">
+      <div class="group-label">Monitor</div>
+      <ul class="menu" role="list">
+        <li><a class="menu-btn is-active" [routerLink]="'/dashboard'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9" />
+              <rect x="14" y="3" width="7" height="5" />
+              <rect x="14" y="12" width="7" height="9" />
+              <rect x="3" y="16" width="7" height="5" />
+            </svg>
+            <span>Overview</span>
+          </a></li>
+        <li><a class="menu-btn" [routerLink]="'/devices'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+              <rect x="9" y="9" width="6" height="6" />
+              <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" />
+            </svg>
+            <span>Devices</span>
+          </a></li>
+        <li><a class="menu-btn" [routerLink]="'/telemetry'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <span>Telemetry</span>
+          </a></li>
+        <li><a class="menu-btn" [routerLink]="'/alarm'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+            <span>Alarms</span>
+            <!-- <span class="badge">3</span> -->
+          </a></li>
+      </ul>
+    </section>
+
+    <section class="group">
+      <div class="group-label">Manage</div>
+      <ul class="menu" role="list">
+        <li><a class="menu-btn" [routerLink]="'/locations'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Locations</span>
+          </a></li>
+        <li><a class="menu-btn" [routerLink]="'/rules'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>Rule Engine</span>
+          </a></li>
+        <li><a class="menu-btn" [routerLink]="'/data-sources'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M3 5v14a9 3 0 0 0 18 0V5" />
+              <path d="M3 12a9 3 0 0 0 18 0" />
+            </svg>
+            <span>Data Sources</span>
+          </a></li>
+      </ul>
+    </section>
+
+    <section class="group">
+      <div class="group-label">Platform</div>
+      <ul class="menu" role="list">
+        <li><a class="menu-btn" [routerLink]="'/tenant'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <path d="M9 22v-4h6v4" />
+              <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+            </svg>
+            <span>Tenants</span>
+          </a></li>
+        <li><a class="menu-btn" [routerLink]="'/users'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Users</span>
+          </a></li>
+      </ul>
+    </section>
   </div>
-  <div class="nav-group">
-    <div class="nav-label">Manage</div>
-    <a class="nav-link" [routerLink]="'/locations'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg><span>Locations</span></a>
-    <a class="nav-link" [routerLink]="'/rules'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 14l4-4" />
-        <path d="M3.34 19a10 10 0 1 1 17.32 0" />
-      </svg><span>Rule Engine</span></a>
-    <a class="nav-link" [routerLink]="'/data-sources'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <ellipse cx="12" cy="5" rx="9" ry="3" />
-        <path d="M3 5v14a9 3 0 0 0 18 0V5" />
-        <path d="M3 12a9 3 0 0 0 18 0" />
-      </svg><span>Data Sources</span></a>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <ul class="menu" role="list">
+      <li><a class="menu-btn" [routerLink]="'/settings'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span>Settings</span>
+        </a></li>
+    </ul>
   </div>
-  <div class="nav-group">
-    <div class="nav-label">Team</div>
-    <a class="nav-link" [routerLink]="'/users'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="8" r="4" />
-        <path d="M2 21a7 7 0 0 1 14 0" />
-        <circle cx="17" cy="8" r="3" />
-        <path d="M22 21a5 5 0 0 0-7-4.6" />
-      </svg><span>Users</span></a>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">Platform</div>
-    <a class="nav-link" [routerLink]="'/tenant'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 21h18"/>
-        <path d="M5 21V7l8-4v18"/>
-        <path d="M19 21V11l-6-4"/>
-        <path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/>
-      </svg><span>Tenants</span></a>
-  </div>
-  <div class="nav-group" style="margin-top:auto">
-    <a class="nav-link" [routerLink]="'/settings'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3" />
-        <path
-          d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-      </svg><span>Settings</span></a>
-  </div>
+</aside>
