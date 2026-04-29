@@ -28,6 +28,35 @@
       </div>
 
       <div class="grid cols-3">
+        <div class="card span-2" style="height: 400px; padding: 0; overflow: hidden;">
+          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border);">
+            <h3>Device Locations</h3>
+            <div class="sub">Real-time device position tracking</div>
+          </div>
+          <div style="height: calc(100% - 70px);">
+            <app-device-map></app-device-map>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Quick Stats</h3>
+          <div class="sub">Device status summary</div>
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+            <h4 style="font-size: 13px; margin-bottom: 8px;">Notifications This Week</h4>
+            <div class="bar-row" style="height: 250px; gap: 4px;">
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 130px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Mon</span></div>
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 145px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Tue</span></div>
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 120px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Wed</span></div>
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 135px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Thu</span></div>
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 128px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Fri</span></div>
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 150px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Sat</span></div>
+              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 115px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Sun</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-3">
         <div class="card span-2">
           <div class="hstack" style="justify-content:space-between">
             <div><h3>Live Telemetry</h3><div class="sub">Aggregate readings · last 24 hours</div></div>
