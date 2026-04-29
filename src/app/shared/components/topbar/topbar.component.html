@@ -13,7 +13,41 @@
       <i class="icon-moon pi pi-moon"></i>
       <i class="icon-sun pi pi-sun"></i>
     </button> -->
-    <button class="icon-btn"><i class="pi pi-bell"></i><span class="dot"></span></button>
+    <button class="icon-btn" (click)="onNotificationMenuToggle($event)" aria-label="Notifications"><i class="pi pi-bell"></i><span class="dot" *ngIf="notifications.length > 0"></span></button>
+    <div *ngIf="showNotifications" style="position: fixed; top: 60px; right: 20px; min-width: 350px; max-width: 400px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000;">
+      <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px;">
+        Notifications
+      </div>
+      <div style="max-height: 300px; overflow-y: auto;">
+        <div *ngIf="notifications.length === 0" style="padding: 2rem 1rem; text-align: center; color: var(--muted-foreground);">
+          No notifications
+        </div>
+        <div *ngFor="let notif of notifications" style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+            <div style="flex: 1;">
+              <div style="font-weight: 500; font-size: 13px; margin-bottom: 0.25rem;">{{ notif.message }}</div>
+              <div style="font-size: 11px; color: var(--muted-foreground); margin-bottom: 0.5rem;">
+                {{ notif.device }} · {{ notif.time }}
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <button (click)="onAcknowledgeAlert(notif)" style="padding: 0.25rem 0.5rem; font-size: 11px; background: var(--primary); color: white; border: none; border-radius: 3px; cursor: pointer;">
+                  Acknowledge
+                </button>
+                <button (click)="onDismissAlert(notif)" style="padding: 0.25rem 0.5rem; font-size: 11px; background: var(--border); color: var(--foreground); border: none; border-radius: 3px; cursor: pointer;">
+                  Dismiss
+                </button>
+              </div>
+            </div>
+            <span [ngClass]="'badge ' + notif.severity" style="flex-shrink: 0;">{{ notif.severity }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--border); text-align: center;">
+        <button (click)="onViewAllAlerts()" style="padding: 0.5rem 1rem; font-size: 12px; background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 500;">
+          View all alerts →
+        </button>
+      </div>
+    </div>
     <button class="avatar" (click)="onAvatarClick($event)" aria-label="User menu">A</button>
     <p-menu #avatarMenu [model]="avatarMenuItems" [popup]="true" [appendTo]="'body'"></p-menu>
   </div>
