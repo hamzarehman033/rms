@@ -72,6 +72,11 @@ export const routes: Routes = [
           import("./features/tenant/tenant.module").then((m) => m.TenantModule),
       },
       {
+        path: "customer",
+        loadChildren: () =>
+          import("./features/customer/customer.module").then((m) => m.CustomerModule),
+      },
+      {
         path: "settings",
         loadChildren: () =>
           import("./features/settings/settings.module").then(
