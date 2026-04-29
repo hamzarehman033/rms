@@ -10,6 +10,7 @@ export interface LineChartOptions {
   height?: string;
   showLegend?: boolean;
   smooth?: boolean;
+  showSymbol?: boolean;
 }
 
 @Component({
@@ -74,6 +75,7 @@ export class LineChartComponent implements OnInit {
         type: 'line',
         data: series.data,
         smooth: this.options.smooth !== false,
+        symbol: this.options.showSymbol !== true ? 'none' : 'circle',
         itemStyle: {
           color: series.color || colors[index % colors.length]
         },
