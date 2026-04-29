@@ -1,0 +1,71 @@
+/* ========== PrimeNG Theme - PulseGrid Design System ========== */
+/* Custom theme variables for PrimeNG components matching project color palette */
+
+:root {
+  /* Primary Colors */
+  --primary-color: #5b6cff;
+  --primary-color-emphasis: #8a7bff;
+  --primary-foreground-color: #ffffff;
+  
+  /* Surface Colors */
+  --surface-ground: #0b0d12;
+  --surface-section: #11141b;
+  --surface-card: #11141b;
+  --surface-overlay: #161a23;
+  --surface-border: #1f2533;
+  
+  /* Text Colors */
+  --text-color: #e6e8ee;
+  --text-color-secondary: #8b93a7;
+  
+  /* State Colors */
+  --green-500: #22c55e;
+  --amber-500: #f59e0b;
+  --cyan-500: #38bdf8;
+  --red-500: #ef4444;
+  
+  /* Component Specific */
+  --surface-50: #0b0d12;
+  --surface-100: #161a23;
+  --surface-200: #1f2533;
+  --surface-300: #2a3140;
+  --surface-400: #353d4d;
+  --surface-500: #404957;
+  --surface-600: #4b5361;
+  --surface-700: #56636b;
+  --surface-800: #616975;
+  --surface-900: #6c6f7f;
+  
+  --primary-50: #f0f1ff;
+  --primary-100: #e0e2ff;
+  --primary-200: #c0c5ff;
+  --primary-300: #a0a8ff;
+  --primary-400: #808bff;
+  --primary-500: #606eff;
+  --primary-600: #5b6cff;
+  --primary-700: #4552ff;
+  --primary-800: #2f38ff;
+  --primary-900: #1a1eff;
+  
+  /* Shadows */
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  
+  /* Border Radius */
+  --border-radius: 0.6rem;
+  
+  /* Transitions */
+  --transition-duration: 0.2s;
+}
+
+/* Override PrimeNG component styles */
+.p-component {
+  color: var(--text-color);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+}
+
+/* Buttons */
+.p-button {
+  border-radius: var(--border-radius);
+  transition: all var(--transition-duration) ease;
+  font-weight: 500;
+}
