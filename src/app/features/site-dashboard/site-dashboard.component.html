@@ -1,56 +1,366 @@
 <main class="content">
-      <div class="hstack" style="font-size:12px;color:var(--muted-foreground)">
-        <a href="locations.html" class="muted">← All locations</a>
+  <!-- Back Link -->
+  <div class="hstack" style="font-size:12px;color:var(--muted-foreground)">
+    <a href="locations.html" class="muted">← All locations</a>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>Plant A · Detroit, MI</h1>
+      <p>Site-specific telemetry, devices, and alerts.</p>
+    </div>
+    <span class="tag"><span class="pulse-dot"></span>LOC-001</span>
+  </div>
+
+  <!-- KPI Cards (4 columns) -->
+  <div class="grid cols-4">
+    <div class="stat">
+      <div class="row"><span class="label">Devices</span><span class="icon primary"><i class="pi pi-server"></i></span></div>
+      <div><span class="value">42</span></div>
+      <div class="hint">38 online · 3 warn · 1 off</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Uptime</span><span class="icon success"><i class="pi pi-check-circle"></i></span></div>
+      <div><span class="value">98.2%</span></div>
+      <div class="hint">last 30 days</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Active Alerts</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div>
+      <div><span class="value">2</span></div>
+      <div class="hint">1 critical · 1 minor</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Avg Temp</span><span class="icon info"><i class="pi pi-chart-line"></i></span></div>
+      <div><span class="value">71.4°F</span></div>
+      <div class="hint">across plant sensors</div>
+    </div>
+  </div>
+
+  <!-- Power Status Strip -->
+  <div class="grid power-strip">
+    <div class="power-tile accent-success">
+      <div>
+        <div class="power-value">Ok</div>
+        <div class="power-label">Status</div>
+        <div class="power-hint">Current Status of Site</div>
       </div>
-      <div class="page-header">
-        <div><h1>Plant A · Detroit, MI</h1><p>Site-specific telemetry, devices, and alerts.</p></div>
-        <span class="tag"><span class="pulse-dot"></span>LOC-001</span>
+      <i class="pi pi-thunder" style="font-size:16px"></i>
+    </div>
+    <div class="power-tile accent-warning">
+      <div>
+        <div class="power-value">Grid</div>
+        <div class="power-label">Source</div>
+        <div class="power-hint">Current Source of Power</div>
       </div>
-      <div class="grid cols-4">
-        <div class="stat"><div class="row"><span class="label">Devices</span><span class="icon primary"><i class="pi pi-server"></i></span></div><div><span class="value">42</span></div><div class="hint">38 online · 3 warn · 1 off</div></div>
-        <div class="stat"><div class="row"><span class="label">Uptime</span><span class="icon success"><i class="pi pi-check-circle"></i></span></div><div><span class="value">98.2%</span></div><div class="hint">last 30 days</div></div>
-        <div class="stat"><div class="row"><span class="label">Active Alerts</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">2</span></div><div class="hint">1 critical · 1 minor</div></div>
-        <div class="stat"><div class="row"><span class="label">Avg Temp</span><span class="icon info"><i class="pi pi-chart-line"></i></span></div><div><span class="value">71.4°F</span></div><div class="hint">across plant sensors</div></div>
+      <i class="pi pi-inbox" style="font-size:16px"></i>
+    </div>
+    <div class="power-tile accent-warning">
+      <div>
+        <div class="power-value">5.22hr</div>
+        <div class="power-label">Est. Backup</div>
+        <div class="power-hint">Current Battery Backup</div>
+      </div>
+      <i class="pi pi-battery-empty" style="font-size:16px"></i>
+    </div>
+    <div class="power-tile accent-warning">
+      <div>
+        <div class="power-value">0ltr</div>
+        <div class="power-label">Fuel Level</div>
+        <div class="power-hint">Fuel level below threshold</div>
+      </div>
+      <i class="pi pi-list" style="font-size:16px"></i>
+    </div>
+    <div class="power-tile accent-warning">
+      <div>
+        <div class="power-value">5.16kW</div>
+        <div class="power-label">Site Load</div>
+        <div class="power-hint">Current Site Load</div>
+      </div>
+      <i class="pi pi-thunder" style="font-size:16px"></i>
+    </div>
+  </div>
+
+  <!-- Live Data + Device Health -->
+  <div class="grid cols-3">
+    <!-- Live Data Section -->
+    <div class="span-2 card card-pad">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Live Data</h3>
+          <p class="muted-sm">Real-time power inputs &amp; subsystems</p>
+        </div>
+        <span class="font-mono kicker">Realtime</span>
+      </div>
+      <div class="grid live-grid">
+        <!-- Grid Data -->
+        <div class="live-card live-grid-tile">
+          <div class="live-head">
+            <span class="font-display">Grid</span>
+            <i class="pi pi-arrow-up-right" style="font-size:16px"></i>
+          </div>
+          <div class="live-cells cols-4">
+            <div><div class="cell-lbl">L1</div><div class="cell-val ok">230</div></div>
+            <div><div class="cell-lbl">L2</div><div class="cell-val ok">226</div></div>
+            <div><div class="cell-lbl">L3</div><div class="cell-val ok">223</div></div>
+            <div><div class="cell-lbl">Status</div><div class="cell-val ok">ON</div></div>
+          </div>
+        </div>
+        <!-- Rectifier -->
+        <div class="live-card live-rect-tile">
+          <div class="live-head">
+            <span class="font-display">Rectifier</span>
+            <i class="pi pi-lightning-fill" style="font-size:16px"></i>
+          </div>
+          <div class="rect-block">
+            <div class="cell-lbl">BLVD</div>
+            <div class="rect-val ok">ON</div>
+          </div>
+          <div class="rect-block">
+            <div class="cell-lbl">SYS-VOLT</div>
+            <div class="rect-val ok">53.51</div>
+          </div>
+          <div class="rect-block">
+            <div class="cell-lbl">LLVD</div>
+            <div class="rect-val ok">ON</div>
+          </div>
+        </div>
+        <!-- Solar -->
+        <div class="live-card live-solar-tile">
+          <div class="live-head">
+            <span class="font-display">Solar</span>
+            <i class="pi pi-sun" style="font-size:16px"></i>
+          </div>
+          <div class="live-cells cols-2">
+            <div><div class="cell-lbl">Current</div><div class="cell-val warn">18.2</div></div>
+            <div><div class="cell-lbl">Power</div><div class="cell-val warn">4.92</div></div>
+          </div>
+          <div class="live-foot">
+            <span>Today: <span class="font-mono">28.4 kWh</span></span>
+            <span>Peak: <span class="font-mono">6.1 kW</span></span>
+          </div>
+        </div>
+        <!-- Battery -->
+        <div class="live-card live-batt-tile">
+          <div class="live-head">
+            <span class="font-display">Battery</span>
+            <i class="pi pi-battery-full" style="font-size:16px"></i>
+          </div>
+          <div class="live-cells cols-2">
+            <div><div class="cell-lbl">Current</div><div class="cell-val info">0</div></div>
+            <div><div class="cell-lbl">SoC</div><div class="cell-val info">100</div></div>
+          </div>
+          <div class="bar-track"><div class="bar-fill info" style="width:100%"></div></div>
+        </div>
+        <!-- Environment -->
+        <div class="live-card live-env-tile">
+          <div class="live-head">
+            <span class="font-display">Environment</span>
+            <span class="kicker font-mono">°C</span>
+          </div>
+          <div class="live-cells cols-3">
+            <div><div class="cell-lbl">TPowerCab</div><div class="cell-val ok">28.4</div></div>
+            <div><div class="cell-lbl">TBattCab</div><div class="cell-val ok">26.1</div></div>
+            <div><div class="cell-lbl">TRect</div><div class="cell-val ok">27.3</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device Health -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3>Site Alerts</h3>
+          <p>Filtered to Plant A</p>
+        </div>
+        <span class="kicker font-mono">2 active</span>
+      </div>
+      <ul class="alerts-list">
+        <li>
+          <div class="alert-icon"><i class="pi pi-exclamation-triangle"></i></div>
+          <div class="alert-body">
+            <div>Device offline &gt; 1h</div>
+            <div class="alert-meta"><span class="font-mono">DV-006</span> · 1 hr ago</div>
+          </div>
+          <span class="sev sev-major">major</span>
+        </li>
+        <li>
+          <div class="alert-icon"><i class="pi pi-exclamation-triangle"></i></div>
+          <div class="alert-body">
+            <div>Firmware update available</div>
+            <div class="alert-meta"><span class="font-mono">DV-001</span> · 3 hr ago</div>
+          </div>
+          <span class="sev sev-info">info</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Telemetry Charts Section -->
+  <div class="grid cols-3">
+    <!-- Trend Analysis -->
+    <div class="span-2 stack">
+      <div class="card card-pad">
+        <div class="card-head-inline">
+          <div>
+            <h3 class="font-display">Trend Analysis</h3>
+            <p class="muted-sm">System voltage, load &amp; solar · 24h</p>
+          </div>
+          <span class="kicker font-mono">General Site Analysis</span>
+        </div>
+        <div class="chart-canvas">
+          <svg viewBox="0 0 600 220" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="solarG" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="hsl(32 80% 42%)" stop-opacity=".4"/>
+                <stop offset="100%" stop-color="hsl(32 80% 42%)" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="loadG" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="hsl(217 60% 28%)" stop-opacity=".4"/>
+                <stop offset="100%" stop-color="hsl(217 60% 28%)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g stroke="hsl(214 20% 88%)" stroke-dasharray="3 3">
+              <line x1="0" x2="600" y1="55" y2="55"/>
+              <line x1="0" x2="600" y1="110" y2="110"/>
+              <line x1="0" x2="600" y1="165" y2="165"/>
+            </g>
+            <path d="M0,180 C50,140 100,150 150,90 C200,40 250,60 300,80 C350,100 400,70 450,110 C500,150 550,130 600,160 L600,220 L0,220 Z" fill="url(#solarG)" stroke="hsl(32 80% 42%)" stroke-width="2"/>
+            <path d="M0,150 C50,120 100,130 150,110 C200,95 250,120 300,130 C350,140 400,115 450,125 C500,135 550,120 600,140 L600,220 L0,220 Z" fill="url(#loadG)" stroke="hsl(217 60% 28%)" stroke-width="2"/>
+            <polyline fill="none" stroke="hsl(152 55% 32%)" stroke-width="2" points="0,90 50,92 100,88 150,91 200,87 250,90 300,86 350,89 400,85 450,88 500,86 550,89 600,87"/>
+          </svg>
+          <div class="chart-legend">
+            <span class="lg-row"><span class="dot" style="background:hsl(32 80% 42%)"></span>Solar (kW)</span>
+            <span class="lg-row"><span class="dot" style="background:hsl(217 60% 28%)"></span>Load (kW)</span>
+            <span class="lg-row"><span class="dot" style="background:hsl(152 55% 32%)"></span>Sys Volt</span>
+          </div>
+        </div>
       </div>
 
-      <div class="grid cols-3">
-        <div class="card span-2"><h3>Site Telemetry</h3><div class="sub">Last 24 hours</div>
-          <div class="chart">
-            <svg viewBox="0 0 600 280" preserveAspectRatio="none">
-              <defs><linearGradient id="gS" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#5b6cff" stop-opacity=".5"/><stop offset="100%" stop-color="#5b6cff" stop-opacity="0"/></linearGradient></defs>
-              <path d="M0,180 C40,160 80,120 120,130 C160,140 200,90 240,80 C280,70 320,110 360,100 C400,90 440,140 480,150 C520,160 560,130 600,140 L600,280 L0,280 Z" fill="url(#gS)"/>
-              <path d="M0,180 C40,160 80,120 120,130 C160,140 200,90 240,80 C280,70 320,110 360,100 C400,90 440,140 480,150 C520,160 560,130 600,140" stroke="#5b6cff" stroke-width="2" fill="none"/>
-            </svg>
-          </div>
+<div class="span-2 card">
+      <div class="card-head">
+        <div>
+          <h3>Site Devices</h3>
+          <p>5 devices at this location</p>
         </div>
-        <div class="card"><h3>Device Health</h3><div class="sub">By status</div>
-          <div class="bar-row" style="height:180px">
-            <div class="bar-col"><div class="bar-stack"><div class="bar online" style="height:140px"></div></div><span class="bar-label">Online · 38</span></div>
-            <div class="bar-col"><div class="bar-stack"><div class="bar online" style="height:30px;background:var(--warning)"></div></div><span class="bar-label">Warn · 3</span></div>
-            <div class="bar-col"><div class="bar-stack"><div class="bar offline" style="height:14px"></div></div><span class="bar-label">Off · 1</span></div>
-          </div>
-        </div>
+        <span class="kicker font-mono">REALTIME</span>
       </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Device</th><th>Status</th><th>Battery</th><th>Signal</th><th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="dev-cell">
+                  <div class="dev-icon"><i class="pi pi-chart-line"></i></div>
+                  <div><div class="dev-name">Boiler-Room Temp Sensor</div><div class="dev-meta font-mono">DV-001 · v2.4.1</div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-online"><span class="pulse-dot"></span>online</span></td>
+              <td><span class="font-mono">87%</span></td>
+              <td><div class="signal-bar"><div style="width:92%"></div></div></td>
+              <td class="font-mono muted">2s ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="dev-cell">
+                  <div class="dev-icon"><i class="pi pi-video"></i></div>
+                  <div><div class="dev-name">North Gate Camera</div><div class="dev-meta font-mono">DV-002 · v1.9.0</div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-online"><span class="pulse-dot"></span>online</span></td>
+              <td><span class="font-mono">100%</span></td>
+              <td><div class="signal-bar"><div style="width:78%"></div></div></td>
+              <td class="font-mono muted">5s ago</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="dev-cell">
+                  <div class="dev-icon"><i class="pi pi-chart-line"></i></div>
+                  <div><div class="dev-name">Vibration Mon. M-7</div><div class="dev-meta font-mono">DV-006 · v2.3.8</div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-offline"><span class="pulse-dot"></span>offline</span></td>
+              <td><span class="font-mono">0%</span></td>
+              <td><div class="signal-bar"><div style="width:0%"></div></div></td>
+              <td class="font-mono muted">2h ago</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-      <div class="grid cols-2">
-        <div class="card" style="padding:0">
-          <div style="padding:14px 18px;border-bottom:1px solid var(--border)"><h3>Devices at this site</h3></div>
-          <table class="table">
-            <thead><tr><th>Device</th><th>Status</th><th>Battery</th></tr></thead>
-            <tbody>
-              <tr><td>DV-001 Boiler-Room Temp</td><td><span class="badge online">● Online</span></td><td class="mono">87%</td></tr>
-              <tr><td>DV-006 Vibration Mon. M-7</td><td><span class="badge offline">● Offline</span></td><td class="mono">0%</td></tr>
-              <tr><td>DV-011 Compressor C-2</td><td><span class="badge online">● Online</span></td><td class="mono">94%</td></tr>
-              <tr><td>DV-014 Conveyor Sensor</td><td><span class="badge warning">● Warning</span></td><td class="mono">31%</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="card"><h3>Recent Alerts at site</h3>
-          <div style="margin-top:12px">
-            <div class="alert-item"><div class="sev-bar critical"></div><div><div style="font-weight:500">Temperature spike +12°F</div><div class="meta">DV-001 · 9 min ago</div></div></div>
-            <div class="alert-item"><div class="sev-bar major"></div><div><div style="font-weight:500">Vibration M-7 offline</div><div class="meta">DV-006 · 2h ago</div></div></div>
-            <div class="alert-item"><div class="sev-bar minor"></div><div><div style="font-weight:500">Battery below 35%</div><div class="meta">DV-014 · 1h ago</div></div></div>
-          </div>
-        </div>
+    </div>
+
+    <!-- General Information -->
+    <div class="card card-pad">
+      <h3 class="font-display">General Information</h3>
+      <div class="info-grid">
+        <div class="info-item"><div class="cell-lbl">Rectifier Brand</div><div class="font-mono info-val">Vertiv</div></div>
+        <div class="info-item"><div class="cell-lbl">Rectifier Qty</div><div class="font-mono info-val">5</div></div>
+        <div class="info-item"><div class="cell-lbl">Rectifier Capacity</div><div class="font-mono info-val">15kW</div></div>
+        <div class="info-item"><div class="cell-lbl">Commissioning Date</div><div class="font-mono info-val">06-Dec-2024</div></div>
+        <div class="info-item"><div class="cell-lbl">ATP Date</div><div class="font-mono info-val">05-Jan-2024</div></div>
+        <div class="info-item"><div class="cell-lbl">Battery Brand</div><div class="font-mono info-val">Sacred Sun</div></div>
+        <div class="info-item"><div class="cell-lbl">Battery Capacity</div><div class="font-mono info-val">500Ah</div></div>
+        <div class="info-item"><div class="cell-lbl">Number of Tenants</div><div class="font-mono info-val">2</div></div>
+        <div class="info-item"><div class="cell-lbl">Tenant1 Load</div><div class="font-mono info-val">2600</div></div>
+        <div class="info-item"><div class="cell-lbl">Tenant2 Load</div><div class="font-mono info-val">2500</div></div>
+        <div class="info-item"><div class="cell-lbl">SIM1</div><div class="font-mono info-val">1932051308</div></div>
+        <div class="info-item"><div class="cell-lbl">SIM2</div><div class="font-mono info-val">3300116483</div></div>
+        <div class="info-item"><div class="cell-lbl">Racks</div><div class="font-mono info-val">2</div></div>
+        <div class="info-item"><div class="cell-lbl">Cells/Module</div><div class="font-mono info-val">4</div></div>
+        <div class="info-item"><div class="cell-lbl">Modules/Rack</div><div class="font-mono info-val">4</div></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Energy + Runtime Reports -->
+  <div class="grid cols-2">
+    <div class="card card-pad">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Energy Report</h3>
+          <p class="muted-sm">Total Energy — 3,138 kWh · last 30 days</p>
+        </div>
+        <span class="kicker font-mono">2026-04-01 ~ 2026-05-01</span>
+      </div>
+      <div class="bars-canvas" id="energyBars"></div>
+      <div class="chart-legend left">
+        <span class="lg-row"><span class="dot" style="background:hsl(152 55% 32%)"></span>Grid</span>
+        <span class="lg-row"><span class="dot" style="background:hsl(32 80% 42%)"></span>Solar</span>
+        <span class="lg-row"><span class="dot" style="background:hsl(210 75% 42%)"></span>Battery</span>
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Runtime Report</h3>
+          <p class="muted-sm">Hours per source · last 30 days</p>
+        </div>
+        <span class="kicker font-mono">2026-04-01 ~ 2026-05-01</span>
+      </div>
+      <div class="bars-canvas" id="runtimeBars"></div>
+      <div class="chart-legend left">
+        <span class="lg-row"><span class="dot" style="background:hsl(152 55% 32%)"></span>Grid</span>
+        <span class="lg-row"><span class="dot" style="background:hsl(210 75% 42%)"></span>Battery</span>
+        <span class="lg-row"><span class="dot" style="background:hsl(215 25% 30%)"></span>Outage</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Devices + Alerts -->
+  <div class="grid cols-3">
+    <!-- Site Devices Table -->
+    
+
+    <!-- Site Alerts -->
+    
+  </div>
 </main>
