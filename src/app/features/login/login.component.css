@@ -28,14 +28,11 @@
 
 .brand-mark.sm { width: 2rem; height: 2rem; }
 
-.brand-mark svg { width: 1rem; height: 1rem; }
-
 .brand-text {
   display: flex;
   flex-direction: column;
   line-height: 1.1;
 }
-
 
 .brand-sub {
   font-size: 0.625rem;

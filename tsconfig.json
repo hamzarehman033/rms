@@ -19,6 +19,7 @@
     "paths": {
       "@app/shared": ["./src/app/shared/index.ts"],
       "@app/layouts": ["./src/app/layouts/index.ts"],
+      "@app/core": ["./src/app/core/index.ts"],
       "@assets/*": ["./src/assets/*"]
     }
   },
