@@ -7,5 +7,14 @@ import { Component } from '@angular/core';
   styleUrl: './customer.component.css'
 })
 export class CustomerComponent {
+  displayAddCustomerDialog = false;
 
+  openAddCustomerDialog() {
+    this.displayAddCustomerDialog = true;
+  }
+
+  onCustomerAdded(customerData: any) {
+    console.log('Customer added:', customerData);
+    this.displayAddCustomerDialog = false;
+  }
 }

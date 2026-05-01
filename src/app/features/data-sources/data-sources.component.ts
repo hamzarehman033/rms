@@ -7,5 +7,14 @@ import { Component } from '@angular/core';
   styleUrl: './data-sources.component.css'
 })
 export class DataSourcesComponent {
+  displayAddDataSourceDialog = false;
 
+  openAddDataSourceDialog() {
+    this.displayAddDataSourceDialog = true;
+  }
+
+  onDataSourceAdded(dataSourceData: any) {
+    console.log('Data source added:', dataSourceData);
+    this.displayAddDataSourceDialog = false;
+  }
 }

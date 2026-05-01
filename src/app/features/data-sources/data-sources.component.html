@@ -1,57 +1,143 @@
 <main class="content">
-      <div class="page-header">
-        <div><h1>Data Sources</h1><p>Manage ingestion streams feeding your console.</p></div>
-        
+  <div class="page-header">
+    <div>
+      <h1>Data Sources</h1>
+      <p>Manage ingestion streams feeding your console.</p>
+    </div>
+
+  </div>
+  <div class="grid cols-4">
+    <div class="stat">
+      <div class="row"><span class="label">Sources</span><span class="icon primary"><i
+            class="pi pi-database"></i></span></div>
+      <div><span class="value">5</span></div>
+      <div class="hint">4 healthy</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Throughput</span><span class="icon info"><i
+            class="pi pi-chart-line"></i></span></div>
+      <div><span class="value">4.2k/s</span></div>
+      <div class="hint">aggregate ingestion</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Errors 24h</span><span class="icon warning"><i
+            class="pi pi-exclamation-triangle"></i></span></div>
+      <div><span class="value">12</span></div>
+      <div class="hint">retried + recovered</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Storage</span><span class="icon success"><i class="pi pi-shield"></i></span>
       </div>
-      <div class="grid cols-4">
-        <div class="stat"><div class="row"><span class="label">Sources</span><span class="icon primary"><i class="pi pi-database"></i></span></div><div><span class="value">5</span></div><div class="hint">4 healthy</div></div>
-        <div class="stat"><div class="row"><span class="label">Throughput</span><span class="icon info"><i class="pi pi-chart-line"></i></span></div><div><span class="value">4.2k/s</span></div><div class="hint">aggregate ingestion</div></div>
-        <div class="stat"><div class="row"><span class="label">Errors 24h</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">12</span></div><div class="hint">retried + recovered</div></div>
-        <div class="stat"><div class="row"><span class="label">Storage</span><span class="icon success"><i class="pi pi-shield"></i></span></div><div><span class="value">8.2 TB</span></div><div class="hint">across all sinks</div></div>
-      </div>
-      <div class="hstack" style="justify-content:space-between">
-        <div class="search"><i class="pi pi-search"></i><input placeholder="Search sources…"></div>
-        <button class="btn primary"><i class="pi pi-plus"></i><span>Add source</span></button>
-      </div>
-      <div class="grid cols-2"><div class="tile">
+      <div><span class="value">8.2 TB</span></div>
+      <div class="hint">across all sinks</div>
+    </div>
+  </div>
+  <div class="hstack" style="justify-content:space-between">
+    <div class="search"><i class="pi pi-search"></i><input placeholder="Search sources…"></div>
+    <button class="btn primary" (click)="openAddDataSourceDialog()"><i class="pi pi-plus"></i><span>Add
+        source</span></button>
+  </div>
+  <div class="grid cols-2">
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-database"></i></div><div><h4>Production MQTT</h4><div class="meta mono" style="font-size:11px">DS-01 · MQTT</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-database"></i></div>
+          <div>
+            <h4>Production MQTT</h4>
+            <div class="meta mono" style="font-size:11px">DS-01 · MQTT</div>
+          </div>
+        </div>
         <span class="badge online">● Healthy</span>
       </div>
       <div class="meta mono" style="font-size:11px">mqtt://broker.prod:1883</div>
-      <div class="stats"><div><span>Throughput</span><strong>2,840 msgs/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
-      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i class="pi pi-refresh"></i><span>Sync now</span></button></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Throughput</span><strong>2,840 msgs/s</strong></div>
+        <div><span>Last sync</span><strong>just now</strong></div>
+      </div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i
+            class="pi pi-refresh"></i><span>Sync now</span></button></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-database"></i></div><div><h4>Telemetry HTTP</h4><div class="meta mono" style="font-size:11px">DS-02 · HTTP</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-database"></i></div>
+          <div>
+            <h4>Telemetry HTTP</h4>
+            <div class="meta mono" style="font-size:11px">DS-02 · HTTP</div>
+          </div>
+        </div>
         <span class="badge online">● Healthy</span>
       </div>
       <div class="meta mono" style="font-size:11px">https://api.pulse.io/ingest</div>
-      <div class="stats"><div><span>Throughput</span><strong>920 msgs/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
-      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i class="pi pi-refresh"></i><span>Sync now</span></button></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Throughput</span><strong>920 msgs/s</strong></div>
+        <div><span>Last sync</span><strong>just now</strong></div>
+      </div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i
+            class="pi pi-refresh"></i><span>Sync now</span></button></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-database"></i></div><div><h4>Kafka Stream</h4><div class="meta mono" style="font-size:11px">DS-03 · Kafka</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-database"></i></div>
+          <div>
+            <h4>Kafka Stream</h4>
+            <div class="meta mono" style="font-size:11px">DS-03 · Kafka</div>
+          </div>
+        </div>
         <span class="badge warning">● Degraded</span>
       </div>
       <div class="meta mono" style="font-size:11px">kafka.cluster:9092</div>
-      <div class="stats"><div><span>Throughput</span><strong>412 msgs/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
-      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i class="pi pi-refresh"></i><span>Sync now</span></button></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Throughput</span><strong>412 msgs/s</strong></div>
+        <div><span>Last sync</span><strong>just now</strong></div>
+      </div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i
+            class="pi pi-refresh"></i><span>Sync now</span></button></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-database"></i></div><div><h4>Postgres CDC</h4><div class="meta mono" style="font-size:11px">DS-04 · Postgres</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-database"></i></div>
+          <div>
+            <h4>Postgres CDC</h4>
+            <div class="meta mono" style="font-size:11px">DS-04 · Postgres</div>
+          </div>
+        </div>
         <span class="badge online">● Healthy</span>
       </div>
       <div class="meta mono" style="font-size:11px">db.warehouse:5432</div>
-      <div class="stats"><div><span>Throughput</span><strong>78 events/s</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
-      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i class="pi pi-refresh"></i><span>Sync now</span></button></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Throughput</span><strong>78 events/s</strong></div>
+        <div><span>Last sync</span><strong>just now</strong></div>
+      </div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i
+            class="pi pi-refresh"></i><span>Sync now</span></button></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-database"></i></div><div><h4>S3 Cold Archive</h4><div class="meta mono" style="font-size:11px">DS-05 · S3</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-database"></i></div>
+          <div>
+            <h4>S3 Cold Archive</h4>
+            <div class="meta mono" style="font-size:11px">DS-05 · S3</div>
+          </div>
+        </div>
         <span class="badge online">● Healthy</span>
       </div>
       <div class="meta mono" style="font-size:11px">s3://pulse-archive</div>
-      <div class="stats"><div><span>Throughput</span><strong>sync 4h</strong></div><div><span>Last sync</span><strong>just now</strong></div></div>
-      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i class="pi pi-refresh"></i><span>Sync now</span></button></div>
-    </div></div>
+      <div class="stats">
+        <div><span>Throughput</span><strong>sync 4h</strong></div>
+        <div><span>Last sync</span><strong>just now</strong></div>
+      </div>
+      <div class="actions"><button class="btn sm ghost">Configure</button><button class="btn sm"><i
+            class="pi pi-refresh"></i><span>Sync now</span></button></div>
+    </div>
+  </div>
 </main>
+
+<!-- Add Data Source Dialog -->
+<app-modal-dialog [(visible)]="displayAddDataSourceDialog" header="Add New Data Source"
+  (onHide)="displayAddDataSourceDialog = false">
+  <app-add-data-source (dataSourceAdded)="onDataSourceAdded($event)"></app-add-data-source>
+</app-modal-dialog>

@@ -7,5 +7,14 @@ import { Component } from '@angular/core';
   styleUrl: './rules.component.css'
 })
 export class RulesComponent {
+  displayAddRuleDialog = false;
 
+  openAddRuleDialog() {
+    this.displayAddRuleDialog = true;
+  }
+
+  onRuleAdded(ruleData: any) {
+    console.log('Rule added:', ruleData);
+    this.displayAddRuleDialog = false;
+  }
 }

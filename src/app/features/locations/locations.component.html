@@ -1,59 +1,162 @@
 <main class="content">
-      <div class="page-header">
-        <div><h1>Locations</h1><p>Physical sites where your devices are deployed.</p></div>
-        
-      </div>
-      <div class="grid cols-4">
-        <div class="stat"><div class="row"><span class="label">Total Sites</span><span class="icon primary"><i class="pi pi-map-marker"></i></span></div><div><span class="value">6</span></div><div class="hint">across 6 states</div></div>
-        <div class="stat"><div class="row"><span class="label">Operational</span><span class="icon success"><i class="pi pi-shield"></i></span></div><div><span class="value">4</span></div><div class="hint">all systems normal</div></div>
-        <div class="stat"><div class="row"><span class="label">Degraded</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">2</span></div><div class="hint">attention needed</div></div>
-        <div class="stat"><div class="row"><span class="label">Total Devices</span><span class="icon info"><i class="pi pi-server"></i></span></div><div><span class="value">150</span></div><div class="hint">deployed</div></div>
-      </div>
-      <div class="hstack" style="justify-content:space-between">
-        <div class="search"><i class="pi pi-search"></i><input placeholder="Search locations…"></div>
-        <button class="btn primary"><i class="pi pi-plus"></i><span>New location</span></button>
-      </div>
-      <div class="grid cols-3"><div class="tile">
+  <div class="page-header">
+    <div>
+      <h1>Locations</h1>
+      <p>Physical sites where your devices are deployed.</p>
+    </div>
+
+  </div>
+  <div class="grid cols-4">
+    <div class="stat">
+      <div class="row"><span class="label">Total Sites</span><span class="icon primary"><i
+            class="pi pi-map-marker"></i></span></div>
+      <div><span class="value">6</span></div>
+      <div class="hint">across 6 states</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Operational</span><span class="icon success"><i
+            class="pi pi-shield"></i></span></div>
+      <div><span class="value">4</span></div>
+      <div class="hint">all systems normal</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Degraded</span><span class="icon warning"><i
+            class="pi pi-exclamation-triangle"></i></span></div>
+      <div><span class="value">2</span></div>
+      <div class="hint">attention needed</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Total Devices</span><span class="icon info"><i
+            class="pi pi-server"></i></span></div>
+      <div><span class="value">150</span></div>
+      <div class="hint">deployed</div>
+    </div>
+  </div>
+  <div class="hstack" style="justify-content:space-between">
+    <div class="search"><i class="pi pi-search"></i><input placeholder="Search locations…"></div>
+    <button class="btn primary" (click)="openAddLocationDialog()"><i class="pi pi-plus"></i><span>New
+        location</span></button>
+  </div>
+  <div class="grid cols-3">
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-building"></i></div><div><h4>Plant A</h4><div class="meta">Manufacturing · Detroit, MI</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-building"></i></div>
+          <div>
+            <h4>Plant A</h4>
+            <div class="meta">Manufacturing · Detroit, MI</div>
+          </div>
+        </div>
         <span class="badge operational">● Operational</span>
       </div>
-      <div class="stats"><div><span>Devices</span><strong>42</strong></div><div><span>Uptime</span><strong>98.2%</strong></div><div><span>ID</span><strong class="mono" style="font-size:13px">LOC-001</strong></div></div>
-      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i class="pi pi-arrow-right"></i></a></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Devices</span><strong>42</strong></div>
+        <div><span>Uptime</span><strong>98.2%</strong></div>
+        <div><span>ID</span><strong class="mono" style="font-size:13px">LOC-001</strong></div>
+      </div>
+      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i
+            class="pi pi-arrow-right"></i></a></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-building"></i></div><div><h4>Plant B</h4><div class="meta">Manufacturing · Cleveland, OH</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-building"></i></div>
+          <div>
+            <h4>Plant B</h4>
+            <div class="meta">Manufacturing · Cleveland, OH</div>
+          </div>
+        </div>
         <span class="badge degraded">● Degraded</span>
       </div>
-      <div class="stats"><div><span>Devices</span><strong>36</strong></div><div><span>Uptime</span><strong>87.4%</strong></div><div><span>ID</span><strong class="mono" style="font-size:13px">LOC-002</strong></div></div>
-      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i class="pi pi-arrow-right"></i></a></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Devices</span><strong>36</strong></div>
+        <div><span>Uptime</span><strong>87.4%</strong></div>
+        <div><span>ID</span><strong class="mono" style="font-size:13px">LOC-002</strong></div>
+      </div>
+      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i
+            class="pi pi-arrow-right"></i></a></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-building"></i></div><div><h4>Warehouse A</h4><div class="meta">Logistics · Memphis, TN</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-building"></i></div>
+          <div>
+            <h4>Warehouse A</h4>
+            <div class="meta">Logistics · Memphis, TN</div>
+          </div>
+        </div>
         <span class="badge operational">● Operational</span>
       </div>
-      <div class="stats"><div><span>Devices</span><strong>28</strong></div><div><span>Uptime</span><strong>99.1%</strong></div><div><span>ID</span><strong class="mono" style="font-size:13px">LOC-003</strong></div></div>
-      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i class="pi pi-arrow-right"></i></a></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Devices</span><strong>28</strong></div>
+        <div><span>Uptime</span><strong>99.1%</strong></div>
+        <div><span>ID</span><strong class="mono" style="font-size:13px">LOC-003</strong></div>
+      </div>
+      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i
+            class="pi pi-arrow-right"></i></a></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-building"></i></div><div><h4>Warehouse B</h4><div class="meta">Logistics · Dallas, TX</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-building"></i></div>
+          <div>
+            <h4>Warehouse B</h4>
+            <div class="meta">Logistics · Dallas, TX</div>
+          </div>
+        </div>
         <span class="badge operational">● Operational</span>
       </div>
-      <div class="stats"><div><span>Devices</span><strong>22</strong></div><div><span>Uptime</span><strong>96.7%</strong></div><div><span>ID</span><strong class="mono" style="font-size:13px">LOC-004</strong></div></div>
-      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i class="pi pi-arrow-right"></i></a></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Devices</span><strong>22</strong></div>
+        <div><span>Uptime</span><strong>96.7%</strong></div>
+        <div><span>ID</span><strong class="mono" style="font-size:13px">LOC-004</strong></div>
+      </div>
+      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i
+            class="pi pi-arrow-right"></i></a></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-building"></i></div><div><h4>DC West</h4><div class="meta">Data Center · Reno, NV</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-building"></i></div>
+          <div>
+            <h4>DC West</h4>
+            <div class="meta">Data Center · Reno, NV</div>
+          </div>
+        </div>
         <span class="badge operational">● Operational</span>
       </div>
-      <div class="stats"><div><span>Devices</span><strong>18</strong></div><div><span>Uptime</span><strong>99.8%</strong></div><div><span>ID</span><strong class="mono" style="font-size:13px">LOC-005</strong></div></div>
-      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i class="pi pi-arrow-right"></i></a></div>
-    </div><div class="tile">
+      <div class="stats">
+        <div><span>Devices</span><strong>18</strong></div>
+        <div><span>Uptime</span><strong>99.8%</strong></div>
+        <div><span>ID</span><strong class="mono" style="font-size:13px">LOC-005</strong></div>
+      </div>
+      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i
+            class="pi pi-arrow-right"></i></a></div>
+    </div>
+    <div class="tile">
       <div class="head">
-        <div class="hstack" style="align-items:flex-start"><div class="tile-icon"><i class="pi pi-building"></i></div><div><h4>Substation 4</h4><div class="meta">Energy · Phoenix, AZ</div></div></div>
+        <div class="hstack" style="align-items:flex-start">
+          <div class="tile-icon"><i class="pi pi-building"></i></div>
+          <div>
+            <h4>Substation 4</h4>
+            <div class="meta">Energy · Phoenix, AZ</div>
+          </div>
+        </div>
         <span class="badge degraded">● Degraded</span>
       </div>
-      <div class="stats"><div><span>Devices</span><strong>4</strong></div><div><span>Uptime</span><strong>82.0%</strong></div><div><span>ID</span><strong class="mono" style="font-size:13px">LOC-006</strong></div></div>
-      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i class="pi pi-arrow-right"></i></a></div>
-    </div></div>
+      <div class="stats">
+        <div><span>Devices</span><strong>4</strong></div>
+        <div><span>Uptime</span><strong>82.0%</strong></div>
+        <div><span>ID</span><strong class="mono" style="font-size:13px">LOC-006</strong></div>
+      </div>
+      <div class="actions"><a class="btn sm ghost" [routerLink]="'/site-dashboard'">Open dashboard <i
+            class="pi pi-arrow-right"></i></a></div>
+    </div>
+  </div>
 </main>
+
+<!-- Add Location Dialog -->
+<app-modal-dialog [(visible)]="displayAddLocationDialog" header="Add New Location"
+  (onHide)="displayAddLocationDialog = false">
+  <app-add-location (locationAdded)="onLocationAdded($event)"></app-add-location>
+</app-modal-dialog>

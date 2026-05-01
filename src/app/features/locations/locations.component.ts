@@ -7,5 +7,14 @@ import { Component } from '@angular/core';
   styleUrl: './locations.component.css'
 })
 export class LocationsComponent {
+  displayAddLocationDialog = false;
 
+  openAddLocationDialog() {
+    this.displayAddLocationDialog = true;
+  }
+
+  onLocationAdded(locationData: any) {
+    console.log('Location added:', locationData);
+    this.displayAddLocationDialog = false;
+  }
 }

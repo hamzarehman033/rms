@@ -7,5 +7,14 @@ import { Component } from '@angular/core';
   styleUrl: './tenant.component.css'
 })
 export class TenantComponent {
+  displayAddTenantDialog = false;
 
+  openAddTenantDialog() {
+    this.displayAddTenantDialog = true;
+  }
+
+  onTenantAdded(tenantData: any) {
+    console.log('Tenant added:', tenantData);
+    this.displayAddTenantDialog = false;
+  }
 }

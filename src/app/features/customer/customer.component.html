@@ -7,9 +7,21 @@
   </div>
 
   <div class="grid cols-4">
-    <div class="stat"><div class="row"><span class="label">Customers</span></div><div><span class="value">42</span></div><div class="hint">total accounts</div></div>
-    <div class="stat"><div class="row"><span class="label">Active</span></div><div><span class="value">38</span></div><div class="hint">paying subscriptions</div></div>
-    <div class="stat"><div class="row"><span class="label">Revenue</span></div><div><span class="value">$125K</span></div><div class="hint">monthly recurring</div></div>
+    <div class="stat">
+      <div class="row"><span class="label">Customers</span></div>
+      <div><span class="value">42</span></div>
+      <div class="hint">total accounts</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Active</span></div>
+      <div><span class="value">38</span></div>
+      <div class="hint">paying subscriptions</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Revenue</span></div>
+      <div><span class="value">$125K</span></div>
+      <div class="hint">monthly recurring</div>
+    </div>
   </div>
   <div class="hstack" style="justify-content:space-between;flex-wrap:wrap;gap:12px">
     <div class="tabs">
@@ -20,11 +32,12 @@
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
-      <button class="btn primary"><i class="pi pi-plus"></i><span>Add customer</span></button>
+      <button class="btn primary" (click)="openAddCustomerDialog()"><i class="pi pi-plus"></i><span>Add
+          customer</span></button>
     </div>
-  </div>  
+  </div>
   <!-- Table -->
-   <div class="card" style="padding:0">
+  <div class="card" style="padding:0">
     <table class="table">
       <thead>
         <tr>
@@ -38,7 +51,10 @@
       </thead>
       <tbody>
         <tr>
-          <td><div style="font-weight:500">John Smith</div><div class="muted mono" style="font-size:11px">CUST-001</div></td>
+          <td>
+            <div style="font-weight:500">John Smith</div>
+            <div class="muted mono" style="font-size:11px">CUST-001</div>
+          </td>
           <td class="muted">john&#64;example.com</td>
           <td><span class="badge online">● Active</span></td>
           <td><span class="badge success">Premium</span></td>
@@ -46,7 +62,10 @@
           <td><button class="btn sm">Manage</button></td>
         </tr>
         <tr>
-          <td><div style="font-weight:500">Sarah Johnson</div><div class="muted mono" style="font-size:11px">CUST-002</div></td>
+          <td>
+            <div style="font-weight:500">Sarah Johnson</div>
+            <div class="muted mono" style="font-size:11px">CUST-002</div>
+          </td>
           <td class="muted">sarah&#64;example.com</td>
           <td><span class="badge online">● Active</span></td>
           <td><span class="badge primary">Standard</span></td>
@@ -54,7 +73,10 @@
           <td><button class="btn sm">Manage</button></td>
         </tr>
         <tr>
-          <td><div style="font-weight:500">Michael Chen</div><div class="muted mono" style="font-size:11px">CUST-003</div></td>
+          <td>
+            <div style="font-weight:500">Michael Chen</div>
+            <div class="muted mono" style="font-size:11px">CUST-003</div>
+          </td>
           <td class="muted">michael&#64;example.com</td>
           <td><span class="badge warning">● Inactive</span></td>
           <td><span class="badge info">Basic</span></td>
@@ -66,3 +88,9 @@
   </div>
 
 </main>
+
+<!-- Add Customer Dialog -->
+<app-modal-dialog [(visible)]="displayAddCustomerDialog" header="Add New Customer"
+  (onHide)="displayAddCustomerDialog = false">
+  <app-add-customer (customerAdded)="onCustomerAdded($event)"></app-add-customer>
+</app-modal-dialog>

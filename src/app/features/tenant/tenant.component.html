@@ -7,9 +7,21 @@
   </div>
 
   <div class="grid cols-4">
-    <div class="stat"><div class="row"><span class="label">Tenants</span></div><div><span class="value">2</span></div><div class="hint">requires action</div></div>
-    <div class="stat"><div class="row"><span class="label">Active</span></div><div><span class="value">3</span></div><div class="hint">degraded service</div></div>
-    <div class="stat"><div class="row"><span class="label">Members</span></div><div><span class="value">5</span></div><div class="hint">informational</div></div>
+    <div class="stat">
+      <div class="row"><span class="label">Tenants</span></div>
+      <div><span class="value">2</span></div>
+      <div class="hint">requires action</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Active</span></div>
+      <div><span class="value">3</span></div>
+      <div class="hint">degraded service</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Members</span></div>
+      <div><span class="value">5</span></div>
+      <div class="hint">informational</div>
+    </div>
   </div>
   <div class="hstack" style="justify-content:space-between;flex-wrap:wrap;gap:12px">
     <div class="tabs">
@@ -20,11 +32,12 @@
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
-      <button class="btn primary"><i class="pi pi-plus"></i><span>Add device</span></button>
+      <button class="btn primary" (click)="openAddTenantDialog()"><i class="pi pi-plus"></i><span>Add
+          tenant</span></button>
     </div>
-  </div>  
+  </div>
   <!-- Table -->
-   <div class="card" style="padding:0">
+  <div class="card" style="padding:0">
     <table class="table">
       <thead>
         <tr>
@@ -38,7 +51,10 @@
       </thead>
       <tbody>
         <tr>
-          <td><div style="font-weight:500">Acme Industrial</div><div class="muted mono" style="font-size:11px">TEN-001</div></td>
+          <td>
+            <div style="font-weight:500">Acme Industrial</div>
+            <div class="muted mono" style="font-size:11px">TEN-001</div>
+          </td>
           <td><span class="badge success">Enterprise</span></td>
           <td><span class="badge online">● Active</span></td>
           <td class="muted">2</td>
@@ -46,7 +62,10 @@
           <td><button class="btn sm">Manage</button></td>
         </tr>
         <tr>
-          <td><div style="font-weight:500">Northwind Logistics</div><div class="muted mono" style="font-size:11px">TEN-002</div></td>
+          <td>
+            <div style="font-weight:500">Northwind Logistics</div>
+            <div class="muted mono" style="font-size:11px">TEN-002</div>
+          </td>
           <td><span class="badge primary">Pro</span></td>
           <td><span class="badge online">● Active</span></td>
           <td class="muted">1</td>
@@ -54,7 +73,10 @@
           <td><button class="btn sm">Manage</button></td>
         </tr>
         <tr>
-          <td><div style="font-weight:500">Helios Solar</div><div class="muted mono" style="font-size:11px">TEN-003</div></td>
+          <td>
+            <div style="font-weight:500">Helios Solar</div>
+            <div class="muted mono" style="font-size:11px">TEN-003</div>
+          </td>
           <td><span class="badge info">Starter</span></td>
           <td><span class="badge warning">● Suspended</span></td>
           <td class="muted">0</td>
@@ -66,3 +88,9 @@
   </div>
 
 </main>
+
+<!-- Add Tenant Dialog -->
+<app-modal-dialog [(visible)]="displayAddTenantDialog" header="Add New Tenant"
+  (onHide)="displayAddTenantDialog = false">
+  <app-add-tenant (tenantAdded)="onTenantAdded($event)"></app-add-tenant>
+</app-modal-dialog>

@@ -1,0 +1,51 @@
+<form [formGroup]="ruleForm" class="form-section">
+    <div class="form-group">
+        <label for="name">Rule Name</label>
+        <input id="name" pInputText type="text" formControlName="name" placeholder="Enter rule name"
+            class="w-full" />
+        <small class="error" *ngIf="ruleForm.get('name')?.invalid && ruleForm.get('name')?.touched">
+            Name is required and must be at least 3 characters
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label>
+        <input id="description" pInputText type="text" formControlName="description" placeholder="Enter description"
+            class="w-full" />
+        <small class="error" *ngIf="ruleForm.get('description')?.invalid && ruleForm.get('description')?.touched">
+            Description is required
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="ruleType">Rule Type</label>
+        <p-dropdown id="ruleType" formControlName="ruleType" [options]="ruleTypes" optionLabel="label"
+            optionValue="value" placeholder="Select rule type" class="w-full"></p-dropdown>
+        <small class="error" *ngIf="ruleForm.get('ruleType')?.invalid && ruleForm.get('ruleType')?.touched">
+            Rule type is required
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="condition">Condition</label>
+        <input id="condition" pInputText type="text" formControlName="condition" placeholder="e.g., temperature > 30"
+            class="w-full" />
+        <small class="error" *ngIf="ruleForm.get('condition')?.invalid && ruleForm.get('condition')?.touched">
+            Condition is required
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="enabled">
+            <p-inputSwitch formControlName="enabled"></p-inputSwitch>
+            Enabled
+        </label>
+    </div>
+</form>
+
+<div class="form-actions" dialogFooter>
+    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
+        (click)="resetForm()"></button>
+    <button type="submit" pButton label="Add Rule" icon="pi pi-check" [disabled]="!ruleForm.valid"
+        (click)="onSubmit()"></button>
+</div>
