@@ -1,5 +1,7 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
+import { ToastService } from "./core/services/toast.service";
+import { initializeGlobalToast } from "./utils/global-toast";
 
 @Component({
   selector: "app-root",
@@ -8,4 +10,10 @@ import { RouterOutlet } from "@angular/router";
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private toastService: ToastService) {}
+
+  ngOnInit(): void {
+    initializeGlobalToast(this.toastService);
+  }
+}

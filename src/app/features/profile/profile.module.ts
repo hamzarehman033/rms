@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TableModule } from 'primeng/table';
 import { AvatarModule } from 'primeng/avatar';
+import { ToastModule } from 'primeng/toast';
 import { ProfileComponent } from './profile.component';
 
 const routes: Routes = [
@@ -27,7 +28,8 @@ const routes: Routes = [
     InputTextModule,
     CheckboxModule,
     TableModule,
-    AvatarModule
-  ],
+    AvatarModule,
+    ToastModule
+  ]
 })
 export class ProfileModule {}

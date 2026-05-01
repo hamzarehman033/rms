@@ -1,17 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormControl,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { toast } from '../../utils/global-toast';
 
 @Component({
   selector: 'app-profile',
   standalone: false,
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   selectedTab = 0;
-  
+
   // Current user profile data
   currentUser = {
     firstName: 'Anna',
@@ -19,7 +26,7 @@ export class ProfileComponent implements OnInit {
     email: 'anna@pulse.io',
     role: 'admin',
     avatar: 'A',
-    joinDate: 'Jan 10, 2025'
+    joinDate: 'Jan 10, 2025',
   };
 
   // Modules for permission management
@@ -31,7 +38,7 @@ export class ProfileComponent implements OnInit {
     { label: 'Rules', value: 'rules', icon: 'pi pi-cog' },
     { label: 'Alarms', value: 'alarms', icon: 'pi pi-bell' },
     { label: 'Reports', value: 'reports', icon: 'pi pi-file' },
-    { label: 'Settings', value: 'settings', icon: 'pi pi-sliders-v' }
+    { label: 'Settings', value: 'settings', icon: 'pi pi-sliders-v' },
   ];
 
   // User permissions
@@ -43,7 +50,7 @@ export class ProfileComponent implements OnInit {
     { module: 'rules', read: true, write: true },
     { module: 'alarms', read: true, write: true },
     { module: 'reports', read: true, write: true },
-    { module: 'settings', read: true, write: true }
+    { module: 'settings', read: true, write: true },
   ];
 
   constructor(private fb: FormBuilder) {}
@@ -56,43 +63,72 @@ export class ProfileComponent implements OnInit {
     this.profileForm = this.fb.group({
       firstName: [this.currentUser.firstName, Validators.required],
       lastName: [this.currentUser.lastName, Validators.required],
-      email: [this.currentUser.email, [Validators.required, Validators.email]]
+      email: [this.currentUser.email, [Validators.required, Validators.email]],
     });
 
     // Add permission controls
-    this.modules.forEach(module => {
-      const permission = this.userPermissions.find(p => p.module === module.value);
-      this.profileForm.addControl(`${module.value}_read`, new FormControl(permission?.read || false));
-      this.profileForm.addControl(`${module.value}_write`, new FormControl(permission?.write || false));
+    this.modules.forEach((module) => {
+      const permission = this.userPermissions.find(
+        (p) => p.module === module.value,
+      );
+      this.profileForm.addControl(
+        `${module.value}_read`,
+        new FormControl(permission?.read || false),
+      );
+      this.profileForm.addControl(
+        `${module.value}_write`,
+        new FormControl(permission?.write || false),
+      );
     });
   }
 
   getPermissionForModule(module: string): any {
-    return this.userPermissions.find(p => p.module === module);
+    return this.userPermissions.find((p) => p.module === module);
   }
 
   onSaveProfile(): void {
     if (this.profileForm.valid) {
-      // Update user profile
-      this.currentUser.firstName = this.profileForm.get('firstName')?.value;
-      this.currentUser.lastName = this.profileForm.get('lastName')?.value;
-      this.currentUser.email = this.profileForm.get('email')?.value;
+      try {
+        // Update user profile
+        this.currentUser.firstName = this.profileForm.get('firstName')?.value;
+        this.currentUser.lastName = this.profileForm.get('lastName')?.value;
+        this.currentUser.email = this.profileForm.get('email')?.value;
 
-      // Update permissions
-      this.modules.forEach(module => {
-        const permission = this.userPermissions.find(p => p.module === module.value);
-        if (permission) {
-          const readValue = this.profileForm.get(`${module.value}_read`)?.value;
-          const writeValue = this.profileForm.get(`${module.value}_write`)?.value;
-          permission.read = readValue || false;
-          permission.write = writeValue || false;
-        }
-      });
+        // Update permissions
+        this.modules.forEach((module) => {
+          const permission = this.userPermissions.find(
+            (p) => p.module === module.value,
+          );
+          if (permission) {
+            const readValue = this.profileForm.get(
+              `${module.value}_read`,
+            )?.value;
+            const writeValue = this.profileForm.get(
+              `${module.value}_write`,
+            )?.value;
+            permission.read = readValue || false;
+            permission.write = writeValue || false;
+          }
+        });
 
-      console.log('Profile saved:', {
-        user: this.currentUser,
-        permissions: this.userPermissions
-      });
+        console.log('Profile saved:', {
+          user: this.currentUser,
+          permissions: this.userPermissions,
+        });
+
+        // Show success toast
+        toast.success(
+          'Profile Updated',
+          'Your profile and permissions have been saved successfully.',
+        );
+      } catch (error) {
+        // Show error toast
+        toast.error(
+          'Failed to Save',
+          'An error occurred while saving your profile. Please try again.',
+        );
+        console.error('Error saving profile:', error);
+      }
     }
   }
 
@@ -100,8 +136,7 @@ export class ProfileComponent implements OnInit {
     console.log('Change password clicked');
   }
 
-  onUploadPhoto(): void {
-  }
+  onUploadPhoto(): void {}
 
   onCancel(): void {
     this.initializeForm();
