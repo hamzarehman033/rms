@@ -2,19 +2,19 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
-  selector: 'app-add-customer',
+  selector: 'app-add-user',
   standalone: false,
-  templateUrl: './add-customer.component.html',
-  styleUrl: './add-customer.component.css'
+  templateUrl: './add-user.component.html',
+  styleUrl: './add-user.component.css'
 })
-export class AddCustomerComponent {
-  @Output() customerAdded = new EventEmitter<any>();
+export class AddUserComponent {
+  @Output() userAdded = new EventEmitter<any>();
 
-  customerForm: FormGroup;
-  customerTypes = [
-    { label: 'Individual', value: 'individual' },
-    { label: 'Business', value: 'business' },
-    { label: 'Enterprise', value: 'enterprise' }
+  userForm: FormGroup;
+  roles = [
+    { label: 'Admin', value: 'admin' },
+    { label: 'Operator', value: 'operator' },
+    { label: 'Viewer', value: 'viewer' }
   ];
   
   modules = [
@@ -29,34 +29,42 @@ export class AddCustomerComponent {
   ];
 
   constructor(private fb: FormBuilder) {
-    this.customerForm = this.fb.group({
+    this.userForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9\s\-()]+$/)]],
-      customerType: ['', Validators.required],
-      address: [''],
-      city: [''],
-      country: [''],
+      role: ['', Validators.required],
       permissions: [[]]
     });
   }
 
   onSubmit() {
-    if (this.customerForm.valid) {
-      const formValue = this.customerForm.value;
+    if (this.userForm.valid) {
+      const formValue = this.userForm.value;
       formValue.permissions = this.getSelectedPermissions();
-      this.customerAdded.emit(formValue);
-      this.customerForm.reset();
+      this.userAdded.emit(formValue);
+      this.userForm.reset();
     }
   }
 
-  getSelectedPermissions(): string[] {
-    const checked = document.querySelectorAll('input[name="module"]:checked');
-    return Array.from(checked).map((checkbox: any) => checkbox.value);
+  getSelectedPermissions(): any[] {
+    const permissions: any[] = [];
+    this.modules.forEach(module => {
+      const viewCheckbox = document.querySelector(`input[name="${module.value}-view"]:checked`);
+      const editCheckbox = document.querySelector(`input[name="${module.value}-edit"]:checked`);
+      
+      if (viewCheckbox || editCheckbox) {
+        permissions.push({
+          module: module.value,
+          view: !!viewCheckbox,
+          edit: !!editCheckbox
+        });
+      }
+    });
+    return permissions;
   }
 
   resetForm() {
-    this.customerForm.reset();
+    this.userForm.reset();
   }
 }

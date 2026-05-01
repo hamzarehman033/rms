@@ -9,7 +9,7 @@
   <div class="hstack" style="justify-content:space-between">
     <div class="tabs"><button
         class="active">All</button><button>Admins</button><button>Operators</button><button>Viewers</button></div>
-    <button class="btn primary"><i class="pi pi-plus"></i><span>Invite member</span></button>
+    <button class="btn primary" (click)="openAddUserDialog()"><i class="pi pi-plus"></i><span>Add User</span></button>
   </div>
   <div class="card" style="padding:0">
     <table class="table">
@@ -17,77 +17,41 @@
         <tr>
           <th>User</th>
           <th>Role</th>
+          <th>Permissions</th>
           <th>Status</th>
           <th>Last active</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr *ngFor="let user of users">
           <td>
-            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">A</span>
+            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">{{ user.firstName.charAt(0) }}</span>
               <div>
-                <div style="font-weight:500">Anna Smith</div>
-                <div class="muted" style="font-size:11px">anna&#64;pulse.io</div>
+                <div style="font-weight:500">{{ user.firstName }} {{ user.lastName }}</div>
+                <div class="muted" style="font-size:11px">{{ user.email }}</div>
               </div>
             </div>
           </td>
-          <td><span class="badge role info">admin</span></td>
-          <td>Active</td>
-          <td class="muted">2m ago</td>
-        </tr>
-        <tr>
+          <td><span class="badge role info">{{ user.role }}</span></td>
           <td>
-            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">M</span>
-              <div>
-                <div style="font-weight:500">Marcus Lee</div>
-                <div class="muted" style="font-size:11px">marcus&#64;pulse.io</div>
-              </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="badge primary" *ngIf="user.permissions.length > 0 && !hasEdit(user.permissions)">{{ getPermissionSummary(user.permissions) }}</span>
+              <span class="badge success" *ngIf="hasEdit(user.permissions)">{{ getPermissionSummary(user.permissions) }}</span>
+              <span class="badge info" *ngIf="user.permissions.length === 0">No access</span>
             </div>
           </td>
-          <td><span class="badge role info">operator</span></td>
-          <td>Active</td>
-          <td class="muted">15m ago</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">P</span>
-              <div>
-                <div style="font-weight:500">Priya Patel</div>
-                <div class="muted" style="font-size:11px">priya&#64;pulse.io</div>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge role info">operator</span></td>
-          <td>Active</td>
-          <td class="muted">1h ago</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">D</span>
-              <div>
-                <div style="font-weight:500">Diego Ruiz</div>
-                <div class="muted" style="font-size:11px">diego&#64;pulse.io</div>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge role info">viewer</span></td>
-          <td>Invited</td>
-          <td class="muted">—</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">S</span>
-              <div>
-                <div style="font-weight:500">Sara Chen</div>
-                <div class="muted" style="font-size:11px">sara&#64;pulse.io</div>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge role info">viewer</span></td>
-          <td>Active</td>
-          <td class="muted">3h ago</td>
+          <td>{{ user.status }}</td>
+          <td class="muted">{{ user.lastActive }}</td>
+          <td><button class="btn sm">Manage</button></td>
         </tr>
       </tbody>
     </table>
   </div>
 </main>
+
+<!-- Add User Dialog -->
+<app-modal-dialog [(visible)]="displayAddUserDialog" header="Invite New User"
+  (onHide)="displayAddUserDialog = false">
+  <app-add-user (userAdded)="onUserAdded($event)"></app-add-user>
+</app-modal-dialog>

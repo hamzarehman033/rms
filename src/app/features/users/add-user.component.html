@@ -1,0 +1,74 @@
+<form [formGroup]="userForm" class="form-section">
+    <div class="form-row">
+        <div class="form-group half">
+            <label for="firstName">First Name</label>
+            <input id="firstName" pInputText type="text" formControlName="firstName" placeholder="Enter first name"
+                class="w-full" />
+            <small class="error" *ngIf="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched">
+                First name is required and must be at least 2 characters
+            </small>
+        </div>
+
+        <div class="form-group half">
+            <label for="lastName">Last Name</label>
+            <input id="lastName" pInputText type="text" formControlName="lastName" placeholder="Enter last name"
+                class="w-full" />
+            <small class="error" *ngIf="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched">
+                Last name is required and must be at least 2 characters
+            </small>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" pInputText type="email" formControlName="email" placeholder="Enter email address"
+            class="w-full" />
+        <small class="error" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+            Valid email is required
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="role">Role</label>
+        <p-dropdown id="role" formControlName="role" [options]="roles" optionLabel="label"
+            optionValue="value" placeholder="Select user role" class="w-full"></p-dropdown>
+        <small class="error" *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+            Role is required
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label style="display:block;margin-bottom:12px;font-weight:500">Module Permissions</label>
+        <div style="display:flex;flex-direction:column;">
+            <div *ngFor="let module of modules" style="display:flex;align-items:center;gap:12px;padding:8px;border:1px solid var(--surface-border);border-radius:4px">
+                <div style="flex:1">
+                    <div style="display:flex;align-items:center;gap:6px;font-weight:500">
+                        <i [class]="module.icon"></i>
+                        {{ module.label }}
+                    </div>
+                </div>
+                <div style="display:flex;gap:16px;align-items:center">
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <input type="checkbox" [name]="module.value + '-view'" [id]="module.value + '-view'" />
+                        <label [for]="module.value + '-view'" style="margin:0;cursor:pointer;font-size:13px">
+                            View
+                        </label>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <input type="checkbox" [name]="module.value + '-edit'" [id]="module.value + '-edit'" />
+                        <label [for]="module.value + '-edit'" style="margin:0;cursor:pointer;font-size:13px">
+                            Edit
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="form-actions" dialogFooter>
+    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
+        (click)="resetForm()"></button>
+    <button type="submit" pButton label="Add User" icon="pi pi-check" [disabled]="!userForm.valid"
+        (click)="onSubmit()"></button>
+</div>

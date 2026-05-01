@@ -7,6 +7,7 @@ import { AddCustomerComponent } from './add-customer.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ModalDialogComponent } from '@app/shared';
 
 const routes: Routes = [
@@ -18,6 +19,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [CustomerComponent, AddCustomerComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, ModalDialogComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ModalDialogComponent],
 })
 export class CustomerModule {}

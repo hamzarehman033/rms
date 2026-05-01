@@ -45,42 +45,28 @@
           <th>Email</th>
           <th>Status</th>
           <th>Plan</th>
+          <th>Permissions</th>
           <th>Joined</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr *ngFor="let customer of customers">
           <td>
-            <div style="font-weight:500">John Smith</div>
-            <div class="muted mono" style="font-size:11px">CUST-001</div>
+            <div style="font-weight:500">{{ customer.name }}</div>
+            <div class="muted mono" style="font-size:11px">{{ customer.id }}</div>
           </td>
-          <td class="muted">john&#64;example.com</td>
-          <td><span class="badge online">● Active</span></td>
-          <td><span class="badge success">Premium</span></td>
-          <td class="muted">Jan 15, 2025</td>
-          <td><button class="btn sm">Manage</button></td>
-        </tr>
-        <tr>
+          <td class="muted">{{ customer.email }}</td>
+          <td><span class="badge online" *ngIf="customer.status === 'Active'">● Active</span><span class="badge warning" *ngIf="customer.status === 'Inactive'">● Inactive</span></td>
+          <td><span class="badge success" *ngIf="customer.plan === 'Premium'">Premium</span><span class="badge primary" *ngIf="customer.plan === 'Standard'">Standard</span><span class="badge info" *ngIf="customer.plan === 'Enterprise'">Enterprise</span></td>
           <td>
-            <div style="font-weight:500">Sarah Johnson</div>
-            <div class="muted mono" style="font-size:11px">CUST-002</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <span class="badge info" *ngIf="customer.permissions.length === 0">No access</span>
+              <span class="badge success" *ngIf="customer.permissions.length === 8">Full access</span>
+              <span class="muted" *ngIf="customer.permissions.length > 0 && customer.permissions.length < 8" style="font-size:12px">{{ customer.permissions.length }} of 8 modules</span>
+            </div>
           </td>
-          <td class="muted">sarah&#64;example.com</td>
-          <td><span class="badge online">● Active</span></td>
-          <td><span class="badge primary">Standard</span></td>
-          <td class="muted">Feb 22, 2025</td>
-          <td><button class="btn sm">Manage</button></td>
-        </tr>
-        <tr>
-          <td>
-            <div style="font-weight:500">Michael Chen</div>
-            <div class="muted mono" style="font-size:11px">CUST-003</div>
-          </td>
-          <td class="muted">michael&#64;example.com</td>
-          <td><span class="badge warning">● Inactive</span></td>
-          <td><span class="badge info">Basic</span></td>
-          <td class="muted">Dec 10, 2024</td>
+          <td class="muted">{{ customer.joined }}</td>
           <td><button class="btn sm">Manage</button></td>
         </tr>
       </tbody>

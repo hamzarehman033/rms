@@ -86,8 +86,6 @@
               <tr><td><div style="font-weight:500">Boiler-Room Temp Sensor</div><div class="muted mono" style="font-size:11px">DV-001</div></td><td><span class="badge online">● Online</span></td><td>Plant A · Sector 3</td><td class="mono">87%</td><td class="muted">2s ago</td></tr>
               <tr><td><div style="font-weight:500">North Gate Camera</div><div class="muted mono" style="font-size:11px">DV-002</div></td><td><span class="badge online">● Online</span></td><td>Perimeter · North</td><td class="mono">100%</td><td class="muted">5s ago</td></tr>
               <tr><td><div style="font-weight:500">Cold Storage Unit 4</div><div class="muted mono" style="font-size:11px">DV-003</div></td><td><span class="badge warning">● Warning</span></td><td>Warehouse B</td><td class="mono">22%</td><td class="muted">1m ago</td></tr>
-              <tr><td><div style="font-weight:500">HVAC Controller</div><div class="muted mono" style="font-size:11px">DV-004</div></td><td><span class="badge online">● Online</span></td><td>Floor 2 · East</td><td class="mono">100%</td><td class="muted">3s ago</td></tr>
-              <tr><td><div style="font-weight:500">Vibration Mon. M-7</div><div class="muted mono" style="font-size:11px">DV-006</div></td><td><span class="badge offline">● Offline</span></td><td>Plant A · Sector 1</td><td class="mono">0%</td><td class="muted">2h ago</td></tr>
             </tbody>
           </table>
         </div>
@@ -98,6 +96,22 @@
             <div class="sub">Online vs offline counts</div>
             <app-bar-chart [options]="weeklyActivityOptions"></app-bar-chart>
           </div>
+        </div>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="card span-2" style="padding:0">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h3>Locations Overview</h3><div class="sub">Facility and site information</div></div>
+          <table class="table">
+            <thead><tr><th>Location</th><th>Region</th><th>Devices</th><th>Status</th><th>Utilization</th></tr></thead>
+            <tbody>
+              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-001'}"><div style="font-weight:500">Plant A</div><div>LOC-001</div></a></td><td>North</td><td><span class="badge primary">45</span></td><td><span class="badge online">● Active</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--surface-border);border-radius:3px;overflow:hidden"><div style="height:100%;width:87%;background:#22c55e"></div></div><span style="font-size:11px">87%</span></div></td></tr>
+              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-002'}"><div style="font-weight:500">Warehouse B</div><div>LOC-002</div></a></td><td>Central</td><td><span class="badge primary">32</span></td><td><span class="badge online">● Active</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--surface-border);border-radius:3px;overflow:hidden"><div style="height:100%;width:72%;background:#22c55e"></div></div><span style="font-size:11px">72%</span></div></td></tr>
+              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-003'}"><div style="font-weight:500">DC West</div><div>LOC-003</div></a></td><td>West</td><td><span class="badge primary">28</span></td><td><span class="badge online">● Active</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--surface-border);border-radius:3px;overflow:hidden"><div style="height:100%;width:94%;background:#22c55e"></div></div><span style="font-size:11px">94%</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="vstack" style="gap:16px">
           <div class="card">
             <h3>Recent Alerts</h3>
             <div class="sub" style="margin-bottom:12px">Last 24h</div>
