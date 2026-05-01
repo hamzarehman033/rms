@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-data-sources',
-  imports: [],
+  standalone: false,
   templateUrl: './data-sources.component.html',
   styleUrl: './data-sources.component.css'
 })

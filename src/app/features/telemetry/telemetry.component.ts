@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
-import { LineChartComponent } from '../../shared/components/chart-components';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-telemetry',
-  imports: [LineChartComponent, CommonModule],
+  standalone: false,
   templateUrl: './telemetry.component.html',
   styleUrl: './telemetry.component.css'
 })

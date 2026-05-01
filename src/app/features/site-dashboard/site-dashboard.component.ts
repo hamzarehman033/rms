@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-site-dashboard',
-  imports: [],
+  standalone: false,
   templateUrl: './site-dashboard.component.html',
   styleUrl: './site-dashboard.component.css'
 })

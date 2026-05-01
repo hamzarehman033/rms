@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
-import { DeviceMapComponent } from '../../shared/components/device-map/device-map.component';
-import { LineChartComponent, PieChartComponent, BarChartComponent } from '../../shared/components/chart-components';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DeviceMapComponent, LineChartComponent, PieChartComponent, BarChartComponent, CommonModule],
+  standalone: false,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

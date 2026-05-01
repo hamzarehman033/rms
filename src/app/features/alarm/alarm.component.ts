@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-alarm',
-  imports: [],
+  standalone: false,
   templateUrl: './alarm.component.html',
   styleUrl: './alarm.component.css'
 })

@@ -11,7 +11,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [],
-  imports: [CommonModule, RouterModule.forChild(routes), SiteDashboardComponent],
+  declarations: [SiteDashboardComponent],
+  imports: [CommonModule, RouterModule.forChild(routes)],
 })
 export class SiteDashboardModule {}
