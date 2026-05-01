@@ -28,8 +28,8 @@
       </div>
 
       <div class="grid cols-3">
-        <div class="card span-2" style="height: 400px; padding: 0; overflow: hidden;">
-          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border);">
+        <div class="card span-2 h-96 p-0 overflow-hidden">
+          <div class="px-5 py-4 border-b border-surface-border">
             <h3>Device Locations</h3>
             <div class="sub">Real-time device position tracking</div>
           </div>
@@ -41,16 +41,16 @@
         <div class="card">
           <h3>Quick Stats</h3>
           <div class="sub">Device status summary</div>
-          <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-            <h4 style="font-size: 13px; margin-bottom: 8px;">Notifications This Week</h4>
-            <div class="bar-row" style="height: 250px; gap: 4px;">
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 130px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Mon</span></div>
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 145px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Tue</span></div>
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 120px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Wed</span></div>
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 135px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Thu</span></div>
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 128px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Fri</span></div>
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 150px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Sat</span></div>
-              <div class="bar-col"><div class="bar-stack" style="height: 100%;"><div class="bar warning" style="height: 115px; background: #eab308;"></div></div><span class="bar-label" style="font-size: 10px;">Sun</span></div>
+          <div class="mt-4 pt-4 border-t border-surface-border">
+            <h4 class="text-sm mb-2">Notifications This Week</h4>
+            <div class="bar-row h-62 gap-1">
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 130px; background: #eab308;"></div></div><span class="bar-label text-xs">Mon</span></div>
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 145px; background: #eab308;"></div></div><span class="bar-label text-xs">Tue</span></div>
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 120px; background: #eab308;"></div></div><span class="bar-label text-xs">Wed</span></div>
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 135px; background: #eab308;"></div></div><span class="bar-label text-xs">Thu</span></div>
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 128px; background: #eab308;"></div></div><span class="bar-label text-xs">Fri</span></div>
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 150px; background: #eab308;"></div></div><span class="bar-label text-xs">Sat</span></div>
+              <div class="bar-col"><div class="bar-stack h-full"><div class="bar warning" style="height: 115px; background: #eab308;"></div></div><span class="bar-label text-xs">Sun</span></div>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@
 
       <div class="grid cols-3">
         <div class="card span-2">
-          <div class="hstack" style="justify-content:space-between">
+          <div class="hstack justify-between">
             <div><h3>Live Telemetry</h3><div class="sub">Aggregate readings · last 24 hours</div></div>
             <div class="legend">
               <span><span class="dot-color" style="background:var(--primary)"></span>Temperature °F</span>
@@ -78,19 +78,19 @@
       </div>
 
       <div class="grid cols-3">
-        <div class="card span-2" style="padding:0">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h3>Recent Devices</h3><div class="sub">Latest fleet status</div></div>
+        <div class="card span-2 p-0">
+          <div class="px-5 py-4 border-b border-surface-border"><h3>Recent Devices</h3><div class="sub">Latest fleet status</div></div>
           <table class="table">
             <thead><tr><th>Device</th><th>Status</th><th>Location</th><th>Battery</th><th>Last seen</th></tr></thead>
             <tbody>
-              <tr><td><div style="font-weight:500">Boiler-Room Temp Sensor</div><div class="muted mono" style="font-size:11px">DV-001</div></td><td><span class="badge online">● Online</span></td><td>Plant A · Sector 3</td><td class="mono">87%</td><td class="muted">2s ago</td></tr>
-              <tr><td><div style="font-weight:500">North Gate Camera</div><div class="muted mono" style="font-size:11px">DV-002</div></td><td><span class="badge online">● Online</span></td><td>Perimeter · North</td><td class="mono">100%</td><td class="muted">5s ago</td></tr>
-              <tr><td><div style="font-weight:500">Cold Storage Unit 4</div><div class="muted mono" style="font-size:11px">DV-003</div></td><td><span class="badge warning">● Warning</span></td><td>Warehouse B</td><td class="mono">22%</td><td class="muted">1m ago</td></tr>
+              <tr><td><div class="font-medium">Boiler-Room Temp Sensor</div><div class="muted mono text-xs">DV-001</div></td><td><span class="badge online">● Online</span></td><td>Plant A · Sector 3</td><td class="mono">87%</td><td class="muted">2s ago</td></tr>
+              <tr><td><div class="font-medium">North Gate Camera</div><div class="muted mono text-xs">DV-002</div></td><td><span class="badge online">● Online</span></td><td>Perimeter · North</td><td class="mono">100%</td><td class="muted">5s ago</td></tr>
+              <tr><td><div class="font-medium">Cold Storage Unit 4</div><div class="muted mono text-xs">DV-003</div></td><td><span class="badge warning">● Warning</span></td><td>Warehouse B</td><td class="mono">22%</td><td class="muted">1m ago</td></tr>
             </tbody>
           </table>
         </div>
 
-        <div class="vstack" style="gap:16px">
+        <div class="vstack gap-4">
           <div class="card">
             <h3>Weekly Activity</h3>
             <div class="sub">Online vs offline counts</div>
@@ -100,24 +100,24 @@
       </div>
 
       <div class="grid cols-3">
-        <div class="card span-2" style="padding:0">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><h3>Locations Overview</h3><div class="sub">Facility and site information</div></div>
+        <div class="card span-2 p-0">
+          <div class="px-5 py-4 border-b border-surface-border"><h3>Locations Overview</h3><div class="sub">Facility and site information</div></div>
           <table class="table">
             <thead><tr><th>Location</th><th>Region</th><th>Devices</th><th>Status</th><th>Utilization</th></tr></thead>
             <tbody>
-              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-001'}"><div style="font-weight:500">Plant A</div><div>LOC-001</div></a></td><td>North</td><td><span class="badge primary">45</span></td><td><span class="badge online">● Active</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--surface-border);border-radius:3px;overflow:hidden"><div style="height:100%;width:87%;background:#22c55e"></div></div><span style="font-size:11px">87%</span></div></td></tr>
-              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-002'}"><div style="font-weight:500">Warehouse B</div><div>LOC-002</div></a></td><td>Central</td><td><span class="badge primary">32</span></td><td><span class="badge online">● Active</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--surface-border);border-radius:3px;overflow:hidden"><div style="height:100%;width:72%;background:#22c55e"></div></div><span style="font-size:11px">72%</span></div></td></tr>
-              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-003'}"><div style="font-weight:500">DC West</div><div>LOC-003</div></a></td><td>West</td><td><span class="badge primary">28</span></td><td><span class="badge online">● Active</span></td><td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--surface-border);border-radius:3px;overflow:hidden"><div style="height:100%;width:94%;background:#22c55e"></div></div><span style="font-size:11px">94%</span></div></td></tr>
+              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-001'}"><div class="font-medium">Plant A</div><div>LOC-001</div></a></td><td>North</td><td><span class="badge primary">45</span></td><td><span class="badge online">● Active</span></td><td><div class="flex items-center gap-1.5"><div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden"><div style="height:100%;width:87%;background:#22c55e"></div></div><span class="text-xs">87%</span></div></td></tr>
+              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-002'}"><div class="font-medium">Warehouse B</div><div>LOC-002</div></a></td><td>Central</td><td><span class="badge primary">32</span></td><td><span class="badge online">● Active</span></td><td><div class="flex items-center gap-1.5"><div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden"><div style="height:100%;width:72%;background:#22c55e"></div></div><span class="text-xs">72%</span></div></td></tr>
+              <tr><td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-003'}"><div class="font-medium">DC West</div><div>LOC-003</div></a></td><td>West</td><td><span class="badge primary">28</span></td><td><span class="badge online">● Active</span></td><td><div class="flex items-center gap-1.5"><div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden"><div style="height:100%;width:94%;background:#22c55e"></div></div><span class="text-xs">94%</span></div></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="vstack" style="gap:16px">
+        <div class="vstack gap-4">
           <div class="card">
             <h3>Recent Alerts</h3>
-            <div class="sub" style="margin-bottom:12px">Last 24h</div>
-            <div class="alert-item"><div class="sev-bar critical"></div><div><div style="font-weight:500;font-size:13px">Temperature exceeds threshold</div><div class="meta">DV-003 · 2 min ago</div></div></div>
-            <div class="alert-item"><div class="sev-bar major"></div><div><div style="font-weight:500;font-size:13px">Device offline > 1h</div><div class="meta">DV-006 · 1 hr ago</div></div></div>
-            <div class="alert-item"><div class="sev-bar minor"></div><div><div style="font-weight:500;font-size:13px">Battery below 30%</div><div class="meta">DV-009 · 12 min ago</div></div></div>
+            <div class="sub mb-3">Last 24h</div>
+            <div class="alert-item"><div class="sev-bar critical"></div><div><div class="font-medium text-sm">Temperature exceeds threshold</div><div class="meta">DV-003 · 2 min ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar major"></div><div><div class="font-medium text-sm">Device offline > 1h</div><div class="meta">DV-006 · 1 hr ago</div></div></div>
+            <div class="alert-item"><div class="sev-bar minor"></div><div><div class="font-medium text-sm">Battery below 30%</div><div class="meta">DV-009 · 12 min ago</div></div></div>
           </div>
         </div>
       </div>

@@ -26,16 +26,16 @@
       <tbody>
         <tr *ngFor="let user of users">
           <td>
-            <div class="hstack"><span class="avatar" style="width:28px;height:28px;font-size:11px">{{ user.firstName.charAt(0) }}</span>
+            <div class="hstack"><span class="avatar w-7 h-7 text-xs">{{ user.firstName.charAt(0) }}</span>
               <div>
-                <div style="font-weight:500">{{ user.firstName }} {{ user.lastName }}</div>
-                <div class="muted" style="font-size:11px">{{ user.email }}</div>
+                <div class="font-medium">{{ user.firstName }} {{ user.lastName }}</div>
+                <div class="muted text-xs">{{ user.email }}</div>
               </div>
             </div>
           </td>
           <td><span class="badge role info">{{ user.role }}</span></td>
           <td>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div class="flex gap-2 flex-wrap">
               <span class="badge primary" *ngIf="user.permissions.length > 0 && !hasEdit(user.permissions)">{{ getPermissionSummary(user.permissions) }}</span>
               <span class="badge success" *ngIf="hasEdit(user.permissions)">{{ getPermissionSummary(user.permissions) }}</span>
               <span class="badge info" *ngIf="user.permissions.length === 0">No access</span>
