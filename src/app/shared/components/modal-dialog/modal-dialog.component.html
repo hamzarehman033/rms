@@ -1,0 +1,7 @@
+<p-dialog [visible]="visible" (visibleChange)="visible = $event" [modal]="modal" [header]="header"
+    [style]="{ width: width }" [styleClass]="styleClass" (onHide)="onDialogHide()">
+    <ng-content></ng-content>
+    <ng-template pDialogFooter>
+        <ng-content select="[dialogFooter]"></ng-content>
+    </ng-template>
+</p-dialog>

@@ -9,3 +9,4 @@ export * from './page-header/page-header.component';
 export * from './sidebar/sidebar.component';
 export * from './topbar/topbar.component';
 export * from './chart-components';
+export * from './modal-dialog/modal-dialog.component';

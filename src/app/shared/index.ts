@@ -9,6 +9,7 @@ import {
   PageHeaderComponent,
   SidebarComponent,
   TopbarComponent,
+  ModalDialogComponent,
 } from './components';
 
 export const SHARED_COMPONENTS = [
@@ -22,6 +23,7 @@ export const SHARED_COMPONENTS = [
   PageHeaderComponent,
   SidebarComponent,
   TopbarComponent,
+  ModalDialogComponent,
 ];
 
 export * from './components';
