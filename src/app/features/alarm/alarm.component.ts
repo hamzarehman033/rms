@@ -7,5 +7,10 @@ import { Component } from '@angular/core';
   styleUrl: './alarm.component.css'
 })
 export class AlarmComponent {
-
+  selectedTab = 0;
+  tabOptions = [
+    { label: 'Open', value: 0 },
+    { label: 'Acknowledged', value: 1 },
+    { label: 'Resolved', value: 2 }
+  ];
 }

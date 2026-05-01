@@ -7,8 +7,12 @@
 
   </div>
   <div class="hstack" style="justify-content:space-between">
-    <div class="tabs"><button
-        class="active">All</button><button>Admins</button><button>Operators</button><button>Viewers</button></div>
+    <div class="tabs">
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All</button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Admins</button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Operators</button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Viewers</button>
+    </div>
     <button class="btn primary" (click)="openAddUserDialog()"><i class="pi pi-plus"></i><span>Add User</span></button>
   </div>
   <div class="card" style="padding:0">

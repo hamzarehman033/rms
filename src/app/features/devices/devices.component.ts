@@ -13,6 +13,7 @@ import { AddDeviceComponent } from './add-device.component';
 })
 export class DevicesComponent {
   displayAddDeviceDialog = false;
+  selectedTab = 0;
 
   openAddDeviceDialog() {
     this.displayAddDeviceDialog = true;

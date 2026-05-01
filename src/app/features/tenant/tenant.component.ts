@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 })
 export class TenantComponent {
   displayAddTenantDialog = false;
+  selectedTab = 0;
 
   openAddTenantDialog() {
     this.displayAddTenantDialog = true;

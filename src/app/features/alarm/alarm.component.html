@@ -10,7 +10,11 @@
         <div class="stat"><div class="row"><span class="label">Resolved 24h</span><span class="icon success"><i class="pi pi-check-circle"></i></span></div><div><span class="value">18</span></div><div class="hint">auto + manual</div></div>
       </div>
       <div class="hstack justify-between">
-        <div class="tabs"><button class="active">Open</button><button>Acknowledged</button><button>Resolved</button></div>
+        <div class="tabs">
+          <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">Open</button>
+          <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Acknowledged</button>
+          <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Resolved</button>
+        </div>
         <button class="btn"><i class="pi pi-check-circle"></i><span>Acknowledge all</span></button>
       </div>
       <div class="card p-0">

@@ -5,7 +5,11 @@
       </div>
       <div class="hstack" style="justify-content:space-between">
         <div class="tabs">
-          <button class="active">Live</button><button>1h</button><button>24h</button><button>7d</button><button>30d</button>
+          <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">Live</button>
+          <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">1h</button>
+          <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">24h</button>
+          <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">7d</button>
+          <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">30d</button>
         </div>
         <select class="select" style="width:auto">
           <option>All devices</option><option>DV-001 · Boiler-Room Temp</option><option>DV-003 · Cold Storage</option>

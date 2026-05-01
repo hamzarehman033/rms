@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 })
 export class UsersComponent {
   displayAddUserDialog = false;
+  selectedTab = 0;
   users = [
     {
       id: 'USR-001',

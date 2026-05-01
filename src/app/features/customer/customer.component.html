@@ -25,10 +25,10 @@
   </div>
   <div class="hstack justify-between flex-wrap gap-3">
     <div class="tabs">
-      <button class="active">All <span class="muted">42</span></button>
-      <button>Active <span class="muted">38</span></button>
-      <button>Inactive <span class="muted">3</span></button>
-      <button>Pending <span class="muted">1</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">42</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Active <span class="muted">38</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Inactive <span class="muted">3</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Pending <span class="muted">1</span></button>
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
