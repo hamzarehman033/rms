@@ -1,0 +1,137 @@
+<main class="content">
+    <div class="page-header">
+        <div>
+            <h1>My Profile</h1>
+            <p>Manage your account settings and access permissions.</p>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="hstack justify-between">
+        <div class="tabs">
+            <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">Profile Settings</button>
+            <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Permissions</button>
+            <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Security</button>
+        </div>
+    </div>
+
+    <!-- Profile Settings Tab -->
+    <div *ngIf="selectedTab === 0" class="card">
+        <div class="flex gap-8">
+            <!-- Avatar Section -->
+            <div class="flex flex-col items-center gap-4">
+                <p-avatar [label]="currentUser.avatar" size="xlarge" shape="circle" styleClass="text-2xl"></p-avatar>
+                <p-button label="Upload Photo" severity="secondary" [text]="false" (click)="onUploadPhoto()"
+                    styleClass="p-button-sm">
+                </p-button>
+                <div class="text-xs text-muted-foreground">JPG, PNG, GIF max 5MB</div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="flex-1">
+                <form [formGroup]="profileForm" class="flex flex-col gap-3">
+                    <div class="form-group">
+                        <label class="block font-medium">First Name</label>
+                        <input pInputText formControlName="firstName" placeholder="First name" class="w-full" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block font-medium">Last Name</label>
+                        <input pInputText formControlName="lastName" placeholder="Last name" class="w-full" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block font-medium">Email</label>
+                        <input pInputText formControlName="email" placeholder="Email address" type="email"
+                            class="w-full" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block font-medium">Role</label>
+                        <input pInputText [value]="currentUser.role | uppercase" [disabled]="true" class="w-full" />
+                    </div>
+
+                    <div class="hstack justify-end gap-3 mt-6">
+                        <p-button label="Cancel" severity="secondary" (click)="onCancel()" icon="pi pi-times">
+                        </p-button>
+                        <p-button class="p-button-primary" label="Save Changes" (click)="onSaveProfile()" icon="pi pi-check">
+                        </p-button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permissions Tab -->
+    <div *ngIf="selectedTab === 1" class="card">
+        <h3 class="mb-4">Module Permissions</h3>
+        <p class="text-muted-foreground mb-6 text-sm">
+            View your access rights for each module. Read permission allows you to view content, while Write
+            permission allows you to create, edit, and delete content.
+        </p>
+
+        <form [formGroup]="profileForm">
+            <p-table [value]="modules" styleClass="p-datatable-sm" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-left">Module</th>
+                        <th class="text-center w-30">Read Access</th>
+                        <th class="text-center w-30">Write Access</th>
+                        <th class="text-center w-25">Status</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-module>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <i [class]="module.icon" class="text-primary"></i>
+                                <span class="font-medium">{{ module.label }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <p-checkbox [formControl]="getReadControl(module.value)" [binary]="true">
+                            </p-checkbox>
+                        </td>
+                        <td class="text-center">
+                            <p-checkbox [formControl]="getWriteControl(module.value)" [binary]="true">
+                            </p-checkbox>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge" [ngClass]="isModuleEnabled(module.value) ? 'success' : 'info'">
+                                {{ isModuleEnabled(module.value) ? 'Enabled' : 'Disabled' }}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </form>
+    </div>
+
+    <!-- Security Tab -->
+    <div *ngIf="selectedTab === 2" class="card">
+        <h3 class="mb-4">Security Settings</h3>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-center p-4 border border-border rounded mb-4">
+                <div>
+                    <h4 class="font-semibold m-0 mb-1">Password</h4>
+                    <p class="text-xs text-muted-foreground m-0">Last changed 90 days ago</p>
+                </div>
+                <p-button label="Change Password" severity="secondary" (click)="onChangePassword()" icon="pi pi-lock">
+                </p-button>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-center p-4 border border-border rounded mb-4">
+                <div>
+                    <h4 class="font-semibold m-0 mb-1">Two-Factor Authentication</h4>
+                    <p class="text-xs text-muted-foreground m-0">Enhance your account security
+                        with 2FA</p>
+                </div>
+                <p-button label="Enable 2FA" severity="secondary" icon="pi pi-shield">
+                </p-button>
+            </div>
+        </div>
+    </div>
+</main>

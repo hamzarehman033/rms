@@ -73,7 +73,7 @@ export class TopbarComponent {
   }
 
   onProfileClick(): void {
-    console.log('Profile clicked');
+    this.router.navigate(['/profile']);
   }
 
   onSignOut(): void {
