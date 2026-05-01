@@ -39,16 +39,17 @@
   --muted-foreground: 215 16% 42%;
 
   /* Sidebar palette */
-  --sidebar-background: 215 35% 16%;
-  --sidebar-foreground: 214 18% 78%;
-  --sidebar-primary: 210 90% 60%;
-  --sidebar-accent: 215 30% 22%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 215 30% 22%;
-  --sidebar-ring: 210 90% 60%;
+  --sidebar-background: #1b2637;
+  --sidebar-foreground: #bdc5d1;
+  --sidebar-primary: #3d99f5;
+  --sidebar-accent: #273549;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #273549;
+  --sidebar-ring: #3d99f5;
   --sidebar-width: 16rem;
   --sidebar-width-icon: 3rem;
 
+  --input: #dae0e7;
 }
 
 * { box-sizing: border-box; }

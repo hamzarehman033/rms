@@ -88,7 +88,13 @@ export const routes: Routes = [
   {
     path: "auth",
     component: PublicLayoutComponent,
-    children: [],
+    children: [
+      {
+        path: "login",
+        loadChildren: () =>
+          import("./features/login/login.module").then((m) => m.LoginModule),
+      },
+    ],
   },
   {
     path: "**",

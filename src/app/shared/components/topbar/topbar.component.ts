@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenuModule, Menu } from 'primeng/menu';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-topbar',
@@ -18,8 +19,7 @@ export class TopbarComponent {
   @Output() notificationClick = new EventEmitter<void>();
   @Output() avatarClick = new EventEmitter<void>();
 
-
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
   showNotifications = false;
 
   status = 'All systems operational';
@@ -77,6 +77,6 @@ export class TopbarComponent {
   }
 
   onSignOut(): void {
-    console.log('Sign out clicked');
+    this.authService.logout();
   }
 }

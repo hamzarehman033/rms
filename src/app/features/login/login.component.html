@@ -1,0 +1,57 @@
+<div class="auth-grid">
+  <!-- Brand panel -->
+  <aside class="brand-panel">
+    <a href="/" class="brand-link">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">PulseGrid</span>
+        <span class="brand-sub">IoT Console</span>
+      </span>
+    </a>
+
+    <div class="brand-pitch">
+      <h2>Operations, unified.</h2>
+      <p>Monitor every device, every alert, every signal — from one calm, enterprise-grade console.</p>
+    </div>
+
+    <div class="brand-footer">© 2026 PulseGrid Systems</div>
+  </aside>
+
+  <!-- Form panel -->
+  <main class="form-panel">
+    <div class="form-wrap">
+      <a href="/" class="brand-link mobile-brand">
+        <span class="brand-mark sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+        </span>
+        PulseGrid
+      </a>
+      <h1 class="form-title">Sign in to your console</h1>
+      <p class="form-sub">Enter your credentials to access the dashboard.</p>
+
+      <form class="auth-form" autocomplete="on">
+        <div class="auth-field">
+          <label for="email">Work email</label>
+          <input id="email" name="email" type="email" placeholder="you@company.com" required autocomplete="email" />
+        </div>
+
+        <div class="auth-field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="••••••••" required minlength="6" [attr.autocomplete]="'current-password'" />
+        </div>
+
+        <button (click)="login()" type="submit" class="auth-btn-primary">
+          <span class="btn-label">{{ 'Sign in' }}</span>
+        </button>
+      </form>
+
+      <p class="auth-legal">By continuing you agree to our terms and privacy policy.</p>
+    </div>
+  </main>
+</div>
