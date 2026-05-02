@@ -7,6 +7,7 @@ import { AddLocationComponent } from './add-location.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ModalDialogComponent } from '@app/shared';
+import { Select, SelectModule } from 'primeng/select';
 
 const routes: Routes = [
   {
@@ -17,6 +18,15 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [LocationsComponent, AddLocationComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, ModalDialogComponent],
+  imports: [
+    CommonModule, 
+    RouterModule.forChild(routes), 
+    ReactiveFormsModule, 
+    ButtonModule, 
+    InputTextModule, 
+    ModalDialogComponent,
+    SelectModule
+    
+  ],
 })
 export class LocationsModule {}

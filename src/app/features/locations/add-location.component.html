@@ -18,29 +18,29 @@
     </div>
 
     <div class="form-group">
-        <label for="address">Address</label>
-        <input id="address" pInputText type="text" formControlName="address" placeholder="Enter address"
-            class="w-full" />
-        <small class="error" *ngIf="locationForm.get('address')?.invalid && locationForm.get('address')?.touched">
-            Address is required
+        <label for="region">Region</label>
+        <p-select id="region" [options]="regions" optionLabel="label" optionValue="value" 
+            formControlName="region" placeholder="Select a region" class="w-full"></p-select>
+        <small class="error" *ngIf="locationForm.get('region')?.invalid && locationForm.get('region')?.touched">
+            Region is required
         </small>
     </div>
 
     <div class="form-group">
         <label for="city">City</label>
-        <input id="city" pInputText type="text" formControlName="city" placeholder="Enter city"
-            class="w-full" />
+        <p-select id="city" [options]="cities" optionLabel="label" optionValue="value" 
+            formControlName="city" placeholder="Select a city" class="w-full"></p-select>
         <small class="error" *ngIf="locationForm.get('city')?.invalid && locationForm.get('city')?.touched">
             City is required
         </small>
     </div>
 
     <div class="form-group">
-        <label for="country">Country</label>
-        <input id="country" pInputText type="text" formControlName="country" placeholder="Enter country"
+        <label for="address">Address</label>
+        <input id="address" pInputText type="text" formControlName="address" placeholder="Enter address"
             class="w-full" />
-        <small class="error" *ngIf="locationForm.get('country')?.invalid && locationForm.get('country')?.touched">
-            Country is required
+        <small class="error" *ngIf="locationForm.get('address')?.invalid && locationForm.get('address')?.touched">
+            Address is required
         </small>
     </div>
 
