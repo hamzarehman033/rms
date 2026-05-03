@@ -18,11 +18,15 @@
 .power-hint { margin-top: 2px; font-size: 11px; color: var(--muted-foreground); }
 
 /* Live data panel */
-.live-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+.live-grid { 
+  display: grid; 
+  gap: 16px; 
+  grid-template-columns: 1fr; 
+}
 @media (min-width: 768px) {
   .live-grid {
     grid-template-columns: repeat(2, 1fr);
-    grid-template-areas: "grid rect" "solar rect" "battery env";
+    grid-template-areas: "grid battery" "solar env" ;
   }
   .live-grid-tile { grid-area: grid; }
   .live-rect-tile { grid-area: rect; }
