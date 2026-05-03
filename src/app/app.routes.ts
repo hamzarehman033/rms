@@ -36,6 +36,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "reports",
+        loadChildren: () =>
+          import("./features/reports/reports.module").then(
+            (m) => m.ReportsModule,
+          ),
+      },
+      {
         path: "locations",
         loadChildren: () =>
           import("./features/locations/locations.module").then(

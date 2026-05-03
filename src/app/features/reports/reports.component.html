@@ -1,0 +1,166 @@
+<main class="content">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Reports</h1>
+      <p>Generate and export operational, energy, and incident reports.</p>
+    </div>
+  </div>
+
+  <!-- Report cards grid -->
+  <div class="grid cols-3">
+    <!-- Device Inventory Card -->
+    <div class="tile">
+      <div class="flex gap-4">
+        <div class="tile-icon">
+            <i class="pi pi-file"></i>
+        </div>
+        <div>
+          <h4>Device Inventory</h4>
+          <div class="meta">Full fleet roster with status, battery, and firmware.</div>
+        </div>
+      </div>
+      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
+    </div>
+
+    <!-- Alarms & Incidents Card -->
+    <div class="tile">
+      <div class="flex gap-4">
+        <div class="tile-icon">
+            <i class="pi pi-file"></i>
+        </div>
+        <div>
+          <h4>Alarms &amp; Incidents</h4>
+          <div class="meta">All alarms raised across tenants.</div>
+        </div>
+      </div>
+      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
+    </div>
+
+    <!-- Site Catalog Card -->
+    <div class="tile">
+      <div class="flex gap-4">
+        <div class="tile-icon"><i class="pi pi-file"></i></div>
+        <div>
+          <h4>Site Catalog</h4>
+          <div class="meta">Locations, addresses, and operational status.</div>
+        </div>
+      </div>
+      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
+    </div>
+
+    <!-- Energy Consumption Card -->
+    <div class="tile">
+      <div class="flex gap-4">
+        <div class="tile-icon"><i class="pi pi-file"></i></div>
+        <div>
+          <h4>Energy Consumption</h4>
+          <div class="meta">kWh per source per day (last 30 days).</div>
+        </div>
+      </div>
+      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
+    </div>
+
+    <!-- Runtime by Source Card -->
+    <div class="tile">
+      <div class="flex gap-4">
+        <div class="tile-icon"><i class="pi pi-file"></i></div>
+        <div>
+          <h4>Runtime by Source</h4>
+          <div class="meta">Hours per source per day (last 30 days).</div>
+        </div>
+      </div>
+      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
+    </div>
+
+    <!-- Data Export Card -->
+    <div class="tile">
+      <div class="flex gap-4">
+        <div class="tile-icon"><i class="pi pi-download"></i></div>
+        <div>
+          <h4>Bulk Export</h4>
+          <div class="meta">Download all available reports.</div>
+        </div>
+      </div>
+      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="card">
+    <h3>Preview</h3>
+    <p class="muted" style="margin-top: 4px; margin-bottom: 16px; font-size: 12px;">First 8 rows of each report.</p>
+
+    <div class="tabs">
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">Device Inventory</button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Alarms &amp; Incidents</button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Site Catalog</button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Energy Consumption</button>
+      <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">Runtime by Source</button>
+    </div>
+
+    <div [style.display]="selectedTab === 0 ? 'block' : 'none'">
+      <table class="table" style="margin-top: 16px;">
+          <thead><tr><th>id</th><th>name</th><th>type</th><th>status</th><th>site</th><th>battery</th><th>signal</th><th>firmware</th><th>lastSeen</th></tr></thead>
+          <tbody>
+            <tr><td>DEV-001</td><td>Gateway A1</td><td>gateway</td><td>online</td><td>Plant A</td><td>92</td><td>-58</td><td>2.4.1</td><td>2m ago</td></tr>
+            <tr><td>DEV-002</td><td>Sensor T-12</td><td>sensor</td><td>online</td><td>Plant A</td><td>87</td><td>-64</td><td>1.9.0</td><td>5m ago</td></tr>
+            <tr><td>DEV-003</td><td>Pump Ctrl 03</td><td>controller</td><td>warning</td><td>Plant B</td><td>54</td><td>-72</td><td>2.1.3</td><td>1h ago</td></tr>
+            <tr><td>DEV-004</td><td>Inverter 07</td><td>inverter</td><td>online</td><td>Solar Farm 1</td><td>—</td><td>-49</td><td>3.0.0</td><td>1m ago</td></tr>
+            <tr><td>DEV-005</td><td>Battery Bank</td><td>battery</td><td>online</td><td>Plant A</td><td>78</td><td>-55</td><td>2.2.0</td><td>3m ago</td></tr>
+            <tr><td>DEV-006</td><td>Meter L2</td><td>meter</td><td>offline</td><td>Plant C</td><td>—</td><td>—</td><td>1.5.2</td><td>12h ago</td></tr>
+            <tr><td>DEV-007</td><td>Camera N-1</td><td>camera</td><td>online</td><td>Plant B</td><td>—</td><td>-61</td><td>4.0.1</td><td>30s ago</td></tr>
+            <tr><td>DEV-008</td><td>Gateway B2</td><td>gateway</td><td>online</td><td>Plant B</td><td>95</td><td>-52</td><td>2.4.1</td><td>1m ago</td></tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div [style.display]="selectedTab === 1 ? 'block' : 'none'">
+      <table class="table" style="margin-top: 16px;">
+          <thead><tr><th>id</th><th>severity</th><th>title</th><th>device</th><th>time</th></tr></thead>
+          <tbody>
+            <tr><td>ALR-101</td><td>critical</td><td>High temperature</td><td>Sensor T-12</td><td>10:24</td></tr>
+            <tr><td>ALR-102</td><td>warning</td><td>Battery low</td><td>Pump Ctrl 03</td><td>09:58</td></tr>
+            <tr><td>ALR-103</td><td>info</td><td>Firmware available</td><td>Gateway A1</td><td>09:30</td></tr>
+            <tr><td>ALR-104</td><td>warning</td><td>Signal degraded</td><td>Meter L2</td><td>08:11</td></tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div [style.display]="selectedTab === 2 ? 'block' : 'none'">
+      <table class="table" style="margin-top: 16px;">
+          <thead><tr><th>id</th><th>name</th><th>type</th><th>status</th><th>address</th></tr></thead>
+          <tbody>
+            <tr><td>LOC-001</td><td>Plant A</td><td>industrial</td><td>operational</td><td>1200 Industrial Pkwy, Detroit, MI</td></tr>
+            <tr><td>LOC-002</td><td>Plant B</td><td>industrial</td><td>operational</td><td>880 Foundry Ln, Cleveland, OH</td></tr>
+            <tr><td>LOC-003</td><td>Solar Farm 1</td><td>solar</td><td>operational</td><td>500 Sun Rd, Phoenix, AZ</td></tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div [style.display]="selectedTab === 3 ? 'block' : 'none'">
+      <table class="table" style="margin-top: 16px;">
+          <thead><tr><th>date</th><th>grid_kWh</th><th>solar_kWh</th><th>battery_kWh</th><th>total_kWh</th></tr></thead>
+          <tbody>
+            <tr><td>2026-04-25</td><td>410</td><td>180</td><td>45</td><td>635</td></tr>
+            <tr><td>2026-04-26</td><td>395</td><td>210</td><td>40</td><td>645</td></tr>
+            <tr><td>2026-04-27</td><td>420</td><td>165</td><td>52</td><td>637</td></tr>
+            <tr><td>2026-04-28</td><td>388</td><td>225</td><td>38</td><td>651</td></tr>
+          </tbody>
+      </table>
+    </div>
+
+    <div [style.display]="selectedTab === 4 ? 'block' : 'none'">
+      <table class="table" style="margin-top: 16px;">
+          <thead><tr><th>date</th><th>grid_hrs</th><th>battery_hrs</th><th>outage_hrs</th><th>unknown_hrs</th></tr></thead>
+          <tbody>
+            <tr><td>2026-04-25</td><td>21.5</td><td>2.0</td><td>0.5</td><td>0</td></tr>
+            <tr><td>2026-04-26</td><td>22.0</td><td>1.5</td><td>0.5</td><td>0</td></tr>
+            <tr><td>2026-04-27</td><td>20.0</td><td>3.0</td><td>1.0</td><td>0</td></tr>
+          </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
