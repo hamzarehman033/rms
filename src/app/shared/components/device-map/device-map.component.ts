@@ -41,7 +41,7 @@ export class DeviceMapComponent implements OnInit {
         {
           id: 'DV-002',
           name: 'North Gate Camera',
-          status: 'online',
+          status: 'offline',
           location: { lat: 31.5204, lng: 74.3587 },
           type: 'Camera',
           battery: 100
@@ -89,8 +89,8 @@ export class DeviceMapComponent implements OnInit {
     const color = this.getColorForStatus(device.status);
     const markerIcon = L.divIcon({
       html: `
-        <div class="device-marker ${device.status}" style="background-color: ${color}; border-color: ${this.getBorderColor(device.status)};">
-          <i class="pi pi-map-pin"></i>
+        <div class="device-marker ${device.status}" style="color: ${this.getBorderColor(device.status)};">
+          <i class="pi pi-map-marker"></i>
         </div>
       `,
       iconSize: [40, 40],
