@@ -32,7 +32,7 @@ export class DeviceMapComponent implements OnInit {
       this.devices = [
         {
           id: 'DV-001',
-          name: 'Boiler-Room Temp Sensor',
+          name: 'Sector 3',
           status: 'online',
           location: { lat: 24.8607, lng: 67.0011 },
           type: 'Sensor',
@@ -40,7 +40,7 @@ export class DeviceMapComponent implements OnInit {
         },
         {
           id: 'DV-002',
-          name: 'North Gate Camera',
+          name: 'North Perimeter',
           status: 'offline',
           location: { lat: 31.5204, lng: 74.3587 },
           type: 'Camera',
@@ -48,7 +48,7 @@ export class DeviceMapComponent implements OnInit {
         },
         {
           id: 'DV-003',
-          name: 'Cold Storage Unit 4',
+          name: 'Warehouse B',
           status: 'warning',
           location: { lat: 33.6844, lng: 73.0479 },
           type: 'Actuator',
