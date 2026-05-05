@@ -1,0 +1,141 @@
+<main class="content">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>AI Analytics</h1>
+      <p>Site: NOC-007 · Zone: 92302</p>
+    </div>
+    <span class="tag"><span class="pulse-dot"></span>Live</span>
+  </div>
+
+  <!-- KPI Cards (4 columns) -->
+  <div class="grid cols-4">
+    <div class="stat">
+      <div class="row"><span class="label">Critical Alerts</span><span class="icon primary"><i class="pi pi-exclamation-circle"></i></span>
+      </div>
+      <div><span class="value">3</span><span class="text-xs text-destructive ml-2">↑ 2</span></div>
+      <div class="hint">requires immediate action</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Warnings</span><span class="icon warning"><i
+            class="pi pi-exclamation-triangle"></i></span></div>
+      <div><span class="value">8</span><span class="text-xs text-warning ml-2">↑ 3</span></div>
+      <div class="hint">monitoring closely</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Cameras Live</span><span class="icon success"><i
+            class="pi pi-video"></i></span></div>
+      <div><span class="value">5/6</span><span class="text-xs text-success ml-2">83%</span></div>
+      <div class="hint">all feeds streaming</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">PPE Compliance</span><span class="icon success"><i
+            class="pi pi-shield"></i></span></div>
+      <div><span class="value">94.2%</span><span class="text-xs text-success ml-2">↑ 2.1%</span></div>
+      <div class="hint">workforce compliance rate</div>
+    </div>
+  </div>
+
+  <!-- Live Data + Device Health -->
+  <div class="grid cols-3">
+    <!-- Live Data Section -->
+    <div class="span-2 card video-card card-pad">
+      <div class="card-head-inline">
+        <div>
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="display:inline-block;vertical-align:middle;margin-right:6px;color:var(--primary)"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            Live Camera View
+          </h3>
+        </div>
+      
+      </div>
+
+      <div class="video-player-container">
+        <video class="video-player" id="cameraVideo" controls controlsList="nodownload">
+          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- Camera selector grid -->
+      <div class="cam-grid">
+        <button class="cam-thumb"><span class="cam-id">CAM-01</span><span class="cam-name">Main Entrance</span></button>
+        <button class="cam-thumb"><span class="cam-id">CAM-02</span><span class="cam-name">Loading Dock</span></button>
+        <button class="cam-thumb"><span class="cam-id">CAM-03</span><span class="cam-name">Production Floor A</span></button>
+        <button class="cam-thumb"><span class="cam-id">CAM-06</span><span class="cam-name">Server Room</span></button>
+      </div>
+    </div>
+
+    <!-- Device Health -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3>Site Alerts</h3>
+          <p>AI & System monitoring</p>
+        </div>
+        <span class="kicker font-mono">4 active</span>
+      </div>
+      <ul class="alerts-list">
+        <li>
+          <div class="alert-icon"><i class="pi pi-exclamation-circle-fill"></i></div>
+          <div class="alert-body">
+            <div class="font-medium">No Helmet Detected</div>
+            <div class="alert-meta"><span class="font-mono">V-1042</span> · Production Floor A · 8 min ago</div>
+          </div>
+          <span class="sev sev-critical">critical</span>
+        </li>
+        <li>
+          <div class="alert-icon"><i class="pi pi-exclamation-circle-fill"></i></div>
+          <div class="alert-body">
+            <div class="font-medium">Restricted Zone Entry</div>
+            <div class="alert-meta"><span class="font-mono">V-1041</span> · Chemical Storage · 15 min ago</div>
+          </div>
+          <span class="sev sev-major">major</span>
+        </li>
+        <li>
+          <div class="alert-icon"><i class="pi pi-exclamation-triangle"></i></div>
+          <div class="alert-body">
+            <div class="font-medium">Restricted Zone Entry</div>
+            <div class="alert-meta"><span class="font-mono">DV-003</span> · 42 min ago</div>
+          </div>
+          <span class="sev sev-major">major</span>
+        </li>
+        <li>
+          <div class="alert-icon"><i class="pi pi-info-circle-fill"></i></div>
+          <div class="alert-body">
+            <div class="font-medium">Height Restriction Alert</div>
+            <div class="alert-meta"><span class="font-mono">DV-001</span> · 5 hrs ago</div>
+          </div>
+          <span class="sev sev-info">info</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Telemetry Charts Section -->
+  <div class="grid cols-3">
+    <!-- Alerts per Hour -->
+    <div class="span-2 card card-pad">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Alerts per Hour</h3>
+          <p class="muted-sm">Critical and warning alerts · 24h trend</p>
+        </div>
+        <span class="kicker font-mono">Alert Analytics</span>
+      </div>
+      <app-bar-chart [options]="alertsChartOptions"></app-bar-chart>
+    </div>
+
+    <!-- PPE Compliance Chart -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3>PPE Compliance</h3>
+          <p>Workforce compliance rate</p>
+        </div>
+        <span class="kicker font-mono">REALTIME</span>
+      </div>
+      <app-pie-chart [options]="pieChartOptions"></app-pie-chart>
+    </div>
+  </div>
+</main>
