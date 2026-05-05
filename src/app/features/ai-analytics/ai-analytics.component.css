@@ -321,7 +321,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 14px 20px;
+  padding: 8px;
   border-top: 1px solid rgba(227, 230, 238, 0.6);
 }
 .alerts-list > li:first-child {
@@ -341,6 +341,20 @@
   place-items: center;
   flex-shrink: 0;
 }
+
+.camera-preview {
+  width: 48px;
+  height: 36px;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
 .alert-body {
   flex: 1;
   min-width: 0;
