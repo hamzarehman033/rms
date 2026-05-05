@@ -12,4 +12,10 @@ import { InputTextModule } from 'primeng/inputtext';
 export class ReportsComponent {
   selectedTab = 0;
   constructor() {}
+
+  onExport(): void {
+  }
+
+  private tableToCSV(table: HTMLTableElement): void {
+  }
 }

@@ -21,7 +21,6 @@
           <div class="meta">Full fleet roster with status, battery, and firmware.</div>
         </div>
       </div>
-      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
     </div>
 
     <!-- Alarms & Incidents Card -->
@@ -35,7 +34,6 @@
           <div class="meta">All alarms raised across tenants.</div>
         </div>
       </div>
-      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
     </div>
 
     <!-- Site Catalog Card -->
@@ -47,7 +45,6 @@
           <div class="meta">Locations, addresses, and operational status.</div>
         </div>
       </div>
-      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
     </div>
 
     <!-- Energy Consumption Card -->
@@ -59,7 +56,6 @@
           <div class="meta">kWh per source per day (last 30 days).</div>
         </div>
       </div>
-      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
     </div>
 
     <!-- Runtime by Source Card -->
@@ -71,7 +67,6 @@
           <div class="meta">Hours per source per day (last 30 days).</div>
         </div>
       </div>
-      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
     </div>
 
     <!-- Data Export Card -->
@@ -79,18 +74,22 @@
       <div class="flex gap-4">
         <div class="tile-icon"><i class="pi pi-download"></i></div>
         <div>
-          <h4>Bulk Export</h4>
-          <div class="meta">Download all available reports.</div>
+          <h4>Devices Runtime</h4>
+          <div class="meta">Download Devices Runtime reports.</div>
         </div>
       </div>
-      <button class="btn w-full"><i class="pi pi-download"></i>Export</button>
     </div>
   </div>
 
   <!-- Preview -->
   <div class="card">
-    <h3>Preview</h3>
-    <p class="muted" style="margin-top: 4px; margin-bottom: 16px; font-size: 12px;">First 8 rows of each report.</p>
+    <div class="flex justify-between items-start">
+      <div>
+        <h3>Preview</h3>
+        <p class="muted mb-4 text-xs">First 8 rows of each report.</p>
+      </div>
+      <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+    </div>
 
     <div class="tabs">
       <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">Device Inventory</button>
@@ -100,8 +99,8 @@
       <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">Runtime by Source</button>
     </div>
 
-    <div [style.display]="selectedTab === 0 ? 'block' : 'none'">
-      <table class="table" style="margin-top: 16px;">
+    <div [ngClass]="{ 'block': selectedTab === 0, 'hidden': selectedTab !== 0 }">
+      <table class="table mt-4">
           <thead><tr><th>id</th><th>name</th><th>type</th><th>status</th><th>site</th><th>battery</th><th>signal</th><th>firmware</th><th>lastSeen</th></tr></thead>
           <tbody>
             <tr><td>DEV-001</td><td>Gateway A1</td><td>gateway</td><td>online</td><td>Plant A</td><td>92</td><td>-58</td><td>2.4.1</td><td>2m ago</td></tr>
@@ -116,8 +115,8 @@
       </table>
     </div>
 
-    <div [style.display]="selectedTab === 1 ? 'block' : 'none'">
-      <table class="table" style="margin-top: 16px;">
+    <div [ngClass]="{ 'block': selectedTab === 1, 'hidden': selectedTab !== 1 }">
+      <table class="table mt-4">
           <thead><tr><th>id</th><th>severity</th><th>title</th><th>device</th><th>time</th></tr></thead>
           <tbody>
             <tr><td>ALR-101</td><td>critical</td><td>High temperature</td><td>Sensor T-12</td><td>10:24</td></tr>
@@ -128,8 +127,8 @@
       </table>
     </div>
 
-    <div [style.display]="selectedTab === 2 ? 'block' : 'none'">
-      <table class="table" style="margin-top: 16px;">
+    <div [ngClass]="{ 'block': selectedTab === 2, 'hidden': selectedTab !== 2 }">
+      <table class="table mt-4">
           <thead><tr><th>id</th><th>name</th><th>type</th><th>status</th><th>address</th></tr></thead>
           <tbody>
             <tr><td>LOC-001</td><td>Plant A</td><td>industrial</td><td>operational</td><td>1200 Industrial Pkwy, Detroit, MI</td></tr>
@@ -139,8 +138,8 @@
       </table>
     </div>
 
-    <div [style.display]="selectedTab === 3 ? 'block' : 'none'">
-      <table class="table" style="margin-top: 16px;">
+    <div [ngClass]="{ 'block': selectedTab === 3, 'hidden': selectedTab !== 3 }">
+      <table class="table mt-4">
           <thead><tr><th>date</th><th>grid_kWh</th><th>solar_kWh</th><th>battery_kWh</th><th>total_kWh</th></tr></thead>
           <tbody>
             <tr><td>2026-04-25</td><td>410</td><td>180</td><td>45</td><td>635</td></tr>
@@ -151,8 +150,8 @@
       </table>
     </div>
 
-    <div [style.display]="selectedTab === 4 ? 'block' : 'none'">
-      <table class="table" style="margin-top: 16px;">
+    <div [ngClass]="{ 'block': selectedTab === 4, 'hidden': selectedTab !== 4 }">
+      <table class="table mt-4">
           <thead><tr><th>date</th><th>grid_hrs</th><th>battery_hrs</th><th>outage_hrs</th><th>unknown_hrs</th></tr></thead>
           <tbody>
             <tr><td>2026-04-25</td><td>21.5</td><td>2.0</td><td>0.5</td><td>0</td></tr>
