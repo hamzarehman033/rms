@@ -4,7 +4,7 @@ import { AdminLayoutComponent, PublicLayoutComponent } from "@app/layouts";
 export const routes: Routes = [
   {
     path: "",
-    redirectTo: "dashboard",
+    redirectTo: "auth/login",
     pathMatch: "full",
   },
   {

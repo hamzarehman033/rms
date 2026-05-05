@@ -1,12 +1,12 @@
 <header class="topbar">
   <div class="status"><span class="pulse-dot"></span><span class="mono">All systems operational</span></div>
-  <p-dropdown 
+  <!-- <p-dropdown 
     [(ngModel)]="currentTenant" 
     [options]="tenants" 
     optionLabel="label" 
     optionValue="value"
     class="tenant-switcher">
-  </p-dropdown>
+  </p-dropdown> -->
   <div class="right">
     <div class="search"><input placeholder="Search devices, alerts…" /></div>
     <!-- <button class="theme-toggle" type="button" (click)="onThemeToggle()" aria-label="Toggle theme">
@@ -42,11 +42,11 @@
           </div>
         </div>
       </div>
-      <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--border); text-align: center;">
+      <!-- <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--border); text-align: center;">
         <button (click)="onViewAllAlerts()" style="padding: 0.5rem 1rem; font-size: 12px; background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 500;">
           View all alerts →
         </button>
-      </div>
+      </div> -->
     </div>
     <button class="avatar" (click)="onAvatarClick($event)" aria-label="User menu">A</button>
     <p-menu #avatarMenu [model]="avatarMenuItems" [popup]="true" [appendTo]="'body'"></p-menu>
