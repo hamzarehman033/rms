@@ -43,6 +43,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "ai-analytics",
+        loadChildren: () =>
+          import("./features/ai-analytics/ai-analytics.module").then(
+            (m) => m.AiAnalyticsModule,
+          ),
+      },
+      {
         path: "locations",
         loadChildren: () =>
           import("./features/locations/locations.module").then(
