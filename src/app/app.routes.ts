@@ -71,6 +71,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "device-detail",
+        loadChildren: () =>
+          import("./features/device-detail/device-detail.module").then(
+            (m) => m.DeviceDetailModule,
+          ),
+      },
+      {
         path: "rules",
         loadChildren: () =>
           import("./features/rules/rules.module").then((m) => m.RulesModule),

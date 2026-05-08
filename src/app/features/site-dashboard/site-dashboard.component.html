@@ -5,12 +5,16 @@
   </div>
 
   <!-- Page Header -->
-  <div class="page-header">
+  <div class="page-header hstack justify-between items-start">
     <div>
       <h1>Plant A · Detroit, MI</h1>
       <p>Real-time monitoring of power systems, devices, and operational metrics.</p>
     </div>
-    <!-- <span class="tag"><span class="pulse-dot"></span>LOC-001 · Updated now</span> -->
+    <div class="hstack gap-2">
+      <button routerLink="/device-detail" type="submit" class="btn primary" pButton label="Device View" icon="pi pi-server">
+          Device View
+      </button>
+    </div>
   </div>
 
   <!-- KPI Cards (4 columns) -->
