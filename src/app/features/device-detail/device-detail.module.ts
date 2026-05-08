@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { DeviceDetailComponent } from './device-detail.component';
+import { DeviceViewComponent } from "@app/shared";
 
 const routes: Routes = [
   {
@@ -12,6 +13,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [DeviceDetailComponent],
-  imports: [CommonModule, RouterModule.forChild(routes)],
+  imports: [CommonModule, RouterModule.forChild(routes), DeviceViewComponent],
 })
 export class DeviceDetailModule {}
