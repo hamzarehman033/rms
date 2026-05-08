@@ -64,6 +64,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "map-dashboard",
+        loadChildren: () =>
+          import("./features/map-dashboard/map-dashboard.module").then(
+            (m) => m.MapDashboardModule,
+          ),
+      },
+      {
         path: "rules",
         loadChildren: () =>
           import("./features/rules/rules.module").then((m) => m.RulesModule),

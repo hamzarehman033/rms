@@ -105,9 +105,14 @@
 
   <div class="grid cols-3">
     <div class="card span-2 h-96 p-0 overflow-hidden">
-      <div class="px-5 py-4 border-b border-surface-border">
-        <h3>Device Locations</h3>
-        <div class="sub">Real-time device position tracking</div>
+      <div class="border-b border-surface-border hstack justify-between items-center">
+        <div>
+          <h3>Device Locations</h3>
+          <div class="sub mb-4">Real-time device position tracking</div>
+        </div>
+        <button routerLink="/map-dashboard" type="submit" class="btn primary" pButton label="Map View" icon="pi pi-map">
+          Map View
+        </button>
       </div>
       <div style="height: calc(100% - 70px);">
         <app-device-map></app-device-map>

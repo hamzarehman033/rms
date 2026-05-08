@@ -1,0 +1,90 @@
+<main class="content p-0">
+  <div class="grid cols-1 relative">
+    <div class="p-0 overflow-hidden" style="height: calc(100vh - 100px);">
+      <app-device-map></app-device-map>
+
+    </div>
+    <!-- Filter Panel Top Right -->
+    <div class="absolute top-0 right-0 z-10000 bg-white rounded-lg shadow-lg border border-surface-border p-4 w-80 max-h-96 overflow-y-auto">
+      <div class="vstack gap-4">
+        <!-- Search Input -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1.5">Search</label>
+          <input 
+            type="text" 
+            placeholder="Device name or ID..." 
+            class="w-full px-3 py-2 rounded-md border border-surface-border bg-surface-0 text-foreground placeholder-muted text-sm focus:border-primary focus:outline-none transition-colors"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onFilterChange()"
+          />
+        </div>
+
+        <!-- Region Filter -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1.5">Region</label>
+          <p-multiSelect
+            [options]="regionOptions"
+            [(ngModel)]="selectedRegions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All regions"
+            (onChange)="onFilterChange()"
+            [showToggleAll]="false"
+            [maxSelectedLabels]="1"
+            class="w-full"
+          ></p-multiSelect>
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1.5">Status</label>
+          <p-multiSelect
+            [options]="statusOptions"
+            [(ngModel)]="selectedStatuses"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All statuses"
+            (onChange)="onFilterChange()"
+            [showToggleAll]="false"
+            [maxSelectedLabels]="1"
+            class="w-full"
+          ></p-multiSelect>
+        </div>
+
+        <!-- Device Type Filter -->
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1.5">Device Type</label>
+          <p-multiSelect
+            [options]="deviceTypeOptions"
+            [(ngModel)]="selectedDeviceTypes"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All types"
+            (onChange)="onFilterChange()"
+            [showToggleAll]="false"
+            [maxSelectedLabels]="1"
+            class="w-full"
+          ></p-multiSelect>
+        </div>
+
+        <!-- Time Range -->
+        <div class="border-t border-surface-border pt-4">
+          <label class="block text-xs font-medium text-muted mb-2">Time Range</label>
+          <div class="flex flex-col gap-2">
+            <button 
+              *ngFor="let option of timeframeOptions"
+              (click)="selectedTimeframe = option.value; onFilterChange()"
+              class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 text-left"
+              [ngClass]="{
+                'bg-primary text-white': selectedTimeframe === option.value,
+                'bg-surface-100 text-foreground hover:bg-surface-200': selectedTimeframe !== option.value
+              }"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
