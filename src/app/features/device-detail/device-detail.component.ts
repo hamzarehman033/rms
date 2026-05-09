@@ -18,6 +18,4 @@ export class DeviceDetailComponent implements OnInit {
       this.deviceId = params['id'] || 'DV-001';
     });
   }
-
-
 }

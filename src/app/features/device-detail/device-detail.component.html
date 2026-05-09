@@ -1,5 +1,52 @@
 <main class="content p-0">
-  <div class="grid cols-1 relative">
-    <app-device-view></app-device-view>
+  <div class="grid grid-cols-3 gap-6 relative">
+    <!-- Device View - 2 columns -->
+    <div class="col-span-2">
+      <app-device-view></app-device-view>
+    </div>
+
+    <!-- Device Details - 1 column -->
+    <div class="col-span-1 bg-white rounded-lg shadow-lg p-6 h-fit sticky top-6">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Device Details</h2>
+
+      <!-- Device Status -->
+      <div class="mb-6 pb-6 border-b">
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-3">Status</h3>
+        <span class="px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+          Online
+        </span>
+      </div>
+
+      <!-- Basic Info -->
+      <div class="mb-6 pb-6 border-b">
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-3">Basic Information</h3>
+        <div class="space-y-3">
+          <div>
+            <p class="text-xs text-gray-500">Device Name</p>
+            <p class="text-gray-800 font-medium">Tower A-1</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Device ID</p>
+            <p class="text-gray-800 font-medium font-mono text-sm">DEV-2024-00147</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location & Network -->
+      <div class="mb-6 pb-6 border-b">
+        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-3">Location & Network</h3>
+        <div class="space-y-3">
+          <div>
+            <p class="text-xs text-gray-500">Location</p>
+            <p class="text-gray-800 font-medium">North Building</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Firmware</p>
+            <p class="text-gray-800 font-medium">v2.3.1</p>
+          </div>
+        </div>
+      </div>
+
+         </div>
   </div>
 </main>
