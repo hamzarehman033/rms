@@ -4,6 +4,10 @@
       <h1>Operations Overview</h1>
       <p>Real-time fleet health, telemetry, and incidents at a glance.</p>
     </div>
+    
+        <button routerLink="/map-dashboard" type="submit" class="btn primary" pButton label="Map View" icon="pi pi-map">
+          Map View
+        </button>
     <!-- <span class="tag"><span class="pulse-dot"></span>Updated just now</span> -->
   </div>
 
@@ -110,9 +114,6 @@
           <h3>Device Locations</h3>
           <div class="sub mb-4">Real-time device position tracking</div>
         </div>
-        <button routerLink="/map-dashboard" type="submit" class="btn primary" pButton label="Map View" icon="pi pi-map">
-          Map View
-        </button>
       </div>
       <div style="height: calc(100% - 70px);">
         <app-device-map></app-device-map>
