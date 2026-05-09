@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { DeviceDetailComponent } from './device-detail.component';
 import { DeviceViewComponent } from "@app/shared";
+import { LineChartComponent } from '../../shared/components/chart-components';
 import { DockModule } from 'primeng/dock';
 
 const routes: Routes = [
@@ -14,6 +15,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [DeviceDetailComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), DeviceViewComponent, DockModule],
+  imports: [CommonModule, RouterModule.forChild(routes), DeviceViewComponent, DockModule, LineChartComponent],
 })
 export class DeviceDetailModule {}

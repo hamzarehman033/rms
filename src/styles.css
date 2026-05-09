@@ -53,7 +53,8 @@
   --input: #dae0e7;
 
   /* Docker */
-  --p-dock-item-size: 1rem;
+  --p-dock-item-size: 2.6rem !important;
+  --p-dock-item-padding: 0.24rem !important;
 }
 
 * { box-sizing: border-box; }
@@ -430,6 +431,12 @@ main.content { flex: 1; padding: 24px; display: flex; flex-direction: column; ga
 .docker-outside .p-dock-item-link {
  background: var(--sidebar-background) !important;
  border-radius: 8px !important;
- color: var(--sidebar-foreground) !important;
+ color: var(--muted-foreground) !important;
  cursor: pointer; 
+ opacity: 1;
+}
+.docker-outside .p-dock-item-link:hover,
+.docker-outside .p-dock-item-link:active {
+ opacity: 1 !important;
+ color: var(--sidebar-foreground) !important;
 }
