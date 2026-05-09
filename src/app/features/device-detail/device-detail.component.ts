@@ -10,6 +10,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class DeviceDetailComponent implements OnInit {
   deviceId: string = '';
   loading = true;
+  dockItems1 = [
+    { label: 'Configuration', icon: 'pi pi-cog' },
+    { label: 'Diagnostics', icon: 'pi pi-heart' },
+    { label: 'Alerts', icon: 'pi pi-bell' },
+  ];
+
 
   constructor(private route: ActivatedRoute, private router: Router) {}
 

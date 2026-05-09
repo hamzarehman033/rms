@@ -1,48 +1,43 @@
 <main class="content p-0">
-  <div class="grid grid-cols-3 gap-6 relative">
+  <div class="grid grid-cols-3 gap-6 relative"  style="height: calc(100vh - 105px);">
     <!-- Device View - 2 columns -->
     <div class="col-span-2">
       <app-device-view></app-device-view>
     </div>
 
     <!-- Device Details - 1 column -->
-    <div class="col-span-1 bg-white rounded-lg shadow-lg p-6 h-fit sticky top-6">
-      <h2 class="text-2xl font-bold text-gray-800 mb-6">Device Details</h2>
-
-      <!-- Device Status -->
-      <div class="mb-6 pb-6 border-b">
-        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-3">Status</h3>
-        <span class="px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-          Online
-        </span>
-      </div>
-
+    <div class="col-span-1 bg-sidebar border border-sidebar-border rounded-lg p-4 h-100 sticky">
+      <p-dock styleClass="docker-outside" class="docker-outside" [model]="dockItems1" [position]="'left'" >
+        <ng-template let-item>
+            <i [class]="item.icon"></i>
+        </ng-template>
+    </p-dock>
       <!-- Basic Info -->
-      <div class="mb-6 pb-6 border-b">
-        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-3">Basic Information</h3>
+      <div class="mb-6 pb-6 border-b border-sidebar-border">
+        <h3 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Basic Information</h3>
         <div class="space-y-3">
           <div>
-            <p class="text-xs text-gray-500">Device Name</p>
-            <p class="text-gray-800 font-medium">Tower A-1</p>
+            <p class="text-xs text-sidebar-foreground opacity-60">Device Name</p>
+            <p class="text-sidebar-foreground font-medium">Tower A-1</p>
           </div>
           <div>
-            <p class="text-xs text-gray-500">Device ID</p>
-            <p class="text-gray-800 font-medium font-mono text-sm">DEV-2024-00147</p>
+            <p class="text-xs text-sidebar-foreground opacity-60">Device ID</p>
+            <p class="text-sidebar-foreground font-medium font-mono text-sm">DEV-2024-00147</p>
           </div>
         </div>
       </div>
 
       <!-- Location & Network -->
-      <div class="mb-6 pb-6 border-b">
-        <h3 class="text-sm font-semibold text-gray-600 uppercase mb-3">Location & Network</h3>
+      <div class="mb-6 pb-6 border-b border-sidebar-border">
+        <h3 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Location & Network</h3>
         <div class="space-y-3">
           <div>
-            <p class="text-xs text-gray-500">Location</p>
-            <p class="text-gray-800 font-medium">North Building</p>
+            <p class="text-xs text-sidebar-foreground opacity-60">Location</p>
+            <p class="text-sidebar-foreground font-medium">North Building</p>
           </div>
           <div>
-            <p class="text-xs text-gray-500">Firmware</p>
-            <p class="text-gray-800 font-medium">v2.3.1</p>
+            <p class="text-xs text-sidebar-foreground opacity-60">Firmware</p>
+            <p class="text-sidebar-foreground font-medium">v2.3.1</p>
           </div>
         </div>
       </div>

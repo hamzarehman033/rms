@@ -51,6 +51,9 @@
   --sidebar-width-icon: 3rem;
 
   --input: #dae0e7;
+
+  /* Docker */
+  --p-dock-item-size: 1rem;
 }
 
 * { box-sizing: border-box; }
@@ -414,3 +417,19 @@ main.content { flex: 1; padding: 24px; display: flex; flex-direction: column; ga
 /* Utility classes */
 .w-full { width: 100%; }
 
+
+/* Docker */
+.docker-outside .p-dock{
+  align-items: start !important;
+}
+.p-dock-left{
+  width: 70px !important;
+  left: -80px !important;
+}
+
+.docker-outside .p-dock-item-link {
+ background: var(--sidebar-background) !important;
+ border-radius: 8px !important;
+ color: var(--sidebar-foreground) !important;
+ cursor: pointer; 
+}
