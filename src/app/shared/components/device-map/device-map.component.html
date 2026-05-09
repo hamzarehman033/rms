@@ -1,1 +1,79 @@
-<div class="device-map-container" #mapContainer></div>
+<div class="map-wrapper">
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <div class="search">
+                <i class="pi pi-search"></i>
+                <input placeholder="Search filters…" />
+            </div>
+
+            <!-- Location Filter -->
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Location</label>
+                <select style="width: 100%; padding: 0.5rem; font-size: 13px;">
+                    <option>All Locations</option>
+                    <option>North Zone</option>
+                    <option>South Zone</option>
+                    <option>East Zone</option>
+                    <option>West Zone</option>
+                </select>
+            </div>
+            
+            <!-- Battery Level Filter -->
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Battery Level</label>
+                <input type="range" min="0" max="100" style="width: 100;">
+            </div>
+            
+            <!-- Temperature Range Dropdown -->
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Temperature Range</label>
+                <select style="width: 100%; padding: 0.5rem; font-size: 13px;">
+                    <option>All Temperatures</option>
+                    <option>Below 30°C</option>
+                    <option>30°C - 40°C</option>
+                    <option>40°C - 50°C</option>
+                    <option>Above 50°C</option>
+                </select>
+            </div>
+            
+            <!-- Signal Strength Dropdown -->
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Signal Strength</label>
+                <select style="width: 100%; padding: 0.5rem; font-size: 13px;">
+                    <option>All Signals</option>
+                    <option>Excellent (90-100%)</option>
+                    <option>Good (75-89%)</option>
+                    <option>Fair (50-74%)</option>
+                    <option>Poor (Below 50%)</option>
+                </select>
+            </div>
+            
+            <!-- Power Consumption Dropdown -->
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Power Consumption</label>
+                <select style="width: 100%; padding: 0.5rem; font-size: 13px;">
+                    <option>All Levels</option>
+                    <option>Low (0-500W)</option>
+                    <option>Medium (500W-2000W)</option>
+                    <option>High (2000W-5000W)</option>
+                    <option>Very High (5000W+)</option>
+                </select>
+            </div>
+            
+            <!-- Uptime Dropdown -->
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Uptime</label>
+                <select style="width: 100%; padding: 0.5rem; font-size: 13px;">
+                    <option>All Devices</option>
+                    <option>Less than 7 days</option>
+                    <option>7 - 30 days</option>
+                    <option>30 - 90 days</option>
+                    <option>90+ days</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <!-- Map -->
+    <div class="device-map-container" style="z-index: 10;" #mapContainer></div>
+</div>

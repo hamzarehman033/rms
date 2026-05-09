@@ -1,3 +1,137 @@
+/* Map Wrapper */
+.map-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+}
+
+.filter-section{
+  position: absolute;
+  background: var(--sidebar-background);
+  top: 0;
+  right: 0;
+  z-index: 100;
+  border-radius: 8px;
+  height: 100%;
+  width: 250px;
+}
+
+.filter-group {
+  padding: 12px;
+}
+
+/* Search Input */
+.filter-group .search {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.filter-group .search input {
+  width: 100%;
+  height: 36px;
+  background: rgba(39, 53, 73, 0.4);
+  border: 1px solid var(--sidebar-border);
+  color: var(--sidebar-foreground);
+  border-radius: 8px;
+  padding: 0 12px 0 32px;
+  outline: none;
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+.filter-group .search input::placeholder {
+  color: rgba(189, 197, 209, 0.5);
+}
+
+.filter-group .search input:focus {
+  border-color: var(--primary);
+  background: rgba(39, 53, 73, 0.6);
+}
+
+.filter-group .search i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(189, 197, 209, 0.6);
+  width: 16px;
+  height: 16px;
+}
+
+/* Select Dropdowns */
+.filter-group select {
+  width: 100% !important;
+  background: rgba(39, 53, 73, 0.4) !important;
+  border: 1px solid var(--sidebar-border) !important;
+  color: var(--sidebar-foreground) !important;
+  border-radius: 6px !important;
+  padding: 0.5rem !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: var(--transition) !important;
+  outline: none !important;
+}
+
+.filter-group select:hover {
+  background: rgba(39, 53, 73, 0.5) !important;
+}
+
+.filter-group select:focus {
+  border-color: var(--primary) !important;
+  background: rgba(39, 53, 73, 0.6) !important;
+}
+
+.filter-group select option {
+  background: var(--sidebar-background);
+  color: var(--sidebar-foreground);
+}
+
+/* Checkboxes */
+.filter-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* Range Input */
+.filter-group input[type="range"] {
+  width: 100% !important;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(39, 53, 73, 0.4);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.filter-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(79, 94, 224, 0.2);
+}
+
+.filter-group input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 3px rgba(79, 94, 224, 0.2);
+}
+
+/* Labels */
+.filter-group label[style*="font-size: 12px"] {
+  color: rgba(189, 197, 209, 0.7) !important;
+}
+
 .device-map-container {
   width: 100%;
   height: 100%;
