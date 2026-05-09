@@ -89,7 +89,7 @@ input, select, textarea { font-family: inherit; color: inherit; }
 .search { position: relative; }
 .search input {
   height: 36px; width: 280px;
-  background: rgba(39, 53, 73, 0.4); border: 1px solid var(--sidebar-border); color: var(--sidebar-foreground);
+  background: var(--surface-1); border: 1px solid var(--border); color: var(--foreground);
   border-radius: 8px; padding: 0 12px 0 32px; outline: none;
 }
 .search input:focus { border-color: var(--primary); }
@@ -99,6 +99,11 @@ input, select, textarea { font-family: inherit; color: inherit; }
   width: 36px; height: 36px; border-radius: 8px;
   background: rgba(39, 53, 73, 0.4); border: 1px solid var(--sidebar-border);
   display: grid; place-items: center; color: rgba(189, 197, 209, 0.7);
+}
+.topbar .search input {
+  height: 36px; width: 280px;
+  background: rgba(39, 53, 73, 0.4); border: 1px solid var(--sidebar-border); color: var(--sidebar-foreground);
+  border-radius: 8px; padding: 0 12px 0 32px; outline: none;
 }
 .icon-btn:hover { color: var(--sidebar-foreground); }
 .icon-btn .dot { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--destructive); }
