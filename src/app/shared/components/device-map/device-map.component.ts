@@ -22,6 +22,7 @@ export interface Device {
 })
 export class DeviceMapComponent implements OnInit {
   @Input() devices: Device[] = [];
+  @Input() showSidebar: boolean = false;
   @ViewChild('mapContainer') mapContainer?: ElementRef;
 
   private map?: L.Map;

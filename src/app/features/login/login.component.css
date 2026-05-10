@@ -180,7 +180,10 @@
   transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
-.auth-btn-primary:hover { background-color: var(--primary) / 0.92; }
+.auth-btn-primary:hover { 
+  background-color: color-mix(in srgb, var(--primary) 92%, transparent);
+  box-shadow: 0 4px 12px rgba(91, 108, 255, 0.3);
+}
 .auth-btn-primary:active { transform: translateY(1px); }
 .auth-btn-primary:focus-visible {
   outline: none;
