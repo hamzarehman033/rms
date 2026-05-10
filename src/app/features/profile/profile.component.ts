@@ -73,11 +73,11 @@ export class ProfileComponent implements OnInit {
       );
       this.profileForm.addControl(
         `${module.value}_read`,
-        new FormControl(permission?.read || false),
+        new FormControl({ value: permission?.read || false, disabled: true }),
       );
       this.profileForm.addControl(
         `${module.value}_write`,
-        new FormControl(permission?.write || false),
+        new FormControl({ value: permission?.write || false, disabled: true }),
       );
     });
   }
