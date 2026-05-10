@@ -29,130 +29,32 @@
           <th>Location</th>
           <th>Battery</th>
           <th>Last seen</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr *ngFor="let device of devices">
           <td>
-            <a routerLink="/device-detail" [queryParams]="{id: 'DV-001'}">
-              <div class="font-medium text-blue-600">Sector 3</div>
-              <div class="muted mono text-xs">DV-001</div>
+            <a routerLink="/site-dashboard" [queryParams]="{id: device.id}">
+              <div class="font-medium text-blue-600">{{ device.name }}</div>
+              <div class="muted mono text-xs">{{ device.id }}</div>
             </a>
           </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Sensor</td>
-          <td>Plant A · Sector 3</td>
-          <td class="mono">87%</td>
-          <td class="muted">2s ago</td>
-        </tr>
-        <tr>
+          <td><span [ngClass]="'badge ' + device.status">● {{ device.status | titlecase }}</span></td>
+          <td>{{ device.type }}</td>
+          <td>{{ device.location }}</td>
+          <td class="mono">{{ device.battery }}</td>
+          <td class="muted">{{ device.lastSeen }}</td>
           <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-002'}">
-              <div class="font-medium text-blue-600">North Perimeter</div>
-              <div class="muted mono text-xs">DV-002</div>
-            </a>
+            <div class="flex gap-2">
+              <button (click)="navigateToDeviceDashboard(device.id)" title="Device Dashboard" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+                <i class="pi pi-chart-bar text-base"></i>
+              </button>
+              <button (click)="navigateToDeviceDetail(device.id)" title="Device Details" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+                <i class="pi pi-tablet text-base"></i>
+              </button>
+            </div>
           </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Camera</td>
-          <td>Perimeter · North</td>
-          <td class="mono">100%</td>
-          <td class="muted">5s ago</td>
-        </tr>
-        <tr>
-          <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-003'}">
-              <div class="font-medium text-blue-600">Warehouse B</div>
-              <div class="muted mono text-xs">DV-003</div>
-            </a>
-          </td>
-          <td><span class="badge warning">● Warning</span></td>
-          <td>Sensor</td>
-          <td>Warehouse B</td>
-          <td class="mono">22%</td>
-          <td class="muted">1m ago</td>
-        </tr>
-        <tr>
-          <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-004'}">
-              <div class="font-medium text-blue-600">Floor 2 East</div>
-              <div class="muted mono text-xs">DV-004</div>
-            </a>
-          </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Actuator</td>
-          <td>Floor 2 · East</td>
-          <td class="mono">100%</td>
-          <td class="muted">3s ago</td>
-        </tr>
-        <tr>
-          <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-005'}">
-              <div class="font-medium text-blue-600">Warehouse A</div>
-              <div class="muted mono text-xs">DV-005</div>
-            </a>
-          </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Gateway</td>
-          <td>Warehouse A</td>
-          <td class="mono">100%</td>
-          <td class="muted">12s ago</td>
-        </tr>
-        <tr>
-          <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-006'}">
-              <div class="font-medium text-blue-600">Sector 1</div>
-              <div class="muted mono text-xs">DV-006</div>
-            </a>
-          </td>
-          <td><span class="badge offline">● Offline</span></td>
-          <td>Sensor</td>
-          <td>Plant A · Sector 1</td>
-          <td class="mono">0%</td>
-          <td class="muted">2h ago</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="font-medium">Substation 4</div>
-            <div class="muted mono text-xs">DV-007</div>
-          </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Sensor</td>
-          <td>Substation 4</td>
-          <td class="mono">94%</td>
-          <td class="muted">8s ago</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="font-medium">Line 2</div>
-            <div class="muted mono text-xs">DV-008</div>
-          </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Actuator</td>
-          <td>Plant B · Line 2</td>
-          <td class="mono">100%</td>
-          <td class="muted">1s ago</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="font-medium">Office Tower</div>
-            <div class="muted mono text-xs">DV-009</div>
-          </td>
-          <td><span class="badge warning">● Warning</span></td>
-          <td>Sensor</td>
-          <td>Office Tower</td>
-          <td class="mono">28%</td>
-          <td class="muted">45s ago</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="font-medium">DC West</div>
-            <div class="muted mono text-xs">DV-010</div>
-          </td>
-          <td><span class="badge online">● Online</span></td>
-          <td>Gateway</td>
-          <td>DC West</td>
-          <td class="mono">100%</td>
-          <td class="muted">2s ago</td>
         </tr>
       </tbody>
     </table>
