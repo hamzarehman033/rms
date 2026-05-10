@@ -38,7 +38,7 @@ export class TopbarComponent {
   ];
 
   avatarMenuItems = [
-    // { label: 'Profile', icon: 'pi pi-user', command: () => this.onProfileClick() },
+    { label: 'Profile', icon: 'pi pi-user', command: () => this.onProfileClick() },
     { label: 'Sign Out', icon: 'pi pi-sign-out', command: () => this.onSignOut() }
   ];
 
