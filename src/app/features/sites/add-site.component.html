@@ -18,29 +18,29 @@
     </div>
 
     <div class="form-group">
-        <label for="siteType">Site Type</label>
-        <p-dropdown id="siteType" formControlName="siteType" [options]="siteTypes" optionLabel="label"
-            optionValue="value" placeholder="Select site type" class="w-full"></p-dropdown>
-        <small class="error" *ngIf="siteForm.get('siteType')?.invalid && siteForm.get('siteType')?.touched">
-            Site type is required
+        <label for="subscriptionType">Subscription Type</label>
+        <p-dropdown id="subscriptionType" formControlName="subscriptionType" [options]="subscriptionTypes" optionLabel="label"
+            optionValue="value" placeholder="Select subscription type" class="w-full"></p-dropdown>
+        <small class="error" *ngIf="siteForm.get('subscriptionType')?.invalid && siteForm.get('subscriptionType')?.touched">
+            Subscription type is required
         </small>
     </div>
 
     <div class="form-group">
         <label for="location">Location</label>
-        <input id="location" pInputText type="text" formControlName="location" placeholder="e.g., North Region"
-            class="w-full" />
+        <p-dropdown id="location" formControlName="location" [options]="locations" optionLabel="label"
+            optionValue="value" placeholder="Select location" class="w-full"></p-dropdown>
         <small class="error" *ngIf="siteForm.get('location')?.invalid && siteForm.get('location')?.touched">
             Location is required
         </small>
     </div>
 
     <div class="form-group">
-        <label for="battery">Battery Level (%)</label>
-        <p-inputNumber id="battery" formControlName="battery" [min]="0" [max]="100" placeholder="0-100"
-            class="w-full"></p-inputNumber>
-        <small class="error" *ngIf="siteForm.get('battery')?.invalid && siteForm.get('battery')?.touched">
-            Battery must be between 0 and 100
+        <label for="installationDate">Installation Date</label>
+        <input id="installationDate" pInputText type="date" formControlName="installationDate" 
+            class="w-full" />
+        <small class="error" *ngIf="siteForm.get('installationDate')?.invalid && siteForm.get('installationDate')?.touched">
+            Installation date is required
         </small>
     </div>
 

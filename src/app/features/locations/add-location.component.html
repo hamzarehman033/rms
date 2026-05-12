@@ -4,16 +4,7 @@
         <input id="name" pInputText type="text" formControlName="name" placeholder="Enter location name"
             class="w-full" />
         <small class="error" *ngIf="locationForm.get('name')?.invalid && locationForm.get('name')?.touched">
-            Name is required and must be at least 3 characters
-        </small>
-    </div>
-
-    <div class="form-group">
-        <label for="description">Description</label>
-        <input id="description" pInputText type="text" formControlName="description" placeholder="Enter description"
-            class="w-full" />
-        <small class="error" *ngIf="locationForm.get('description')?.invalid && locationForm.get('description')?.touched">
-            Description is required
+            Location name is required and must be at least 3 characters
         </small>
     </div>
 
@@ -27,11 +18,11 @@
     </div>
 
     <div class="form-group">
-        <label for="city">City</label>
-        <p-select id="city" [options]="cities" optionLabel="label" optionValue="value" 
-            formControlName="city" placeholder="Select a city" class="w-full"></p-select>
-        <small class="error" *ngIf="locationForm.get('city')?.invalid && locationForm.get('city')?.touched">
-            City is required
+        <label for="subRegion">Sub Region</label>
+        <p-select id="subRegion" [options]="subRegions" optionLabel="label" optionValue="value" 
+            formControlName="subRegion" placeholder="Select a sub region" class="w-full"></p-select>
+        <small class="error" *ngIf="locationForm.get('subRegion')?.invalid && locationForm.get('subRegion')?.touched">
+            Sub region is required
         </small>
     </div>
 
@@ -45,13 +36,25 @@
     </div>
 
     <div class="form-group">
-        <label for="coordinates">Coordinates</label>
+        <label for="coordinates">Location Coordinates</label>
         <input id="coordinates" pInputText type="text" formControlName="coordinates" placeholder="e.g., 40.7128, -74.0060"
             class="w-full" />
+        <small class="error" *ngIf="locationForm.get('coordinates')?.invalid && locationForm.get('coordinates')?.touched">
+            Coordinates are required
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="timeZone">Time Zone</label>
+        <p-select id="timeZone" [options]="timeZones" optionLabel="label" optionValue="value" 
+            formControlName="timeZone" placeholder="Select time zone" class="w-full"></p-select>
+        <small class="error" *ngIf="locationForm.get('timeZone')?.invalid && locationForm.get('timeZone')?.touched">
+            Time zone is required
+        </small>
     </div>
 </form>
 
-<div class="form-actions" dialogFooter>
+<div class="form-actions pt-2" dialogFooter>
     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
         (click)="resetForm()"></button>
     <button type="submit" pButton label="Add Location" icon="pi pi-check" [disabled]="!locationForm.valid"

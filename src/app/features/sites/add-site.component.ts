@@ -11,34 +11,40 @@ export class AddSiteComponent {
   @Output() siteAdded = new EventEmitter<any>();
 
   siteForm: FormGroup;
-  siteTypes = [
-    { label: 'Manufacturing', value: 'manufacturing' },
-    { label: 'Storage', value: 'storage' },
-    { label: 'Data Center', value: 'datacenter' },
-    { label: 'Office', value: 'office' },
-    { label: 'Logistics', value: 'logistics' },
-    { label: 'Laboratory', value: 'laboratory' },
-    { label: 'Retail', value: 'retail' }
+  subscriptionTypes = [
+    { label: 'Basic', value: 'basic' },
+    { label: 'Standard', value: 'standard' },
+    { label: 'Enterprise', value: 'enterprise' }
+  ];
+
+  locations = [
+    { label: 'Plant A', value: 'plant-a' },
+    { label: 'Plant B', value: 'plant-b' },
+    { label: 'Warehouse A', value: 'warehouse-a' },
+    { label: 'Warehouse B', value: 'warehouse-b' },
+    { label: 'DC West', value: 'dc-west' },
+    { label: 'DC East', value: 'dc-east' }
   ];
 
   constructor(private fb: FormBuilder) {
     this.siteForm = this.fb.group({
       siteName: ['', [Validators.required, Validators.minLength(3)]],
       siteId: ['', Validators.required],
-      siteType: ['', Validators.required],
+      subscriptionType: ['', Validators.required],
       location: ['', Validators.required],
-      battery: [100, [Validators.required, Validators.min(0), Validators.max(100)]]
+      installationDate: ['', Validators.required]
     });
   }
 
   onSubmit() {
     if (this.siteForm.valid) {
       this.siteAdded.emit(this.siteForm.value);
-      this.siteForm.reset({ battery: 100 });
+      this.siteForm.reset();
     }
   }
 
   resetForm() {
-    this.siteForm.reset({ battery: 100 });
+    this.siteForm.reset();
   }
 }
+
