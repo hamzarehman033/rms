@@ -62,6 +62,7 @@ export class DashboardComponent {
   // Filter Properties
   searchTerm = '';
   selectedRegions: string[] = [];
+  selectedSubRegions: string[] = [];
   selectedStatuses: string[] = [];
   selectedDeviceTypes: string[] = [];
   selectedTimeframe = '24h';
@@ -73,6 +74,15 @@ export class DashboardComponent {
     { label: 'South', value: 'south' },
     { label: 'East', value: 'east' },
     { label: 'West', value: 'west' }
+  ];
+
+  subRegionOptions = [
+    { label: 'Plant A', value: 'plant-a' },
+    { label: 'Plant B', value: 'plant-b' },
+    { label: 'Warehouse A', value: 'warehouse-a' },
+    { label: 'Warehouse B', value: 'warehouse-b' },
+    { label: 'DC West', value: 'dc-west' },
+    { label: 'DC East', value: 'dc-east' }
   ];
 
   statusOptions = [
@@ -117,6 +127,7 @@ export class DashboardComponent {
     console.log('Filters changed:', {
       searchTerm: this.searchTerm,
       regions: this.selectedRegions,
+      subRegions: this.selectedSubRegions,
       statuses: this.selectedStatuses,
       deviceTypes: this.selectedDeviceTypes,
       timeframe: this.selectedTimeframe

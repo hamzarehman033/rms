@@ -4,10 +4,6 @@
       <h1>Operations Overview</h1>
       <p>Real-time fleet health, telemetry, and incidents at a glance.</p>
     </div>
-    
-        <button routerLink="/map-dashboard" type="submit" class="btn primary" pButton label="Map View" icon="pi pi-map">
-          Map View
-        </button>
     <!-- <span class="tag"><span class="pulse-dot"></span>Updated just now</span> -->
   </div>
 
@@ -33,7 +29,22 @@
             [(ngModel)]="selectedRegions"
             optionLabel="label"
             optionValue="value"
-            placeholder="Regions"
+            placeholder="Region"
+            (onChange)="onFilterChange()"
+            [showToggleAll]="false"
+            [maxSelectedLabels]="1"
+            class="w-full"
+          ></p-multiSelect>
+        </div>
+
+        <!-- Sub Region Multiselect -->
+        <div class="w-32">
+          <p-multiSelect
+            [options]="subRegionOptions"
+            [(ngModel)]="selectedSubRegions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sub Region"
             (onChange)="onFilterChange()"
             [showToggleAll]="false"
             [maxSelectedLabels]="1"
@@ -56,14 +67,14 @@
           ></p-multiSelect>
         </div>
 
-        <!-- Device Type Multiselect -->
+        <!-- Type Multiselect -->
         <div class="w-32">
           <p-multiSelect
             [options]="deviceTypeOptions"
             [(ngModel)]="selectedDeviceTypes"
             optionLabel="label"
             optionValue="value"
-            placeholder="Device"
+            placeholder="Type"
             (onChange)="onFilterChange()"
             [showToggleAll]="false"
             [maxSelectedLabels]="1"
@@ -81,29 +92,37 @@
     </div>
   </div>
   <div class="grid cols-4">
-    <a routerLink="/devices" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200">
-      <div class="row"><span class="label">Total Devices</span><span class="icon primary"><i
-            class="pi pi-server"></i></span></div>
-      <div><span class="value">150</span><span class="delta up">+2.4%</span></div>
-      <div class="hint">+3 added this week</div>
-    </a>
-    <a routerLink="/devices" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200">
-      <div class="row"><span class="label">Online</span><span class="icon success"><i class="pi pi-wifi"></i></span>
+    <a routerLink="/devices" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-primary">
+      <div class="row">
+        <span class="label font-semibold">Total Devices</span>
+        <span class="icon primary text-xl"><i class="pi pi-server"></i></span>
       </div>
-      <div><span class="value">142</span><span class="delta up">+1.1%</span></div>
-      <div class="hint">94.6% uptime</div>
+      <div><span class="value text-3xl font-bold">150</span><span class="delta up font-semibold ml-2">+2.4%</span></div>
+      <div class="hint text-xs">+3 added this week</div>
     </a>
-    <a routerLink="/alerts" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200">
-      <div class="row"><span class="label">Active Alerts</span><span class="icon warning"><i
-            class="pi pi-exclamation-triangle"></i></span></div>
-      <div><span class="value">7</span><span class="delta down">-12.5%</span></div>
-      <div class="hint">2 critical · 5 minor</div>
+    <a routerLink="/devices" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-success">
+      <div class="row">
+        <span class="label font-semibold">Online</span>
+        <span class="icon success text-xl"><i class="pi pi-wifi"></i></span>
+      </div>
+      <div><span class="value text-3xl font-bold">142</span><span class="delta up font-semibold ml-2">+1.1%</span></div>
+      <div class="hint text-xs">94.6% uptime</div>
     </a>
-    <div class="stat">
-      <div class="row"><span class="label">Msgs / min</span><span class="icon info"><i
-            class="pi pi-chart-line"></i></span></div>
-      <div><span class="value">2,847</span><span class="delta up">+5.8%</span></div>
-      <div class="hint">ingestion rate</div>
+    <a routerLink="/alerts" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-warning">
+      <div class="row">
+        <span class="label font-semibold">Active Alerts</span>
+        <span class="icon warning text-xl"><i class="pi pi-exclamation-triangle"></i></span>
+      </div>
+      <div><span class="value text-3xl font-bold">7</span><span class="delta down font-semibold ml-2">-12.5%</span></div>
+      <div class="hint text-xs">2 critical · 5 minor</div>
+    </a>
+    <div class="stat border-l-4 border-info">
+      <div class="row">
+        <span class="label font-semibold">Msgs / min</span>
+        <span class="icon info text-xl"><i class="pi pi-chart-line"></i></span>
+      </div>
+      <div><span class="value text-3xl font-bold">2,847</span><span class="delta up font-semibold ml-2">+5.8%</span></div>
+      <div class="hint text-xs">ingestion rate</div>
     </div>
   </div>
 
@@ -114,6 +133,9 @@
           <h3>Device Locations</h3>
           <div class="sub mb-4">Real-time device position tracking</div>
         </div>
+        <button routerLink="/map-dashboard" type="submit" class="btn primary" pButton label="Map View" icon="pi pi-map">
+          Map View
+        </button>
       </div>
       <div style="height: calc(100% - 70px);">
         <app-device-map></app-device-map>
