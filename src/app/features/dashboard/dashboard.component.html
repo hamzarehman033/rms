@@ -127,7 +127,7 @@
   </div>
 
   <div class="grid cols-3">
-    <div class="card span-2 h-96 p-0 overflow-hidden">
+    <div class="card span-2 h-96 p-0 overflow-hidden flex flex-col">
       <div class="border-b border-surface-border hstack justify-between items-center">
         <div>
           <h3>Site Locations</h3>
@@ -137,8 +137,15 @@
           Map View
         </button>
       </div>
-      <div style="height: calc(100% - 70px);">
+      <div style="flex: 1; overflow: hidden;">
         <app-device-map></app-device-map>
+      </div>
+      <div class="border-t border-surface-border flex justify-center items-center py-3">
+        <div class="legend">
+          <span><span class="dot-color" style="background:#22c55e"></span>Online</span>
+          <span><span class="dot-color" style="background:#eab308"></span>Warning</span>
+          <span><span class="dot-color" style="background:#ef4444"></span>Offline</span>
+        </div>
       </div>
     </div>
 

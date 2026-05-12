@@ -166,7 +166,7 @@ main.content { flex: 1; padding: 24px; display: flex; flex-direction: column; ga
 .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted-foreground); }
 .stat .icon { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
 .stat .icon svg { width: 16px; height: 16px; }
-.stat .value { font-family: var(--font-display); font-size: 26px; font-weight: 600; margin-top: 10px; }
+.stat .value { font-family: var(--font-display); font-size: 28px; font-weight: 600; margin-top: 10px; }
 .stat .hint { color: var(--muted-foreground); font-size: 12px; margin-top: 2px; }
 .stat .delta { font-size: 12px; font-weight: 500; margin-left: 8px; }
 .delta.up { color: var(--success); }
