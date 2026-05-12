@@ -53,6 +53,9 @@
               <button (click)="navigateToSiteDetail(site.id)" title="Site Details" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
                 <i class="pi pi-tablet text-base"></i>
               </button>
+              <button (click)="openSiteConfiguration(site)" title="Configure Site" class="text-gray-500 hover:text-white hover:bg-gray-600 transition-colors p-2 rounded">
+                <i class="pi pi-cog text-base"></i>
+              </button>
             </div>
           </td>
         </tr>
@@ -64,4 +67,9 @@
 <!-- Add Site Dialog -->
 <app-modal-dialog [(visible)]="displayAddSiteDialog" header="Add New Site">
   <app-add-site (siteAdded)="onSiteAdded($event)"></app-add-site>
+</app-modal-dialog>
+
+<!-- Site Configuration Dialog -->
+<app-modal-dialog [(visible)]="displayConfigDialog" header="Configure Site: {{ selectedSiteForConfig?.name }}">
+  <app-site-configuration [site]="selectedSiteForConfig" (siteConfigured)="onSiteConfigured()"></app-site-configuration>
 </app-modal-dialog>

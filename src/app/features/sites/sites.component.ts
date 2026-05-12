@@ -19,6 +19,8 @@ interface Site {
 })
 export class SitesComponent {
   displayAddSiteDialog = false;
+  displayConfigDialog = false;
+  selectedSiteForConfig: Site | null = null;
   selectedTab = 0;
 
   sites: Site[] = [
@@ -50,5 +52,15 @@ export class SitesComponent {
 
   navigateToSiteDetail(siteId: string) {
     this.router.navigate(['/site-detail'], { queryParams: { id: siteId } });
+  }
+
+  openSiteConfiguration(site: Site) {
+    this.selectedSiteForConfig = site;
+    this.displayConfigDialog = true;
+  }
+
+  onSiteConfigured() {
+    this.displayConfigDialog = false;
+    this.selectedSiteForConfig = null;
   }
 }

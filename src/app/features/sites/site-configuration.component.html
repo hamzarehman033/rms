@@ -1,0 +1,114 @@
+<form [formGroup]="configForm" (ngSubmit)="submitConfiguration()" class="vstack gap-6">
+  <!-- Rectifier Section -->
+  <div formGroupName="rectifier" class="config-section">
+    <h4 class="text-lg font-bold mb-3">Rectifier</h4>
+    <div class="grid cols-3 gap-3">
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Brand</label>
+        <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Quantity</label>
+        <input type="number" formControlName="quantity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="0" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Capacity</label>
+        <input type="text" formControlName="capacity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="e.g., 100 kW" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Battery Section -->
+  <div formGroupName="battery" class="config-section border-t border-surface-border pt-6">
+    <h4 class="text-lg font-bold mb-3">Battery</h4>
+    <div class="grid cols-3 gap-3">
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Brand</label>
+        <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Quantity</label>
+        <input type="number" formControlName="quantity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="0" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Capacity</label>
+        <input type="text" formControlName="capacity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="e.g., 500 Ah" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Solar Section -->
+  <div formGroupName="solar" class="config-section border-t border-surface-border pt-6">
+    <h4 class="text-lg font-bold mb-3">Solar</h4>
+    <div class="grid cols-3 gap-3">
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Brand</label>
+        <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Quantity</label>
+        <input type="number" formControlName="quantity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="0" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Capacity</label>
+        <input type="text" formControlName="capacity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="e.g., 50 kWp" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Generator Section -->
+  <div formGroupName="generator" class="config-section border-t border-surface-border pt-6">
+    <h4 class="text-lg font-bold mb-3">Generator</h4>
+    <div class="grid cols-3 gap-3">
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Brand</label>
+        <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Quantity</label>
+        <input type="number" formControlName="quantity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="0" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Capacity</label>
+        <input type="text" formControlName="capacity" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="e.g., 100 kVA" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Fields Section -->
+  <div class="config-section border-t border-surface-border pt-6">
+    <div class="grid cols-2 gap-4 mb-4">
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">RMS Device Serial Number</label>
+        <input type="text" formControlName="rmsDeviceSerialNumber" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter serial number" />
+      </div>
+      <div class="vstack gap-1">
+        <label class="text-sm font-semibold">Sim Card Number</label>
+        <input type="text" formControlName="simCardNumber" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter SIM card number" />
+      </div>
+    </div>
+
+    <div class="grid cols-1 gap-4 mb-4">
+        <div class="vstack gap-1">
+            <label class="text-sm font-semibold">Number of Cameras Installed</label>
+            <input type="number" formControlName="numberOfCamerasInstalled" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="0" />
+        </div>
+      
+    </div>
+    <div class="grid cols-2 gap-4 mb-4">
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="aiEhs" formControlName="aiEhsInstalled" class="w-4 h-4 cursor-pointer" />
+        <label for="aiEhs" class="text-sm font-semibold cursor-pointer">AI EHS Installed</label>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="aiSecurity" formControlName="aiSecurityInstalled" class="w-4 h-4 cursor-pointer" />
+        <label for="aiSecurity" class="text-sm font-semibold cursor-pointer">AI Security Installed</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="hstack gap-2 justify-end border-t border-surface-border pt-6">
+    <button type="button" (click)="closeConfiguration()" class="btn secondary">Cancel</button>
+    <button type="submit" [disabled]="!configForm.valid" class="btn primary">Save Configuration</button>
+  </div>
+</form>

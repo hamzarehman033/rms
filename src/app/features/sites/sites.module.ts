@@ -7,7 +7,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { ModalDialogComponent } from '@app/shared';
-import { AddSiteComponent } from './add-site.component';
+import { AddSiteComponent } from './add-site/add-site.component';
+import { SiteConfigurationComponent } from './site-configuration.component';
 import { SitesComponent } from './sites.component';
 
 const routes: Routes = [
@@ -31,7 +32,8 @@ const routes: Routes = [
     InputTextModule,
     DropdownModule,
     InputNumberModule,
-    ModalDialogComponent
+    ModalDialogComponent,
+    SiteConfigurationComponent
   ],
 })
 export class SitesModule {}
