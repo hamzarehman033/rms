@@ -28,7 +28,7 @@ export class DashboardComponent {
   };
 
   // Device Breakdown Chart Data
-  deviceBreakdownOptions = {
+  siteBreakdownOptions = {
     data: [
       { name: 'Sensors', value: 86, color: '#5b6cff' },
       { name: 'Gateways', value: 24, color: '#8a7bff' },
@@ -64,7 +64,7 @@ export class DashboardComponent {
   selectedRegions: string[] = [];
   selectedSubRegions: string[] = [];
   selectedStatuses: string[] = [];
-  selectedDeviceTypes: string[] = [];
+  selectedSiteTypes: string[] = [];
   selectedTimeframe = '24h';
 
   // Filter Options
@@ -92,11 +92,11 @@ export class DashboardComponent {
     { label: 'Error', value: 'error' }
   ];
 
-  deviceTypeOptions = [
-    { label: 'Sensors', value: 'sensors' },
-    { label: 'Gateways', value: 'gateways' },
-    { label: 'Actuators', value: 'actuators' },
-    { label: 'Cameras', value: 'cameras' }
+  siteTypeOptions = [
+    { label: 'Manufacturing', value: 'manufacturing' },
+    { label: 'Storage', value: 'storage' },
+    { label: 'Data Center', value: 'datacenter' },
+    { label: 'Office', value: 'office' }
   ];
 
   timeframeOptions = [
@@ -129,7 +129,7 @@ export class DashboardComponent {
       regions: this.selectedRegions,
       subRegions: this.selectedSubRegions,
       statuses: this.selectedStatuses,
-      deviceTypes: this.selectedDeviceTypes,
+      siteTypes: this.selectedSiteTypes,
       timeframe: this.selectedTimeframe
     });
   }

@@ -15,7 +15,7 @@
         <div class="flex-1">
           <input 
             type="text" 
-            placeholder="Search by device name or ID..." 
+            placeholder="Search by site name or ID..." 
             class="w-full px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground placeholder-muted"
             [(ngModel)]="searchTerm"
             (ngModelChange)="onFilterChange()"
@@ -70,8 +70,8 @@
         <!-- Type Multiselect -->
         <div class="w-32">
           <p-multiSelect
-            [options]="deviceTypeOptions"
-            [(ngModel)]="selectedDeviceTypes"
+            [options]="siteTypeOptions"
+            [(ngModel)]="selectedSiteTypes"
             optionLabel="label"
             optionValue="value"
             placeholder="Type"
@@ -92,15 +92,15 @@
     </div>
   </div>
   <div class="grid cols-4">
-    <a routerLink="/devices" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-primary">
+    <a routerLink="/sites" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-primary">
       <div class="row">
-        <span class="label font-semibold">Total Devices</span>
+        <span class="label font-semibold">Total Sites</span>
         <span class="icon primary text-xl"><i class="pi pi-server"></i></span>
       </div>
       <div><span class="value text-3xl font-bold">150</span><span class="delta up font-semibold ml-2">+2.4%</span></div>
       <div class="hint text-xs">+3 added this week</div>
     </a>
-    <a routerLink="/devices" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-success">
+    <a routerLink="/sites" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-success">
       <div class="row">
         <span class="label font-semibold">Online</span>
         <span class="icon success text-xl"><i class="pi pi-wifi"></i></span>
@@ -130,8 +130,8 @@
     <div class="card span-2 h-96 p-0 overflow-hidden">
       <div class="border-b border-surface-border hstack justify-between items-center">
         <div>
-          <h3>Device Locations</h3>
-          <div class="sub mb-4">Real-time device position tracking</div>
+          <h3>Site Locations</h3>
+          <div class="sub mb-4">Real-time site position tracking</div>
         </div>
         <button routerLink="/map-dashboard" type="submit" class="btn primary" pButton label="Map View" icon="pi pi-map">
           Map View
@@ -144,7 +144,7 @@
 
     <div class="card">
       <h3>Quick Stats</h3>
-      <div class="sub">Device status summary</div>
+      <div class="sub">Site status summary</div>
       <div class="mt-4 pt-4 border-t border-surface-border">
         <h4 class="text-sm mb-2">Notifications This Week</h4>
         <div class="bar-row h-62 gap-1">
@@ -206,22 +206,22 @@
     </div>
 
     <div class="card">
-      <h3>Device Breakdown</h3>
+      <h3>Site Breakdown</h3>
       <div class="sub">By type · 150 total</div>
-      <app-pie-chart [options]="deviceBreakdownOptions"></app-pie-chart>
+      <app-pie-chart [options]="siteBreakdownOptions"></app-pie-chart>
     </div>
   </div>
 
   <div class="grid cols-3">
     <div class="card span-2 p-0">
       <div class="px-5 py-4 border-b border-surface-border">
-        <h3>Recent Devices</h3>
+        <h3>Recent Sites</h3>
         <div class="sub">Latest fleet status</div>
       </div>
       <table class="table">
         <thead>
           <tr>
-            <th>Device</th>
+            <th>Site</th>
             <th>Status</th>
             <th>Location</th>
             <th>Battery</th>
@@ -289,7 +289,7 @@
           <tr>
             <th>Location</th>
             <th>Region</th>
-            <th>Devices</th>
+            <th>Sites</th>
             <th>Status</th>
             <th>Utilization</th>
           </tr>

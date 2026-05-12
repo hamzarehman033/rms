@@ -24,9 +24,9 @@ export const routes: Routes = [
           import("./features/alarm/alarm.module").then((m) => m.AlarmModule),
       },
       {
-        path: "devices",
+        path: "sites",
         loadChildren: () =>
-          import("./features/devices/devices.module").then((m) => m.DevicesModule),
+          import("./features/sites/sites.module").then((m) => m.SitesModule),
       },
       {
         path: "telemetry",

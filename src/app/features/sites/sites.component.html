@@ -1,8 +1,8 @@
 <main class="content">
   <div class="page-header">
     <div>
-      <h1>Devices</h1>
-      <p>Manage and monitor your full fleet of connected devices.</p>
+      <h1>Sites</h1>
+      <p>Manage and monitor your full portfolio of connected sites.</p>
     </div>
 
   </div>
@@ -15,15 +15,15 @@
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
-      <button class="btn primary" (click)="openAddDeviceDialog()"><i class="pi pi-plus"></i><span>Add
-          device</span></button>
+      <button class="btn primary" (click)="openAddSiteDialog()"><i class="pi pi-plus"></i><span>Add
+          site</span></button>
     </div>
   </div>
   <div class="card p-0">
     <table class="table">
       <thead>
         <tr>
-          <th>Device</th>
+          <th>Site</th>
           <th>Status</th>
           <th>Type</th>
           <th>Location</th>
@@ -33,24 +33,24 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let device of devices">
+        <tr *ngFor="let site of sites">
           <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: device.id}">
-              <div class="font-medium text-blue-600">{{ device.name }}</div>
-              <div class="muted mono text-xs">{{ device.id }}</div>
+            <a routerLink="/site-dashboard" [queryParams]="{id: site.id}">
+              <div class="font-medium text-blue-600">{{ site.name }}</div>
+              <div class="muted mono text-xs">{{ site.id }}</div>
             </a>
           </td>
-          <td><span [ngClass]="'badge ' + device.status">● {{ device.status | titlecase }}</span></td>
-          <td>{{ device.type }}</td>
-          <td>{{ device.location }}</td>
-          <td class="mono">{{ device.battery }}</td>
-          <td class="muted">{{ device.lastSeen }}</td>
+          <td><span [ngClass]="'badge ' + site.status">● {{ site.status | titlecase }}</span></td>
+          <td>{{ site.type }}</td>
+          <td>{{ site.location }}</td>
+          <td class="mono">{{ site.battery }}</td>
+          <td class="muted">{{ site.lastSeen }}</td>
           <td>
             <div class="flex gap-2">
-              <button (click)="navigateToDeviceDashboard(device.id)" title="Device Dashboard" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+              <button (click)="navigateToSiteDashboard(site.id)" title="Site Dashboard" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
                 <i class="pi pi-chart-bar text-base"></i>
               </button>
-              <button (click)="navigateToDeviceDetail(device.id)" title="Device Details" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+              <button (click)="navigateToSiteDetail(site.id)" title="Site Details" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
                 <i class="pi pi-tablet text-base"></i>
               </button>
             </div>
@@ -61,7 +61,7 @@
   </div>
 </main>
 
-<!-- Add Device Dialog -->
-<app-modal-dialog [(visible)]="displayAddDeviceDialog" header="Add New Device">
-  <app-add-device (deviceAdded)="onDeviceAdded($event)"></app-add-device>
+<!-- Add Site Dialog -->
+<app-modal-dialog [(visible)]="displayAddSiteDialog" header="Add New Site">
+  <app-add-site (siteAdded)="onSiteAdded($event)"></app-add-site>
 </app-modal-dialog>
