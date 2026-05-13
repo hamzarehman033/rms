@@ -65,7 +65,7 @@
 </main>
 
 <!-- Add Site Dialog -->
-<app-modal-dialog [(visible)]="displayAddSiteDialog" header="Add New Site">
+<app-modal-dialog [(visible)]="displayAddSiteDialog" header="Add New Site" [width]="'600px'">
   <app-add-site (siteAdded)="onSiteAdded($event)"></app-add-site>
 </app-modal-dialog>
 

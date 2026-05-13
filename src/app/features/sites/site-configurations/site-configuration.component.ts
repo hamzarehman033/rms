@@ -19,14 +19,7 @@ interface Site {
   selector: 'app-site-configuration',
   templateUrl: './site-configuration.component.html',
   styleUrl: './site-configuration.component.css',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    DropdownModule,
-    InputNumberModule,
-    CalendarModule
-  ],
+  standalone: false,
 })
 export class SiteConfigurationComponent {
   @Input() site: Site | null = null;

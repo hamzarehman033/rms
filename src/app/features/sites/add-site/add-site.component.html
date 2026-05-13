@@ -1,52 +1,241 @@
-<form [formGroup]="siteForm" (ngSubmit)="onSubmit()" class="form-section">
-    <div class="form-group">
-        <label for="siteName">Site Name</label>
-        <input id="siteName" pInputText type="text" formControlName="siteName" placeholder="Enter site name"
-            class="w-full" />
-        <small class="error" *ngIf="siteForm.get('siteName')?.invalid && siteForm.get('siteName')?.touched">
-            Site name is required and must be at least 3 characters
-        </small>
-    </div>
+<p-stepper [value]="1" class="basis-[50rem]">
+    <p-step-list>
+        <p-step [value]="1">Site Details</p-step>
+        <p-step [value]="2">Location Details</p-step>
+        <p-step [value]="3">MQTT Configuration</p-step>
+    </p-step-list>
+    <p-step-panels>
+        <p-step-panel [value]="1">
+            <ng-template #content let-activateCallback="activateCallback">
+                <form [formGroup]="siteForm" (ngSubmit)="onSubmit()" class="form-section">
+                    <div class="form-group">
+                        <label for="siteName">Site Name</label>
+                        <input id="siteName" pInputText type="text" formControlName="siteName"
+                            placeholder="Enter site name" class="w-full" />
+                        <small class="error"
+                            *ngIf="siteForm.get('siteName')?.invalid && siteForm.get('siteName')?.touched">
+                            Site name is required and must be at least 3 characters
+                        </small>
+                    </div>
 
-    <div class="form-group">
-        <label for="siteId">Site ID</label>
-        <input id="siteId" pInputText type="text" formControlName="siteId" placeholder="e.g., ST-001"
-            class="w-full" />
-        <small class="error" *ngIf="siteForm.get('siteId')?.invalid && siteForm.get('siteId')?.touched">
-            Site ID is required
-        </small>
-    </div>
+                    <div class="form-group">
+                        <label for="siteId">Site ID</label>
+                        <input id="siteId" pInputText type="text" formControlName="siteId" placeholder="e.g., ST-001"
+                            class="w-full" />
+                        <small class="error" *ngIf="siteForm.get('siteId')?.invalid && siteForm.get('siteId')?.touched">
+                            Site ID is required
+                        </small>
+                    </div>
 
-    <div class="form-group">
-        <label for="subscriptionType">Subscription Type</label>
-        <p-dropdown id="subscriptionType" formControlName="subscriptionType" [options]="subscriptionTypes" optionLabel="label"
-            optionValue="value" placeholder="Select subscription type" class="w-full"></p-dropdown>
-        <small class="error" *ngIf="siteForm.get('subscriptionType')?.invalid && siteForm.get('subscriptionType')?.touched">
-            Subscription type is required
-        </small>
-    </div>
+                    <div class="form-group">
+                        <label for="subscriptionType">Subscription Type</label>
+                        <p-dropdown id="subscriptionType" formControlName="subscriptionType"
+                            [options]="subscriptionTypes" optionLabel="label" optionValue="value"
+                            placeholder="Select subscription type" class="w-full"></p-dropdown>
+                        <small class="error"
+                            *ngIf="siteForm.get('subscriptionType')?.invalid && siteForm.get('subscriptionType')?.touched">
+                            Subscription type is required
+                        </small>
+                    </div>
 
-    <div class="form-group">
-        <label for="location">Location</label>
-        <p-dropdown id="location" formControlName="location" [options]="locations" optionLabel="label"
-            optionValue="value" placeholder="Select location" class="w-full"></p-dropdown>
-        <small class="error" *ngIf="siteForm.get('location')?.invalid && siteForm.get('location')?.touched">
-            Location is required
-        </small>
-    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <p-dropdown id="location" formControlName="location" [options]="locations" optionLabel="label"
+                            optionValue="value" placeholder="Select location" class="w-full"></p-dropdown>
+                        <small class="error"
+                            *ngIf="siteForm.get('location')?.invalid && siteForm.get('location')?.touched">
+                            Location is required
+                        </small>
+                    </div>
 
-    <div class="form-group">
-        <label for="installationDate">Installation Date</label>
-        <input id="installationDate" pInputText type="date" formControlName="installationDate" 
-            class="w-full" />
-        <small class="error" *ngIf="siteForm.get('installationDate')?.invalid && siteForm.get('installationDate')?.touched">
-            Installation date is required
-        </small>
-    </div>
+                    <div class="form-group">
+                        <label for="installationDate">Installation Date</label>
+                        <input id="installationDate" pInputText type="date" formControlName="installationDate"
+                            class="w-full" />
+                        <small class="error"
+                            *ngIf="siteForm.get('installationDate')?.invalid && siteForm.get('installationDate')?.touched">
+                            Installation date is required
+                        </small>
+                    </div>
 
-    <div class="form-actions">
-        <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
-            (click)="resetForm()"></button>
-        <button type="submit" class="btn primary" pButton label="Add Site" icon="pi pi-check" [disabled]="!siteForm.valid"></button>
-    </div>
-</form>
+                    <div class="form-actions">
+                        <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
+                            (click)="resetForm()"></button>
+                        <button type="submit" class="btn primary" pButton label="Next" icon="pi pi-check"
+                            [disabled]="!siteForm.valid"></button>
+                    </div>
+                </form>
+            </ng-template>
+        </p-step-panel>
+
+        <p-step-panel [value]="2">
+            <ng-template #content let-activateCallback="activateCallback">
+                <form [formGroup]="locationForm" class="form-section">
+                    <div class="form-group">
+                        <label for="name">Location Name</label>
+                        <input id="name" pInputText type="text" formControlName="name" placeholder="Enter location name"
+                            class="w-full" />
+                        <small class="error"
+                            *ngIf="locationForm.get('name')?.invalid && locationForm.get('name')?.touched">
+                            Location name is required and must be at least 3 characters
+                        </small>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="region">Region</label>
+                            <p-select id="region" [options]="regions" optionLabel="label" optionValue="value"
+                                formControlName="region" placeholder="Select a region" class="w-full"></p-select>
+                            <small class="error"
+                                *ngIf="locationForm.get('region')?.invalid && locationForm.get('region')?.touched">
+                                Region is required
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subRegion">Sub Region</label>
+                            <p-select id="subRegion" [options]="subRegions" optionLabel="label" optionValue="value"
+                                formControlName="subRegion" placeholder="Select a sub region" class="w-full"></p-select>
+                            <small class="error"
+                                *ngIf="locationForm.get('subRegion')?.invalid && locationForm.get('subRegion')?.touched">
+                                Sub region is required
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input id="address" pInputText type="text" formControlName="address" placeholder="Enter address"
+                            class="w-full" />
+                        <small class="error"
+                            *ngIf="locationForm.get('address')?.invalid && locationForm.get('address')?.touched">
+                            Address is required
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="coordinates">Location Coordinates</label>
+                        <input id="coordinates" pInputText type="text" formControlName="coordinates"
+                            placeholder="e.g., 40.7128, -74.0060" class="w-full" />
+                        <small class="error"
+                            *ngIf="locationForm.get('coordinates')?.invalid && locationForm.get('coordinates')?.touched">
+                            Coordinates are required
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timeZone">Time Zone</label>
+                        <p-select id="timeZone" [options]="timeZones" optionLabel="label" optionValue="value"
+                            formControlName="timeZone" placeholder="Select time zone" class="w-full"></p-select>
+                        <small class="error"
+                            *ngIf="locationForm.get('timeZone')?.invalid && locationForm.get('timeZone')?.touched">
+                            Time zone is required
+                        </small>
+                    </div>
+                </form>
+                <div class="form-actions pt-2" dialogFooter>
+                    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
+                        (click)="resetForm()"></button>
+                    <button type="submit" pButton label="Next" icon="pi pi-check"
+                        [disabled]="!locationForm.valid" (click)="onSubmit()"></button>
+                </div>
+            </ng-template>
+        </p-step-panel>
+
+        <p-step-panel [value]="3">
+            <ng-template #content let-activateCallback="activateCallback">
+                <form [formGroup]="mqttForm" class="form-section">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="col-span-2 form-group">
+                            <label for="mqttBrokerUrl">MQTT Broker URL</label>
+                            <input id="mqttBrokerUrl" pInputText type="text" formControlName="mqttBrokerUrl"
+                                placeholder="e.g., mqtt.example.com" class="w-full" />
+                            <small class="error"
+                                *ngIf="mqttForm.get('mqttBrokerUrl')?.invalid && mqttForm.get('mqttBrokerUrl')?.touched">
+                                MQTT Broker URL is required
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mqttPort">MQTT Port</label>
+                            <input id="mqttPort" pInputText type="text" formControlName="mqttPort"
+                                placeholder="e.g., 1883" class="w-full" />
+                            <small class="error"
+                                *ngIf="mqttForm.get('mqttPort')?.invalid && mqttForm.get('mqttPort')?.touched">
+                                MQTT Port is required
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="mqttUsername">MQTT Username</label>
+                            <input id="mqttUsername" pInputText type="text" formControlName="mqttUsername"
+                                placeholder="Enter username" class="w-full" />
+                            <small class="error"
+                                *ngIf="mqttForm.get('mqttUsername')?.invalid && mqttForm.get('mqttUsername')?.touched">
+                                MQTT Username is required
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mqttPassword">MQTT Password</label>
+                            <input id="mqttPassword" pInputText type="password" formControlName="mqttPassword"
+                                placeholder="Enter password" class="w-full" />
+                            <small class="error"
+                                *ngIf="mqttForm.get('mqttPassword')?.invalid && mqttForm.get('mqttPassword')?.touched">
+                                MQTT Password is required
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clientId">Client ID</label>
+                        <input id="clientId" pInputText type="text" formControlName="clientId"
+                            placeholder="e.g., client-001" class="w-full" />
+                        <small class="error"
+                            *ngIf="mqttForm.get('clientId')?.invalid && mqttForm.get('clientId')?.touched">
+                            Client ID is required
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="publishTopic">Publish Topic</label>
+                        <input id="publishTopic" pInputText type="text" formControlName="publishTopic"
+                            placeholder="e.g., site/publish" class="w-full" />
+                        <small class="error"
+                            *ngIf="mqttForm.get('publishTopic')?.invalid && mqttForm.get('publishTopic')?.touched">
+                            Publish Topic is required
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rmsSubscribeTopic">RMS Subscribe Topic</label>
+                        <input id="rmsSubscribeTopic" pInputText type="text" formControlName="rmsSubscribeTopic"
+                            placeholder="e.g., site/rms/subscribe" class="w-full" />
+                        <small class="error"
+                            *ngIf="mqttForm.get('rmsSubscribeTopic')?.invalid && mqttForm.get('rmsSubscribeTopic')?.touched">
+                            RMS Subscribe Topic is required
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aiSubscribeTopic">AI Subscribe Topic</label>
+                        <input id="aiSubscribeTopic" pInputText type="text" formControlName="aiSubscribeTopic"
+                            placeholder="e.g., site/ai/subscribe" class="w-full" />
+                        <small class="error"
+                            *ngIf="mqttForm.get('aiSubscribeTopic')?.invalid && mqttForm.get('aiSubscribeTopic')?.touched">
+                            AI Subscribe Topic is required
+                        </small>
+                    </div>
+                </form>
+                <div class="form-actions pt-2" dialogFooter>
+                    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
+                        (click)="resetForm()"></button>
+                    <button type="submit" pButton label="Submit" icon="pi pi-check"
+                        [disabled]="!mqttForm.valid" (click)="onSubmit()"></button>
+                </div>
+            </ng-template>
+        </p-step-panel>
+    </p-step-panels>
+</p-stepper>

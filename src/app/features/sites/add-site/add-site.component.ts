@@ -26,6 +26,43 @@ export class AddSiteComponent {
     { label: 'DC East', value: 'dc-east' }
   ];
 
+  // Location section
+  locationForm: FormGroup;
+  regions = [
+    { label: 'North', value: 'north' },
+    { label: 'Central', value: 'central' },
+    { label: 'South', value: 'south' },
+    { label: 'East', value: 'east' },
+    { label: 'West', value: 'west' }
+  ];
+
+  subRegions = [
+    { label: 'Plant A', value: 'plant-a' },
+    { label: 'Plant B', value: 'plant-b' },
+    { label: 'Warehouse A', value: 'warehouse-a' },
+    { label: 'Warehouse B', value: 'warehouse-b' },
+    { label: 'DC West', value: 'dc-west' },
+    { label: 'DC East', value: 'dc-east' }
+  ];
+
+  timeZones = [
+    { label: 'UTC', value: 'UTC' },
+    { label: 'GMT+1', value: 'GMT+1' },
+    { label: 'GMT+2', value: 'GMT+2' },
+    { label: 'GMT+3', value: 'GMT+3' },
+    { label: 'GMT+4', value: 'GMT+4' },
+    { label: 'GMT+5', value: 'GMT+5' },
+    { label: 'GMT+5:30', value: 'GMT+5:30' },
+    { label: 'GMT+6', value: 'GMT+6' },
+    { label: 'EST', value: 'EST' },
+    { label: 'CST', value: 'CST' },
+    { label: 'PST', value: 'PST' }
+  ];
+
+  // MQTT section
+  mqttForm: FormGroup;
+
+
   constructor(private fb: FormBuilder) {
     this.siteForm = this.fb.group({
       siteName: ['', [Validators.required, Validators.minLength(3)]],
@@ -34,17 +71,45 @@ export class AddSiteComponent {
       location: ['', Validators.required],
       installationDate: ['', Validators.required]
     });
+    
+    this.locationForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      region: ['', Validators.required],
+      subRegion: ['', Validators.required],
+      address: ['', Validators.required],
+      coordinates: ['', Validators.required],
+      timeZone: ['', Validators.required]
+    });
+
+    this.mqttForm = this.fb.group({
+      mqttBrokerUrl: ['', Validators.required],
+      mqttPort: ['', Validators.required],
+      mqttUsername: ['', Validators.required],
+      mqttPassword: ['', Validators.required],
+      clientId: ['', Validators.required],
+      publishTopic: ['', Validators.required],
+      rmsSubscribeTopic: ['', Validators.required],
+      aiSubscribeTopic: ['', Validators.required]
+    });
   }
 
   onSubmit() {
-    if (this.siteForm.valid) {
-      this.siteAdded.emit(this.siteForm.value);
+    if (this.siteForm.valid && this.locationForm.valid && this.mqttForm.valid) {
+      const formData = {
+        site: this.siteForm.value,
+        location: this.locationForm.value,
+        mqtt: this.mqttForm.value
+      };
+      this.siteAdded.emit(formData);
       this.siteForm.reset();
+      this.locationForm.reset();
+      this.mqttForm.reset();
     }
   }
 
   resetForm() {
     this.siteForm.reset();
+    this.locationForm.reset();
+    this.mqttForm.reset();
   }
 }
-

@@ -8,8 +8,10 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { ModalDialogComponent } from '@app/shared';
 import { AddSiteComponent } from './add-site/add-site.component';
-import { SiteConfigurationComponent } from './site-configuration.component';
+import { SiteConfigurationComponent } from './site-configurations/site-configuration.component';
 import { SitesComponent } from './sites.component';
+import { StepperModule } from 'primeng/stepper';
+import { SelectModule } from 'primeng/select';
 
 const routes: Routes = [
   {
@@ -22,6 +24,7 @@ const routes: Routes = [
   declarations: [
     SitesComponent,
     AddSiteComponent,
+    SiteConfigurationComponent
   ],
   imports: [
     CommonModule, 
@@ -33,7 +36,9 @@ const routes: Routes = [
     DropdownModule,
     InputNumberModule,
     ModalDialogComponent,
-    SiteConfigurationComponent
+    StepperModule,
+    SelectModule
+    
   ],
 })
 export class SitesModule {}
