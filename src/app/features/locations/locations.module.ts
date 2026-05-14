@@ -8,6 +8,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ModalDialogComponent } from '@app/shared';
 import { Select, SelectModule } from 'primeng/select';
+import { TreeTableModule } from 'primeng/treetable';
+import { DialogModule } from 'primeng/dialog';
 
 const routes: Routes = [
   {
@@ -25,8 +27,9 @@ const routes: Routes = [
     ButtonModule, 
     InputTextModule, 
     ModalDialogComponent,
-    SelectModule
-    
+    SelectModule,
+    TreeTableModule,
+    DialogModule
   ],
 })
 export class LocationsModule {}
