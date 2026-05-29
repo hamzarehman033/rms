@@ -33,19 +33,37 @@
       <h1 class="form-title">Sign in to your console</h1>
       <p class="form-sub">Enter your credentials to access the dashboard.</p>
 
-      <form class="auth-form" autocomplete="on">
+      <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="login()" autocomplete="on">
         <div class="auth-field">
-          <label for="email">Work email</label>
-          <input id="email" name="email" type="email" placeholder="you@company.com" required autocomplete="email" />
+          <label for="username">Username</label>
+          <input 
+            id="username" 
+            formControlName="username"
+            type="text" 
+            placeholder="you@company.com" 
+            required 
+            autocomplete="username"
+            [disabled]="isLoading" />
         </div>
 
         <div class="auth-field">
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="••••••••" required minlength="6" [attr.autocomplete]="'current-password'" />
+          <input 
+            id="password" 
+            formControlName="password"
+            type="password" 
+            placeholder="••••••••" 
+            required 
+            minlength="6" 
+            [attr.autocomplete]="'current-password'"
+            [disabled]="isLoading" />
         </div>
 
-        <button (click)="login()" type="submit" class="auth-btn-primary">
-          <span class="btn-label">{{ 'Sign in' }}</span>
+        <button 
+          type="submit" 
+          class="auth-btn-primary"
+          [disabled]="isLoading || loginForm.invalid">
+          <span class="btn-label">{{ isLoading ? 'Signing in...' : 'Sign in' }}</span>
         </button>
       </form>
 
