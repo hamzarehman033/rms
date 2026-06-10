@@ -7,6 +7,7 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { DashboardComponent } from './dashboard.component';
 import { DeviceMapComponent } from '../../shared/components/device-map/device-map.component';
 import { LineChartComponent, PieChartComponent, BarChartComponent } from '../../shared/components/chart-components';
+import { TableModule } from "primeng/table";
 
 const routes: Routes = [
   {
@@ -17,6 +18,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [DashboardComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), FormsModule, MultiSelectModule, SplitButtonModule, DeviceMapComponent, LineChartComponent, PieChartComponent, BarChartComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), FormsModule, MultiSelectModule, SplitButtonModule, DeviceMapComponent, LineChartComponent, PieChartComponent, BarChartComponent, TableModule],
 })
 export class DashboardModule {}

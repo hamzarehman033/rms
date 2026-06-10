@@ -1,10 +1,12 @@
-import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenuModule, Menu } from 'primeng/menu';
 import { AuthService } from '../../../core/services/auth.service';
+import { CustomerService } from '../../../core/services/customer.service';
 
 @Component({
   selector: 'app-topbar',
@@ -13,23 +15,25 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.css',
 })
-export class TopbarComponent {
+export class TopbarComponent implements OnInit {
   @ViewChild('avatarMenu') avatarMenu!: Menu;
   @Output() toggleTheme = new EventEmitter<void>();
   @Output() notificationClick = new EventEmitter<void>();
   @Output() avatarClick = new EventEmitter<void>();
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private customerService: CustomerService
+  ) {}
   showNotifications = false;
 
   status = 'All systems operational';
   searchQuery = '';
-  currentTenant = 'Acme Industrial';
-  tenants = [
-    { label: 'Acme Industrial', value: 'Acme Industrial' },
-    { label: 'Tech Corp', value: 'Tech Corp' },
-    { label: 'Global Systems', value: 'Global Systems' }
-  ];
+  showCustomerSelector = false;
+  selectedCustomerId: string | null = null;
+  customers: Array<{ label: string; value: string }> = [];
 
   notifications = [
     { id: 'ALR-104', message: 'Temperature exceeds threshold', severity: 'critical', device: 'DV-003', time: '2m ago' },
@@ -41,6 +45,33 @@ export class TopbarComponent {
     { label: 'Profile', icon: 'pi pi-user', command: () => this.onProfileClick() },
     { label: 'Sign Out', icon: 'pi pi-sign-out', command: () => this.onSignOut() }
   ];
+
+  ngOnInit(): void {
+    this.showCustomerSelector = this.authService.hasAnyRole(['SysAdmin', 'sysadmin']);
+
+    this.customerService.customers$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(items => {
+        this.customers = items.map(item => ({
+          label: item.name,
+          value: item.id,
+        }));
+      });
+
+    this.customerService.activeCustomer$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(activeCustomer => {
+        this.selectedCustomerId = activeCustomer?.id ?? null;
+      });
+  }
+
+  onCustomerChange(customerId: string | null): void {
+    if (!customerId) {
+      return;
+    }
+
+    this.customerService.setActiveCustomerById(customerId);
+  }
 
   onThemeToggle(): void {
     this.toggleTheme.emit();

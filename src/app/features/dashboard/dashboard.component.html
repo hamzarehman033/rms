@@ -1,4 +1,14 @@
 <main class="content">
+  <!-- No Customer Selected Message -->
+  <div *ngIf="!hasActiveCustomer" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">    
+    <div class="text-center">
+      <h2 class="text-2xl font-semibold mb-2">No Active Customer</h2>
+      <p class="text-muted-foreground text-base">Active customer is required to view the Operations Overview dashboard.</p>
+    </div>
+  </div>
+
+  <!-- Dashboard Content (only visible with active customer) -->
+  <ng-container *ngIf="hasActiveCustomer">
   <div class="page-header">
     <div>
       <h1>Operations Overview</h1>
@@ -383,4 +393,5 @@
       </div>
     </div>
   </div>
+  </ng-container>
 </main>

@@ -1,11 +1,16 @@
 <header class="topbar">
   <div class="status"><span class="pulse-dot"></span><span class="mono">All systems operational</span></div>
-  <p-dropdown 
-    [(ngModel)]="currentTenant" 
-    [options]="tenants" 
-    optionLabel="label" 
+  <p-dropdown
+    *ngIf="showCustomerSelector"
+    [(ngModel)]="selectedCustomerId"
+    [options]="customers"
+    optionLabel="label"
     optionValue="value"
-    class="tenant-switcher">
+    [filter]="true"
+    filterBy="label"
+    placeholder="Select customer"
+    class="tenant-switcher"
+    (ngModelChange)="onCustomerChange($event)">
   </p-dropdown>
   <div class="right">
     <div class="search"><input placeholder="Search devices, alerts…" /></div>

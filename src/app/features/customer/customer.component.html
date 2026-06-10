@@ -9,29 +9,29 @@
   <div class="grid cols-4">
     <div class="stat">
       <div class="row"><span class="label">Customers</span></div>
-      <div><span class="value">42</span></div>
+      <div><span class="value">{{ totalCustomers }}</span></div>
       <div class="hint">total accounts</div>
     </div>
     <div class="stat">
       <div class="row"><span class="label">Active</span></div>
-      <div><span class="value">38</span></div>
+      <div><span class="value">{{ activeCustomers }}</span></div>
       <div class="hint">paying subscriptions</div>
     </div>
     <div class="stat">
       <div class="row"><span class="label">Revenue</span></div>
-      <div><span class="value">$125K</span></div>
+      <div><span class="value">$0</span></div>
       <div class="hint">monthly recurring</div>
     </div>
   </div>
   <div class="hstack justify-between flex-wrap gap-3">
     <div class="tabs">
-      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">42</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Active <span class="muted">38</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Inactive <span class="muted">3</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Pending <span class="muted">1</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalCustomers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Active <span class="muted">{{ activeCustomers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Inactive <span class="muted">{{ inactiveCustomers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Pending <span class="muted">{{ pendingCustomers }}</span></button>
     </div>
     <div class="hstack">
-      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…" (input)="searchTerm = $any($event).target.value"></div>
       <button class="btn primary" (click)="openAddCustomerDialog()"><i class="pi pi-plus"></i><span>Add
           customer</span></button>
     </div>
@@ -51,23 +51,25 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let customer of customers">
+        <tr *ngFor="let customer of filteredCustomers">
           <td>
             <div class="font-medium">{{ customer.name }}</div>
-            <div class="muted mono text-xs">{{ customer.id }}</div>
           </td>
           <td class="muted">{{ customer.email }}</td>
-          <td><span class="badge online" *ngIf="customer.status === 'Active'">● Active</span><span class="badge warning" *ngIf="customer.status === 'Inactive'">● Inactive</span></td>
+          <td><span class="badge online" *ngIf="customer.status === 'Active'">● Active</span><span class="badge warning" *ngIf="customer.status === 'Inactive'">● Inactive</span><span class="badge info" *ngIf="customer.status === 'Pending'">● Pending</span></td>
           <td><span class="badge success" *ngIf="customer.plan === 'Premium'">Premium</span><span class="badge primary" *ngIf="customer.plan === 'Standard'">Standard</span><span class="badge info" *ngIf="customer.plan === 'Enterprise'">Enterprise</span></td>
           <td>
             <div class="flex flex-wrap gap-1">
-              <span class="badge info" *ngIf="customer.permissions.length === 0">No access</span>
-              <span class="badge success" *ngIf="customer.permissions.length === 8">Full access</span>
-              <span class="muted text-xs" *ngIf="customer.permissions.length > 0 && customer.permissions.length < 8">{{ customer.permissions.length }} of 8 modules</span>
+              <span class="badge info" *ngIf="!customer.permissions || customer.permissions.length === 0">No access</span>
+              <span class="badge success" *ngIf="customer.permissions && customer.permissions.length === 8">Full access</span>
+              <span class="muted text-xs" *ngIf="customer.permissions && customer.permissions.length > 0 && customer.permissions.length < 8">{{ customer.permissions.length }} of 8 modules</span>
             </div>
           </td>
           <td class="muted">{{ customer.joined }}</td>
           <td><button class="btn sm">Manage</button></td>
+        </tr>
+        <tr *ngIf="filteredCustomers.length === 0">
+          <td colspan="7" class="text-center py-8 text-muted">No customers found</td>
         </tr>
       </tbody>
     </table>

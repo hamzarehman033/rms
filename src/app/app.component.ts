@@ -1,12 +1,13 @@
 import { Component, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
+import { ToastModule } from "primeng/toast";
 import { ToastService } from "./core/services/toast.service";
 import { initializeGlobalToast } from "./utils/global-toast";
 
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ToastModule],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
 })

@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CustomerService } from '../../core/services/customer.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -6,7 +8,11 @@ import { Component } from '@angular/core';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+  hasActiveCustomer = false;
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor(private customerService: CustomerService) {}
   // Live Telemetry Chart Data
   telemetryChartOptions = {
     xAxisData: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am'],
@@ -108,7 +114,12 @@ export class DashboardComponent {
 
   timeframeMenuItems: any[] = [];
 
-  constructor() {
+  ngOnInit(): void {
+    this.customerService.activeCustomer$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(activeCustomer => {
+        this.hasActiveCustomer = !!activeCustomer?.id;
+      });
     this.initializeTimeframeMenu();
   }
 

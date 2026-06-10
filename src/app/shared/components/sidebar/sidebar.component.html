@@ -16,7 +16,7 @@
   <!-- Content / scrollable -->
   <div class="sidebar-content">
 
-    <section class="group">
+    <section class="group" *ngIf="hasActiveCustomer">
       <div class="group-label">Monitor</div>
       <ul class="menu" role="list">
         <li><a class="menu-btn" [routerLink]="'/dashboard'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}" aria-current="page">
@@ -47,7 +47,7 @@
       </ul>
     </section>
 
-    <section class="group">
+    <section class="group" *ngIf="hasActiveCustomer">
       <div class="group-label">Manage</div>
       <ul class="menu" role="list">
         <li><a class="menu-btn" [routerLink]="'/locations'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
@@ -85,7 +85,7 @@
   </div>
 
   <!-- Footer -->
-  <div class="sidebar-footer">
+  <div class="sidebar-footer" *ngIf="hasActiveCustomer">
     <ul class="menu" role="list">
       <li><a class="menu-btn" [routerLink]="'/settings'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
           <i class="pi pi-cog"></i>

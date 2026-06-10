@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.prod';
 import { HttpClient } from '@angular/common/http';
+import { CustomerService } from './customer.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,11 @@ export class AuthService {
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'current_user';
 
-  constructor(private router: Router, private http: HttpClient) {
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private customerService: CustomerService
+  ) {
     this.updateAuthState(this.hasToken());
   }
 
@@ -92,6 +97,7 @@ export class AuthService {
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    this.customerService.clear();
     this.currentUserSubject.next(null);
     this.updateAuthState(false);
     this.router.navigate(['/auth/login']);

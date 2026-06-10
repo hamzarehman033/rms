@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { CustomerService } from '../../core/services/customer.service';
+import { catchError, finalize, map, of, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +20,7 @@ export class LoginComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private customerService: CustomerService,
     private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute
@@ -49,27 +52,49 @@ export class LoginComponent implements OnInit {
       password: this.loginForm.get('password')?.value
     };
 
-    this.authService.login(loginPayload).subscribe({
-      next: (response: any) => {
-        // Use AuthService to handle login success and token storage
+    this.authService.login(loginPayload).pipe(
+      tap((response: any) => {
         this.authService.handleLoginSuccess(response);
+      }),
+      switchMap(() => this.initializeCustomerFlow()),
+      finalize(() => {
         this.isLoading = false;
-        
+      })
+    ).subscribe({
+      next: () => {
         // Redirect to return URL or dashboard
         setTimeout(() => {
-            if(this.returnUrl && this.returnUrl !== '/') {
-                this.router.navigateByUrl(this.returnUrl);
-            } else {
-                this.router.navigate(['/dashboard']);
-            }
+          if (this.returnUrl && this.returnUrl !== '/') {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }, 500);
       },
       error: (error: any) => {
-        this.isLoading = false;
         console.error('Login error:', error);
         this.toastService.showError('Login Failed', 'Invalid username or password. Please try again.');
         // Error toast is handled by the global error interceptor
       }
     });
+  }
+
+  private initializeCustomerFlow() {
+    if (!this.authService.hasAnyRole(['SysAdmin', 'sysadmin'])) {
+      this.customerService.clear();
+      return of(void 0);
+    }
+
+    return this.customerService.getCustomers().pipe(
+      tap((response: any) => {
+        this.customerService.initializeFromApiResponse(response);
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        console.error('Failed to initialize customers:', error);
+        this.customerService.clear();
+        return of(void 0);
+      })
+    );
   }
 }
