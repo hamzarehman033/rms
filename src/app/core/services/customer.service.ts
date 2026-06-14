@@ -66,7 +66,7 @@ export class CustomerService {
   }
 
   initializeFromApiResponse(response: any): void {
-    const customers = this.normalizeCustomers(this.extractList(response));
+    const customers = this.normalizeCustomers(response.data.pageData || response.data || response);
     this.customersSubject.next(customers);
 
     if (!customers.length) {
@@ -103,26 +103,6 @@ export class CustomerService {
   private setActiveCustomer(customer: CustomerContextItem): void {
     localStorage.setItem(this.ACTIVE_CUSTOMER_KEY, customer.id);
     this.activeCustomerSubject.next(customer);
-  }
-
-  private extractList(response: any): any[] {
-    if (Array.isArray(response)) {
-      return response;
-    }
-
-    if (Array.isArray(response?.data)) {
-      return response.data;
-    }
-
-    if (Array.isArray(response?.data?.items)) {
-      return response.data.items;
-    }
-
-    if (Array.isArray(response?.items)) {
-      return response.items;
-    }
-
-    return [];
   }
 
   private normalizeCustomers(items: any[]): CustomerContextItem[] {

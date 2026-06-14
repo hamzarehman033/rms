@@ -80,11 +80,6 @@ export class LoginComponent implements OnInit {
   }
 
   private initializeCustomerFlow() {
-    if (!this.authService.hasAnyRole(['SysAdmin', 'sysadmin'])) {
-      this.customerService.clear();
-      return of(void 0);
-    }
-
     return this.customerService.getCustomers().pipe(
       tap((response: any) => {
         this.customerService.initializeFromApiResponse(response);
