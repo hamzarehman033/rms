@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ConfirmationService } from 'primeng/api';
 import { CustomerService } from '../../core/services/customer.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -14,10 +15,13 @@ export class CustomerComponent implements OnInit {
   isLoading = false;
   searchTerm = '';
   customers: any[] = [];
+  selectedCustomerForEdit: any = null;
+  dialogHeader = 'Add New Customer';
 
   constructor(
     private customerService: CustomerService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -36,6 +40,7 @@ export class CustomerComponent implements OnInit {
           description: customer.description || customer.Description || '',
           status: customer.status || 'Active',
           plan: customer.plan || 'Standard',
+          subscriptionActive: customer.subscriptionActive ?? false,
           joined: customer.joined || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
           permissions: customer.permissions || []
         }));
@@ -49,11 +54,52 @@ export class CustomerComponent implements OnInit {
   }
 
   openAddCustomerDialog() {
+    this.selectedCustomerForEdit = null;
+    this.dialogHeader = 'Add New Customer';
     this.displayAddCustomerDialog = true;
+  }
+
+  openEditCustomerDialog(customer: any) {
+    this.selectedCustomerForEdit = customer;
+    this.dialogHeader = 'Edit Customer';
+    this.displayAddCustomerDialog = true;
+  }
+
+  deleteCustomer(customer: any): void {
+    this.confirmationService.confirm({
+      header: 'Delete Customer',
+      message: `Are you sure you want to delete ${customer?.name || 'this customer'}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.isLoading = true;
+        this.customerService.deleteCustomer(customer.id).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.toastService.showSuccess('Success', 'Customer deleted successfully.');
+            this.loadCustomers();
+          },
+          error: (error: any) => {
+            this.isLoading = false;
+            console.error('Error deleting customer:', error);
+            this.toastService.showError('Error', 'Failed to delete customer. Please try again.');
+          }
+        });
+      }
+    });
   }
 
   onCustomerAdded(response: any) {
     this.displayAddCustomerDialog = false;
+    this.selectedCustomerForEdit = null;
+    this.loadCustomers();
+  }
+
+  onCustomerUpdated(response: any) {
+    this.displayAddCustomerDialog = false;
+    this.selectedCustomerForEdit = null;
     this.loadCustomers();
   }
 

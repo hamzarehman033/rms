@@ -56,8 +56,15 @@
             <div class="font-medium">{{ customer.name }}</div>
           </td>
           <td class="muted">{{ customer.email }}</td>
-          <td><span class="badge online" *ngIf="customer.status === 'Active'">● Active</span><span class="badge warning" *ngIf="customer.status === 'Inactive'">● Inactive</span><span class="badge info" *ngIf="customer.status === 'Pending'">● Pending</span></td>
-          <td><span class="badge success" *ngIf="customer.plan === 'Premium'">Premium</span><span class="badge primary" *ngIf="customer.plan === 'Standard'">Standard</span><span class="badge info" *ngIf="customer.plan === 'Enterprise'">Enterprise</span></td>
+          <td>
+            <span class="badge online" *ngIf="customer.subscriptionActive">● Active</span>
+            <span class="badge warning" *ngIf="!customer.subscriptionActive">● Disabled</span>
+          </td>
+          <td>
+            <span class="badge success" *ngIf="customer.plan === 'Premium'">Premium</span>
+            <span class="badge primary" *ngIf="customer.plan === 'Standard'">Standard</span>
+            <span class="badge info" *ngIf="customer.plan === 'Enterprise'">Enterprise</span>
+          </td>
           <td>
             <div class="flex flex-wrap gap-1">
               <span class="badge info" *ngIf="!customer.permissions || customer.permissions.length === 0">No access</span>
@@ -66,7 +73,16 @@
             </div>
           </td>
           <td class="muted">{{ customer.joined }}</td>
-          <td><button class="btn sm">Manage</button></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <button class="btn sm" (click)="openEditCustomerDialog(customer)" title="Edit customer" aria-label="Edit customer">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="btn sm" (click)="deleteCustomer(customer)" title="Delete customer" aria-label="Delete customer">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </td>
         </tr>
         <tr *ngIf="filteredCustomers.length === 0">
           <td colspan="7" class="text-center py-8 text-muted">No customers found</td>
@@ -78,7 +94,9 @@
 </main>
 
 <!-- Add Customer Dialog -->
-<app-modal-dialog [(visible)]="displayAddCustomerDialog" header="Add New Customer"
+<app-modal-dialog [(visible)]="displayAddCustomerDialog" [header]="dialogHeader"
   (onHide)="displayAddCustomerDialog = false">
-  <app-add-customer (customerAdded)="onCustomerAdded($event)"></app-add-customer>
+  <app-add-customer [customerData]="selectedCustomerForEdit" (customerAdded)="onCustomerAdded($event)" (customerUpdated)="onCustomerUpdated($event)"></app-add-customer>
 </app-modal-dialog>
+
+<p-confirmDialog></p-confirmDialog>
