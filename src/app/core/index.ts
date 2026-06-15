@@ -5,6 +5,7 @@ export * from './services/dashboard.service';
 export * from './services/locations.service';
 export * from './services/profile.service';
 export * from './services/settings.service';
+export * from './services/users.service';
 export * from './services/toast.service';
 export * from './guards/auth.guard';
 export * from './interceptors/jwt.interceptor';

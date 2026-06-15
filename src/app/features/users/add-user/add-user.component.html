@@ -68,7 +68,7 @@
 
 <div class="form-actions" dialogFooter>
     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
-        (click)="resetForm()"></button>
-    <button type="submit" pButton label="Add User" icon="pi pi-check" [disabled]="!userForm.valid"
-        (click)="onSubmit()"></button>
+        (click)="resetForm()" [disabled]="isLoading"></button>
+    <button type="submit" pButton [label]="isLoading ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update User' : 'Add User')" icon="pi pi-check" [disabled]="!userForm.valid || isLoading"
+        [loading]="isLoading" (click)="onSubmit()"></button>
 </div>

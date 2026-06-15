@@ -6,14 +6,17 @@
     </div>
 
   </div>
-  <div class="hstack" style="justify-content:space-between">
+  <div class="hstack justify-between flex-wrap gap-3">
     <div class="tabs">
-      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All</button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Admins</button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Operators</button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Viewers</button>
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Admins <span class="muted">{{ adminUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Operators <span class="muted">{{ operatorUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Viewers <span class="muted">{{ viewerUsers }}</span></button>
     </div>
-    <button class="btn primary" (click)="openAddUserDialog()"><i class="pi pi-plus"></i><span>Add User</span></button>
+    <div class="hstack">
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID, name, or email..." (input)="searchTerm = $any($event).target.value"></div>
+      <button class="btn primary" (click)="openAddUserDialog()"><i class="pi pi-plus"></i><span>Add User</span></button>
+    </div>
   </div>
   <div class="card" style="padding:0">
     <table class="table">
@@ -28,7 +31,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
+        <tr *ngFor="let user of filteredUsers">
           <td>
             <div class="hstack"><span class="avatar w-7 h-7 text-xs">{{ user.firstName.charAt(0) }}</span>
               <div>
@@ -47,7 +50,19 @@
           </td>
           <td>{{ user.status }}</td>
           <td class="muted">{{ user.lastActive }}</td>
-          <td><button class="btn sm">Manage</button></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <button class="btn sm" (click)="openEditUserDialog(user)" title="Edit user" aria-label="Edit user">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="btn sm" (click)="deleteUser(user)" title="Delete user" aria-label="Delete user">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredUsers.length === 0">
+          <td colspan="6" class="text-center py-8 text-muted">No users found</td>
         </tr>
       </tbody>
     </table>
@@ -55,7 +70,9 @@
 </main>
 
 <!-- Add User Dialog -->
-<app-modal-dialog [(visible)]="displayAddUserDialog" header="Invite New User"
+<app-modal-dialog [(visible)]="displayAddUserDialog" [header]="dialogHeader"
   (onHide)="displayAddUserDialog = false">
-  <app-add-user (userAdded)="onUserAdded($event)"></app-add-user>
+  <app-add-user [userData]="selectedUserForEdit" (userAdded)="onUserAdded($event)" (userUpdated)="onUserUpdated($event)"></app-add-user>
 </app-modal-dialog>
+
+<p-confirmDialog></p-confirmDialog>

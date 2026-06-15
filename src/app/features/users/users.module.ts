@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { UsersComponent } from './users.component';
-import { AddUserComponent } from './add-user.component';
+import { AddUserComponent } from './add-user/add-user.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { ModalDialogComponent } from '@app/shared';
 
 const routes: Routes = [
@@ -19,6 +21,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [UsersComponent, AddUserComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ModalDialogComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, ModalDialogComponent],
+  providers: [ConfirmationService],
 })
 export class UsersModule {}
