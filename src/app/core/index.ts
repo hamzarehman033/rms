@@ -11,3 +11,4 @@ export * from './guards/auth.guard';
 export * from './interceptors/jwt.interceptor';
 export * from './interceptors/token-refresh.interceptor';
 export * from './interceptors/error.interceptor';
+export * from './constants/roles';

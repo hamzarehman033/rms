@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AppRole, ROLE_OPTIONS } from '../../../core/constants/roles';
 
 @Component({
   selector: 'app-add-user',
@@ -17,11 +18,7 @@ export class AddUserComponent implements OnInit, OnChanges {
   userForm: FormGroup;
   isLoading = false;
   isEditMode = false;
-  roles = [
-    { label: 'Admin', value: 'admin' },
-    { label: 'Operator', value: 'operator' },
-    { label: 'Viewer', value: 'viewer' }
-  ];
+  roles = ROLE_OPTIONS;
   
   modules = [
     { label: 'Dashboard', value: 'dashboard', icon: 'pi pi-chart-bar' },

@@ -7,6 +7,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MenuModule, Menu } from 'primeng/menu';
 import { AuthService } from '../../../core/services/auth.service';
 import { CustomerService } from '../../../core/services/customer.service';
+import { AppRole } from '../../../core/constants/roles';
 
 @Component({
   selector: 'app-topbar',
@@ -47,7 +48,7 @@ export class TopbarComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.showCustomerSelector = this.authService.hasAnyRole(['SysAdmin', 'sysadmin']);
+    this.showCustomerSelector = this.authService.hasAnyRole([AppRole.SysAdmin]);
 
     this.customerService.customers$
       .pipe(takeUntilDestroyed(this.destroyRef))

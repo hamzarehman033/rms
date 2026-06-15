@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.prod';
 import { HttpClient } from '@angular/common/http';
 import { CustomerService } from './customer.service';
+import { AppRole } from '../constants/roles';
 
 @Injectable({
   providedIn: 'root'
@@ -133,13 +134,13 @@ export class AuthService {
     }
   }
 
-  hasRole(role: string): boolean {
+  hasRole(role: AppRole): boolean {
     const user = this.getCurrentUser();
     if (!user || !user.roles) return false;
     return user.roles.includes(role);
   }
 
-  hasAnyRole(roles: string[]): boolean {
+  hasAnyRole(roles: AppRole[]): boolean {
     return roles.some(role => this.hasRole(role));
   }
 
