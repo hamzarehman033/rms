@@ -1,44 +1,39 @@
-import { Injectable } from '@angular/core';
+import { inject } from '@angular/core';
 import {
-  HttpInterceptor,
+  HttpInterceptorFn,
   HttpRequest,
-  HttpHandler,
-  HttpEvent,
+  HttpHandlerFn,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { CustomerService } from '../services/customer.service';
 
-@Injectable()
-export class JwtInterceptor implements HttpInterceptor {
-  constructor(
-    private authService: AuthService,
-    private customerService: CustomerService
-  ) {}
+export const jwtInterceptor: HttpInterceptorFn = (
+  req: HttpRequest<any>,
+  next: HttpHandlerFn
+) => {
+  const authService = inject(AuthService);
+  const customerService = inject(CustomerService);
+  const token = authService.getAccessToken();
 
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    const token = this.authService.getAccessToken();
+  const activeCustomerId = customerService.getActiveCustomerId();
+  const isAuthRequest = req.url.toLowerCase().includes('/auth/');
 
-    const activeCustomerId = this.customerService.getActiveCustomerId();
-    const isAuthRequest = req.url.toLowerCase().includes('/auth/');
+  if (token) {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+    };
 
-    if (token) {
-      const headers: Record<string, string> = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      if (activeCustomerId && !isAuthRequest) {
-        headers['X-Customer-Id'] = activeCustomerId;
+    if (activeCustomerId && !isAuthRequest) {
+      const customerId = String(activeCustomerId).trim();
+      if (customerId) {
+        headers['X-Customer-Id'] = customerId;
       }
-
-      req = req.clone({
-        setHeaders: headers,
-      });
     }
 
-    return next.handle(req);
+    req = req.clone({
+      setHeaders: headers,
+    });
   }
-}
+
+  return next(req);
+};

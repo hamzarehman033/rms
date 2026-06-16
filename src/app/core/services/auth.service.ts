@@ -37,8 +37,8 @@ export class AuthService {
 
   handleLoginSuccess(responseObj: any): void {
     const response = responseObj.data;
-    if (response.accessToken) {
-      localStorage.setItem(this.ACCESS_TOKEN_KEY, response.accessToken);
+    if (response.token) {
+      localStorage.setItem(this.ACCESS_TOKEN_KEY, response.token);
     }
     if (response.refreshToken) {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);

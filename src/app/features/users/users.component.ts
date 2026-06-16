@@ -33,28 +33,7 @@ export class UsersComponent {
     this.usersService.getUsers().subscribe({
       next: (response: any) => {
         const userList = response?.data?.pageData || response?.data || response || [];
-        this.users = userList.map((user: any) => {
-          const firstName = user.firstName || user.FirstName || '';
-          const lastName = user.lastName || user.LastName || '';
-          const fullName = user.name || user.Name || `${firstName} ${lastName}`.trim();
-
-          return {
-            id: user.id || user.userId || user.Id || 'N/A',
-            firstName: firstName || fullName.split(' ')[0] || 'Unknown',
-            lastName: lastName || fullName.split(' ').slice(1).join(' '),
-            name: fullName,
-            email: user.email || user.Email || 'N/A',
-            role: String(user.role || user.Role || 'viewer').toLowerCase(),
-            status: user.status || user.Status || (user.isActive === false ? 'Inactive' : 'Active'),
-            lastActive:
-              user.lastActive ||
-              user.LastActive ||
-              user.lastLogin ||
-              user.LastLogin ||
-              '-',
-            permissions: user.permissions || user.Permissions || []
-          };
-        });
+        this.users = userList;
         this.isLoading = false;
       },
       error: (error: any) => {

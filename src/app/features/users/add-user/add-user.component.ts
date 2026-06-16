@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { AppRole, ROLE_OPTIONS } from '../../../core/constants/roles';
+import { ROLE_OPTIONS } from '../../../core/constants/roles';
 
 @Component({
   selector: 'app-add-user',
@@ -37,11 +37,10 @@ export class AddUserComponent implements OnInit, OnChanges {
     private toastService: ToastService
   ) {
     this.userForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      userName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
+      phoneNumber: [''],
       role: ['', Validators.required],
-      status: ['Active'],
       permissions: [[]]
     });
   }
@@ -77,12 +76,11 @@ export class AddUserComponent implements OnInit, OnChanges {
 
     const payload = {
       id: this.isEditMode ? this.userData?.id : 0,
-      firstName: formValue.firstName,
-      lastName: formValue.lastName,
+      userName: formValue.userName,
       email: formValue.email,
+      phoneNumber: formValue.phoneNumber,
       role: formValue.role,
-      permissions,
-      status: formValue.status
+      Permissions: permissions
     };
 
     if (this.isEditMode) {
@@ -158,18 +156,56 @@ export class AddUserComponent implements OnInit, OnChanges {
       return;
     }
 
+    const roles = user.roles || user.role || user.Role || [];
+
     this.userForm.patchValue({
-      firstName: user.firstName || user.FirstName || user.name?.split(' ')[0] || '',
-      lastName: user.lastName || user.LastName || user.name?.split(' ').slice(1).join(' ') || '',
+      userName: user.userName || '',
       email: user.email || user.Email || '',
-      role: String(user.role || user.Role || 'viewer').toLowerCase(),
-      status: user.status || user.Status || 'Active'
+      phoneNumber: user.phoneNumber || user.PhoneNumber || '',
+      role: Array.isArray(roles) ? roles[0] || '' : roles || ''
+    });
+
+    this.setSelectedPermissions(user.Permissions || user.permissions || []);
+  }
+
+  private setSelectedPermissions(permissions: any[]): void {
+    if (!Array.isArray(permissions)) {
+      return;
+    }
+
+    this.modules.forEach(module => {
+      const permission = permissions.find(
+        p =>
+          String(p?.module || p?.Module || '').toLowerCase() ===
+          String(module.value).toLowerCase()
+      );
+
+      const viewInput = document.querySelector(
+        `input[name="${module.value}-view"]`
+      ) as HTMLInputElement | null;
+      const editInput = document.querySelector(
+        `input[name="${module.value}-edit"]`
+      ) as HTMLInputElement | null;
+
+      if (viewInput) {
+        viewInput.checked = !!(permission?.view || permission?.canView || permission?.View);
+      }
+      if (editInput) {
+        editInput.checked = !!(permission?.edit || permission?.canEdit || permission?.Edit);
+      }
     });
   }
 
   resetForm() {
     if (!this.isLoading) {
-      this.userForm.reset();
+      this.userForm.reset({
+        userName: '',
+        email: '',
+        phoneNumber: '',
+        role: '',
+        permissions: []
+      });
+      this.setSelectedPermissions([]);
       this.isEditMode = false;
       this.userData = null;
     }

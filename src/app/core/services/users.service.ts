@@ -9,7 +9,7 @@ import { CustomerService } from './customer.service';
 })
 export class UsersService {
   private readonly baseUrl = environment.baseUrl;
-  private readonly url = '/Auth/admin/users';
+  private readonly url = '/Auth/Users';
 
   constructor(
     private http: HttpClient,
@@ -35,7 +35,7 @@ export class UsersService {
   }
 
   updateUser(id: number | string, payload: any, customerId?: string): Observable<any> {
-    return this.http.put(this.baseUrl + this.url + '/' + encodeURIComponent(String(id)), payload, {
+    return this.http.post(this.baseUrl + this.url + '/' + encodeURIComponent(String(id)), payload, {
       params: this.getCustomerParams(customerId),
     });
   }

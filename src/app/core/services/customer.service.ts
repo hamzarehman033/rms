@@ -13,7 +13,7 @@ export interface CustomerContextItem {
   providedIn: 'root',
 })
 export class CustomerService {
-  private readonly ACTIVE_CUSTOMER_KEY = 'active_customer_id';
+  private readonly CUSTOMERS_CACHE_KEY = 'customers_list';
 
   private readonly customersSubject = new BehaviorSubject<CustomerContextItem[]>([]);
   readonly customers$ = this.customersSubject.asObservable();
@@ -24,7 +24,9 @@ export class CustomerService {
   baseUrl: string = environment.baseUrl;
   url: string = '/Customer';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.restoreCustomers();
+  }
 
   getCustomers(): Observable<any> {
     return this.http.get(this.baseUrl + this.url);
@@ -66,19 +68,10 @@ export class CustomerService {
   }
 
   initializeFromApiResponse(response: any): void {
-    const customers = this.normalizeCustomers(response.data.pageData || response.data || response);
+    const customers = response.data.pageData;
     this.customersSubject.next(customers);
-
-    if (!customers.length) {
-      this.clear();
-      return;
-    }
-
-    const persistedId = localStorage.getItem(this.ACTIVE_CUSTOMER_KEY);
-    const preferred =
-      (persistedId ? customers.find(customer => customer.id === persistedId) : undefined) || customers[0];
-
-    this.setActiveCustomer(preferred);
+    localStorage.setItem(this.CUSTOMERS_CACHE_KEY, JSON.stringify(customers));
+    this.setActiveCustomer(customers[0]);
   }
 
   setActiveCustomerById(id: string): void {
@@ -91,46 +84,33 @@ export class CustomerService {
   }
 
   getActiveCustomerId(): string | null {
-    return this.activeCustomerSubject.value?.id ?? localStorage.getItem(this.ACTIVE_CUSTOMER_KEY);
+    return this.activeCustomerSubject.value?.id ?? null;
   }
 
   clear(): void {
-    localStorage.removeItem(this.ACTIVE_CUSTOMER_KEY);
+    localStorage.removeItem(this.CUSTOMERS_CACHE_KEY);
     this.customersSubject.next([]);
     this.activeCustomerSubject.next(null);
   }
 
   private setActiveCustomer(customer: CustomerContextItem): void {
-    localStorage.setItem(this.ACTIVE_CUSTOMER_KEY, customer.id);
     this.activeCustomerSubject.next(customer);
   }
 
-  private normalizeCustomers(items: any[]): CustomerContextItem[] {
-    return items
-      .map(item => {
-        const id = this.pickFirst(item, ['id', 'customerId', 'Id', 'customerID']);
-        const name = this.pickFirst(item, ['name', 'customerName', 'companyName', 'displayName', 'title']);
-
-        if (id === undefined || id === null) {
-          return null;
-        }
-
-        return {
-          id: String(id),
-          name: String(name ?? `Customer ${id}`),
-          raw: item,
-        } as CustomerContextItem;
-      })
-      .filter((item): item is CustomerContextItem => item !== null);
-  }
-
-  private pickFirst(item: any, keys: string[]): any {
-    for (const key of keys) {
-      if (item && item[key] !== undefined && item[key] !== null && item[key] !== '') {
-        return item[key];
-      }
+  private restoreCustomers(): void {
+    const cached = localStorage.getItem(this.CUSTOMERS_CACHE_KEY);
+    if (!cached) {
+      return;
     }
 
-    return undefined;
+    try {
+      const customers = JSON.parse(cached);
+
+      this.customersSubject.next(customers);
+      this.setActiveCustomer(customers[0]);
+    } catch {
+      localStorage.removeItem(this.CUSTOMERS_CACHE_KEY);
+    }
   }
+
 }
