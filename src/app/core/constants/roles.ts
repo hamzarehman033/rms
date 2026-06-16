@@ -7,7 +7,7 @@ export enum AppRole {
 }
 
 export const ROLE_OPTIONS: Array<{ label: string; value: AppRole }> = [
-  { label: AppRole.SysAdmin, value: AppRole.SysAdmin },
+  // { label: AppRole.SysAdmin, value: AppRole.SysAdmin },
   { label: AppRole.Admin, value: AppRole.Admin },
   { label: AppRole.User, value: AppRole.User },
   { label: AppRole.Technician, value: AppRole.Technician },
