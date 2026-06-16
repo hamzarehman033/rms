@@ -65,10 +65,10 @@
           <button *ngIf="!rowNode.children || rowNode.children.length === 0" 
             pButton type="button" icon="pi pi-eye" class="p-button-rounded p-button-text" [routerLink]="'/site-dashboard'">
           </button>
-          <!-- Add Sub Region button for Region nodes -->
+          <!-- Add Sub Location button -->
           <button pButton type="button" 
             icon="pi pi-plus" class="p-button-rounded p-button-text p-button-warning"
-            (click)="openAddRegionDialog(rowNode)" title="Add Sub Region">
+            (click)="openAddSubLocationDialog(rowNode)" title="Add Sub Location">
           </button>
         </td>
       </tr>
@@ -76,78 +76,35 @@
   </p-treetable>
 </main>
 
-<!-- Add Location Dialog - Smart Dialog for Region and Sub-Region -->
+<!-- Add Region Dialog -->
 <p-dialog [(visible)]="displayAddRegionDialog" [modal]="true" styleClass="location-dialog">
   <ng-template pTemplate="header">
-    <span *ngIf="!selectedNode">Add New Region</span>
-    <span *ngIf="selectedNode">Add Sub Region to {{ selectedNode.node.data.name }}</span>
+    Add New Region
   </ng-template>
 
-  <div class="p-fluid">
-    <!-- Region Details (shown when adding sub-region) -->
-    <div *ngIf="selectedNode" class="bg-gray-100 rounded p-4 mb-4">
-      <h4 class="mt-0 mb-3">Region Details</h4>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <p class="text-xs text-gray-600 mb-1">Region Name</p>
-          <p class="font-medium">{{ selectedNode.node.data.name }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-gray-600 mb-1">Devices</p>
-          <p class="font-medium">{{ selectedNode.node.data.devices }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-gray-600 mb-1">Uptime</p>
-          <p class="font-medium">{{ selectedNode.node.data.uptime }}</p>
-        </div>
-        <div>
-          <p class="text-xs text-gray-600 mb-1">Status</p>
-          <p class="font-medium">
-            <span [ngClass]="'badge ' + (selectedNode.node.data.status === 'Operational' ? 'operational' : 'degraded')">
-              ● {{ selectedNode.node.data.status }}
-            </span>
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Form for New Region -->
-    <div *ngIf="!selectedNode" class="form-group">
-      <label for="regionName">Region Name</label>
-      <input #regionName pInputText id="regionName" class="w-full"
-        type="text" placeholder="e.g., North Region">
-    </div>
-
-    <!-- Form for New Sub Region -->
-    <div *ngIf="selectedNode" class="form-group mb-3">
-      <label for="subRegionName">Sub Region Name</label>
-      <input #subRegionName pInputText class="w-full"
-        id="subRegionName" [disabled]="selectedNode && selectedNode.level == 1" type="text" placeholder="e.g., North 1B (Lahore)">
-    </div>
-
-    <!-- Form for New Sub Region -->
-    <div *ngIf="selectedNode && selectedNode.level == 1" class="form-group mb-3">
-      <label for="zoneName">Zone Name</label>
-      <input #subRegionName pInputText class="w-full"
-        id="zoneName" type="text" placeholder="e.g., Zone 2A">
-    </div>
-  </div>
+  <app-add-location 
+    [level]="1" 
+    [parentId]="0"
+    (locationAdded)="onLocationAdded($event)">
+  </app-add-location>
 
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Cancel" 
       icon="pi pi-times" class="p-button-text" (click)="displayAddRegionDialog = false">
     </button>
-    <button *ngIf="!selectedNode" pButton 
-      type="button" label="Add Region" icon="pi pi-check" >
-    </button>
-    <button *ngIf="selectedNode" pButton type="button" label="Add Sub Region" 
-    icon="pi pi-check" >
-    </button>
   </ng-template>
 </p-dialog>
 
-<!-- Add Location Dialog -->
-<app-modal-dialog [(visible)]="displayAddLocationDialog" header="Add New Location"
-  (onHide)="displayAddLocationDialog = false">
-  <app-add-location (locationAdded)="onLocationAdded($event)"></app-add-location>
-</app-modal-dialog>
+<!-- Add Sub Location Dialog -->
+<p-dialog [(visible)]="displayAddLocationDialog" [modal]="true" styleClass="location-dialog">
+  <ng-template pTemplate="header">
+    Add New {{ levelNames[currentLevel] }} to {{ selectedParentForSubitem?.name }}
+  </ng-template>
+
+  <app-add-location 
+    [level]="currentLevel" 
+    [parentId]="currentParentId"
+    (locationAdded)="onLocationAdded($event)">
+  </app-add-location>
+
+</p-dialog>

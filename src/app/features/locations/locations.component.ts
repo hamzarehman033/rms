@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { TreeNode, TreeTableNode } from 'primeng/api';
+import { TreeNode } from 'primeng/api';
+import { LocationsService, Location } from '@app/core';
+import { ToastService } from '@app/core';
 
 @Component({
   selector: 'app-locations',
@@ -9,175 +11,105 @@ import { TreeNode, TreeTableNode } from 'primeng/api';
 })
 export class LocationsComponent implements OnInit {
   displayAddLocationDialog = false;
-  locationTree: TreeNode[] = [];
   displayAddRegionDialog = false;
+  locationTree: TreeNode[] = [];
   selectedNode: any | undefined = undefined;
+  locations: Location[] = [];
+  loading = false;
+  currentLevel = 1; // 1 for region, 2 for subregion, 3 for zone
+  currentParentId = 0;
+  selectedParentForSubitem: Location | undefined = undefined;  levelNames: { [key: number]: string } = {
+    1: 'Region',
+    2: 'SubRegion',
+    3: 'Zone'
+  };
+  constructor(
+    private locationsService: LocationsService,
+    private toastService: ToastService
+  ) {}
+
   ngOnInit() {
-    this.initializeLocationTree();
+    this.loadLocations();
   }
 
-  initializeLocationTree() {
-    this.locationTree = [
-      {
-        key: '0',
-        data: {
-          name: 'North Region',
-          devices: 92,
-          uptime: '97.5%',
-          status: 'Operational'
-        },
-        children: [
-          {
-            key: '0-0',
-            data: {
-              name: 'North 1B (Lahore)',
-              devices: 70,
-              uptime: '98.0%',
-              status: 'Operational'
-            },
-            children: [
-              {
-                key: '0-0-0',
-                data: {
-                  name: 'Zone A',
-                  devices: 42,
-                  uptime: '98.2%',
-                  status: 'Operational',
-                  id: 'LOC-001'
-                }
-              },
-              {
-                key: '0-0-1',
-                data: {
-                  name: 'Warehouse A',
-                  devices: 28,
-                  uptime: '99.1%',
-                  status: 'Operational',
-                  id: 'LOC-003'
-                }
-              }
-            ]
-          },
-          {
-            key: '0-1',
-            data: {
-              name: 'North 2A (Islamabad)',
-              devices: 22,
-              uptime: '96.7%',
-              status: 'Operational'
-            },
-            children: [
-              {
-                key: '0-1-0',
-                data: {
-                  name: 'Warehouse B',
-                  devices: 22,
-                  uptime: '96.7%',
-                  status: 'Operational',
-                  id: 'LOC-004'
-                }
-              }
-            ]
-          }
-        ]
+  loadLocations() {
+    this.loading = true;
+    this.locationsService.getAllLocations().subscribe({
+      next: (response: any) => {
+        this.locations = response.data.pageData;
+        this.buildLocationTree();
+        this.loading = false;
       },
-      {
-        key: '1',
-        data: {
-          name: 'South Region',
-          devices: 58,
-          uptime: '88.0%',
-          status: 'Degraded'
-        },
-        children: [
-          {
-            key: '1-0',
-            data: {
-              name: 'South 1A (Karachi)',
-              devices: 36,
-              uptime: '87.4%',
-              status: 'Degraded'
-            },
-            children: [
-              {
-                key: '1-0-0',
-                data: {
-                  name: 'Zone B',
-                  devices: 36,
-                  uptime: '87.4%',
-                  status: 'Degraded',
-                  id: 'LOC-002'
-                }
-              }
-            ]
-          },
-          {
-            key: '1-1',
-            data: {
-              name: 'South 1A (Multan)',
-              devices: 22,
-              uptime: '99.8%',
-              status: 'Operational'
-            },
-            children: [
-              {
-                key: '1-1-0',
-                data: {
-                  name: 'DC West',
-                  devices: 18,
-                  uptime: '99.8%',
-                  status: 'Operational',
-                  id: 'LOC-005'
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        key: '2',
-        data: {
-          name: 'East Region',
-          devices: 4,
-          uptime: '82.0%',
-          status: 'Degraded'
-        },
-        children: [
-          {
-            key: '2-0',
-            data: {
-              name: 'North 2A (Peshawar)',
-              devices: 4,
-              uptime: '82.0%',
-              status: 'Degraded'
-            },
-            children: [
-              {
-                key: '2-0-0',
-                data: {
-                  name: 'Substation 4',
-                  devices: 4,
-                  uptime: '82.0%',
-                  status: 'Degraded',
-                  id: 'LOC-006'
-                }
-              }
-            ]
-          }
-        ]
+      error: (error) => {
+        this.toastService.showError('Failed to load locations');
+        this.loading = false;
       }
-    ];
+    });
   }
 
-  openAddRegionDialog(rowNode?: TreeTableNode) {
-    this.selectedNode = rowNode;
+  buildLocationTree() {
+    // Get root locations (level 1 - regions)
+    const rootLocations = this.locations.filter(loc => loc.level === 1);
+    this.locationTree = rootLocations.map(root => this.buildTreeNode(root));
+  }
+
+  buildTreeNode(location: Location): TreeNode {
+    // Find children for this location
+    const children = this.locations.filter(loc => loc.parentId === location.id);
+    
+    return {
+      key: location.id?.toString() || '',
+      data: {
+        ...location,
+        devices: 0, // These would come from backend
+        uptime: '100%',
+        status: 'Operational'
+      },
+      children: children.length > 0 ? children.map(child => this.buildTreeNode(child)) : undefined
+    };
+  }
+
+  openAddRegionDialog() {
     this.displayAddRegionDialog = true;
+    this.currentLevel = 1;
+    this.currentParentId = 0;
   }
 
-  onLocationAdded(locationData: any) {
-    console.log('Location added:', locationData);
-    this.displayAddLocationDialog = false;
-    // Refresh tree data
-    this.initializeLocationTree();
+  openAddSubLocationDialog(node: any) {
+    const location = node.node.data as Location;
+    this.selectedParentForSubitem = location;
+    this.displayAddLocationDialog = true;
+    // Next level after current level (1->2, 2->3, max 3)
+    this.currentLevel = location.level >= 3 ? 3 : location.level + 1;
+    this.currentParentId = location.id || 0;
+  }
+
+  onLocationAdded(formData: any) {
+    const level = this.displayAddLocationDialog ? this.currentLevel : 1;
+    const parentId = this.displayAddLocationDialog ? this.currentParentId : 0;
+
+    const location: any = {
+      name: formData.name,
+      code: formData.code,
+      level
+    };
+
+    // Only include parentId for non-region levels
+    if (level > 1) {
+      location.parentId = parentId;
+    }
+
+    this.locationsService.createLocation(location).subscribe({
+      next: (response) => {
+        const levelNames = {1: 'Region', 2: 'SubRegion', 3: 'Zone'};
+        this.toastService.showSuccess(`${levelNames[location.level as keyof typeof levelNames]} added successfully`);
+        this.displayAddLocationDialog = false;
+        this.displayAddRegionDialog = false;
+        this.loadLocations();
+      },
+      error: (error) => {
+        this.toastService.showError('Failed to add location');
+      }
+    });
   }
 }
