@@ -9,31 +9,31 @@
   <div class="grid cols-4">
     <div class="stat">
       <div class="row"><span class="label">Tenants</span></div>
-      <div><span class="value">2</span></div>
-      <div class="hint">requires action</div>
+      <div><span class="value">{{ totalTenants }}</span></div>
+      <div class="hint">Total Tenants</div>
     </div>
     <div class="stat">
       <div class="row"><span class="label">Active</span></div>
       <div><span class="value">3</span></div>
-      <div class="hint">degraded service</div>
+      <div class="hint">Active</div>
     </div>
     <div class="stat">
-      <div class="row"><span class="label">Members</span></div>
+      <div class="row"><span class="label">Disabled</span></div>
       <div><span class="value">5</span></div>
-      <div class="hint">informational</div>
+      <div class="hint">Disabled</div>
     </div>
   </div>
   <div class="hstack justify-between flex-wrap gap-3">
-    <div class="tabs">
-      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">150</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Online <span class="muted">142</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Warning <span class="muted">5</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Offline <span class="muted">3</span></button>
-    </div>
+    <!-- <div class="tabs">
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalTenants }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Online <span class="muted">{{ onlineTenants }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Warning <span class="muted">{{ warningTenants }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Offline <span class="muted">{{ offlineTenants }}</span></button>
+    </div> -->
     <div class="hstack">
-      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
-      <button class="btn primary" (click)="openAddTenantDialog()"><i class="pi pi-plus"></i><span>Add
-          tenant</span></button>
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…" (input)="searchTerm = $any($event).target.value"></div>
+      <!-- <button class="btn primary" (click)="openAddTenantDialog()"><i class="pi pi-plus"></i><span>Add
+          tenant</span></button> -->
     </div>
   </div>
   <!-- Table -->
@@ -42,46 +42,23 @@
       <thead>
         <tr>
           <th>Tenant</th>
-          <th>Plan</th>
+          <th>Code</th>
           <th>Status</th>
-          <th>Members</th>
-          <th>Created</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
+        <tr *ngFor="let tenant of filteredTenants">
           <td>
-            <div class="font-medium">Acme Industrial</div>
-            <div class="muted mono text-xs">TEN-001</div>
+            <div class="font-medium">{{ tenant.name }}</div>
           </td>
-          <td><span class="badge success">Enterprise</span></td>
-          <td><span class="badge online">● Active</span></td>
-          <td class="muted">2</td>
-          <td class="muted">Jan 26, 2026</td>
-          <td><button class="btn sm">Manage</button></td>
+          <td><span class="badge success">{{ tenant.code }}</span></td>
+          <td>
+            <span class="badge online" *ngIf="tenant.status === 'Active'">● {{ tenant.status }}</span>
+            <span class="badge warning" *ngIf="tenant.status === 'Disabled'">● {{ tenant.status }}</span>
+          </td>
         </tr>
-        <tr>
-          <td>
-            <div class="font-medium">Northwind Logistics</div>
-            <div class="muted mono text-xs">TEN-002</div>
-          </td>
-          <td><span class="badge primary">Pro</span></td>
-          <td><span class="badge online">● Active</span></td>
-          <td class="muted">1</td>
-          <td class="muted">Mar 27, 2026</td>
-          <td><button class="btn sm">Manage</button></td>
-        </tr>
-        <tr>
-          <td>
-            <div class="font-medium">Helios Solar</div>
-            <div class="muted mono text-xs">TEN-003</div>
-          </td>
-          <td><span class="badge info">Starter</span></td>
-          <td><span class="badge warning">● Suspended</span></td>
-          <td class="muted">0</td>
-          <td class="muted">Apr 19, 2026</td>
-          <td><button class="btn sm">Manage</button></td>
+        <tr *ngIf="!isLoading && filteredTenants.length === 0">
+          <td colspan="6" class="text-center py-8 text-muted">No tenants found</td>
         </tr>
       </tbody>
     </table>
