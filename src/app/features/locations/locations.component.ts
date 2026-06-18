@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TreeNode } from 'primeng/api';
-import { LocationsService, Location } from '@app/core';
+import { LocationsService, Location, CustomerService } from '@app/core';
 import { ToastService } from '@app/core';
 
 @Component({
@@ -12,19 +12,25 @@ import { ToastService } from '@app/core';
 export class LocationsComponent implements OnInit {
   displayAddLocationDialog = false;
   displayAddRegionDialog = false;
+  displayEditLocationDialog = false;
+  displayDeleteLocationDialog = false;
+  editingLocation: Location | null = null;
+  deleteLocation: Location | null = null;
   locationTree: TreeNode[] = [];
   selectedNode: any | undefined = undefined;
   locations: Location[] = [];
   loading = false;
   currentLevel = 1; // 1 for region, 2 for subregion, 3 for zone
   currentParentId = 0;
-  selectedParentForSubitem: Location | undefined = undefined;  levelNames: { [key: number]: string } = {
+  selectedParentForSubitem: Location | undefined = undefined;
+  levelNames: { [key: number]: string } = {
     1: 'Region',
     2: 'SubRegion',
     3: 'Zone'
   };
   constructor(
     private locationsService: LocationsService,
+    private customerService: CustomerService,
     private toastService: ToastService
   ) {}
 
@@ -91,6 +97,7 @@ export class LocationsComponent implements OnInit {
     const location: any = {
       name: formData.name,
       code: formData.code,
+      customerId: this.customerService.getActiveCustomerId(), // Assuming you want to set the active customer ID
       level
     };
 
@@ -109,6 +116,67 @@ export class LocationsComponent implements OnInit {
       },
       error: (error) => {
         this.toastService.showError('Failed to add location');
+      }
+    });
+  }
+
+  openEditLocationDialog(node: any) {
+    const location = node.node.data as Location;
+    this.editingLocation = location;
+    this.displayEditLocationDialog = true;
+  }
+
+  onLocationUpdated(formData: any) {
+    if (!this.editingLocation || !this.editingLocation.id) {
+      return;
+    }
+
+    const updateData: Location = {
+      id: this.editingLocation.id,
+      name: formData.name,
+      code: formData.code,
+      parentId: formData.parentId,
+      level: formData.level,
+      customerId: this.customerService.getActiveCustomerId() || '' // Assuming you want to set the active customer ID
+    };
+
+    this.locationsService.updateLocation(this.editingLocation.id, updateData).subscribe({
+      next: (response) => {
+        const levelNames = {1: 'Region', 2: 'SubRegion', 3: 'Zone'};
+        this.toastService.showSuccess(`${levelNames[updateData.level as keyof typeof levelNames]} updated successfully`);
+        this.displayEditLocationDialog = false;
+        this.editingLocation = null;
+        this.loadLocations();
+      },
+      error: (error) => {
+        this.toastService.showError('Failed to update location');
+      }
+    });
+  }
+
+  openDeleteLocationDialog(node: any) {
+    const location = node.node.data as Location;
+    this.deleteLocation = location;
+    this.displayDeleteLocationDialog = true;
+  }
+
+  confirmDeleteLocation() {
+    if (!this.deleteLocation || !this.deleteLocation.id) {
+      return;
+    }
+
+    const locationId = this.deleteLocation.id;
+    const locationName = this.deleteLocation.name;
+
+    this.locationsService.deleteLocation(locationId).subscribe({
+      next: (response) => {
+        this.toastService.showSuccess(`Location "${locationName}" deleted successfully`);
+        this.displayDeleteLocationDialog = false;
+        this.deleteLocation = null;
+        this.loadLocations();
+      },
+      error: (error) => {
+        this.toastService.showError('Failed to delete location');
       }
     });
   }

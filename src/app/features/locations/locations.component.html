@@ -42,9 +42,9 @@
     <ng-template #header>
       <tr>
         <th>Name</th>
+        <th>Code</th>
         <th>Devices</th>
-        <th>Uptime</th>
-        <th>Status</th>
+        <!-- <th>Status</th> -->
         <th>Actions</th>
       </tr>
     </ng-template>
@@ -54,21 +54,28 @@
           <p-treetable-toggler [rowNode]="rowNode" />
           {{ rowData.name }}
         </td>
+        <td>{{ rowData.code }}</td>
         <td>{{ rowData.devices }}</td>
-        <td>{{ rowData.uptime }}</td>
-        <td>
+        <!-- <td>
           <span [ngClass]="'badge ' + (rowData.status === 'Operational' ? 'operational' : 'degraded')">
             ● {{ rowData.status }}
           </span>
-        </td>
+        </td> -->
         <td>
-          <button *ngIf="!rowNode.children || rowNode.children.length === 0" 
-            pButton type="button" icon="pi pi-eye" class="p-button-rounded p-button-text" [routerLink]="'/site-dashboard'">
-          </button>
           <!-- Add Sub Location button -->
           <button pButton type="button" 
             icon="pi pi-plus" class="p-button-rounded p-button-text p-button-warning"
             (click)="openAddSubLocationDialog(rowNode)" title="Add Sub Location">
+          </button>
+          <!-- Edit Location button -->
+          <button pButton type="button" 
+            icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-info"
+            (click)="openEditLocationDialog(rowNode)" title="Edit Location">
+          </button>
+          <!-- Delete Location button -->
+          <button pButton type="button" 
+            icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
+            (click)="openDeleteLocationDialog(rowNode)" title="Delete Location">
           </button>
         </td>
       </tr>
@@ -107,4 +114,44 @@
     (locationAdded)="onLocationAdded($event)">
   </app-add-location>
 
+</p-dialog>
+
+<!-- Edit Location Dialog -->
+<p-dialog [(visible)]="displayEditLocationDialog" [modal]="true" styleClass="location-dialog">
+  <ng-template pTemplate="header">
+    Edit {{ levelNames[editingLocation?.level || 1] }}: {{ editingLocation?.name }}
+  </ng-template>
+
+  <app-add-location 
+    [level]="editingLocation?.level || 1"
+    [parentId]="editingLocation?.parentId || 0"
+    [editingLocation]="editingLocation"
+    (locationUpdated)="onLocationUpdated($event)">
+  </app-add-location>
+
+</p-dialog>
+
+<!-- Delete Location Dialog -->
+<p-dialog [(visible)]="displayDeleteLocationDialog" [modal]="true" styleClass="location-dialog">
+  <ng-template pTemplate="header">
+    Delete Location
+  </ng-template>
+
+  <div class="p-4">
+    <p class="text-base mb-4">
+      Are you sure you want to delete <strong>{{ deleteLocation?.name }}</strong>?
+    </p>
+    <p class="text-sm text-gray-600">
+      This action cannot be undone.
+    </p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" 
+      icon="pi pi-times" class="p-button-text" (click)="displayDeleteLocationDialog = false">
+    </button>
+    <button pButton type="button" label="Delete" 
+      icon="pi pi-trash" class="p-button-danger" (click)="confirmDeleteLocation()">
+    </button>
+  </ng-template>
 </p-dialog>

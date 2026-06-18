@@ -23,6 +23,8 @@
 <div class="form-actions pt-2" dialogFooter>
     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
         (click)="resetForm()"></button>
-    <button type="submit" pButton [label]="'Add ' + levelNames[level]" icon="pi pi-check" [disabled]="!locationForm.valid"
+    <button type="submit" pButton 
+        [label]="isEditMode ? 'Update ' : 'Add ' + levelNames[level]" 
+        icon="pi pi-check" [disabled]="!locationForm.valid"
         (click)="onSubmit()"></button>
 </div>

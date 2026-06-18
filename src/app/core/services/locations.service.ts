@@ -9,6 +9,7 @@ export interface Location {
   code: string;
   parentId: number;
   level: number;
+  customerId?: string;
   children?: Location[];
 }
 
