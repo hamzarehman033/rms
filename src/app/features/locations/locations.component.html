@@ -8,28 +8,28 @@
   </div>
   <div class="grid cols-4">
     <div class="stat">
-      <div class="row"><span class="label">Total Sites</span><span class="icon primary"><i
+      <div class="row"><span class="label">Regions</span><span class="icon primary"><i
             class="pi pi-map-marker"></i></span></div>
-      <div><span class="value">6</span></div>
-      <div class="hint">across 6 states</div>
+      <div><span class="value">{{ totalRegions }}</span></div>
+      <div class="hint">level 1</div>
     </div>
     <div class="stat">
-      <div class="row"><span class="label">Operational</span><span class="icon success"><i
-            class="pi pi-shield"></i></span></div>
-      <div><span class="value">4</span></div>
-      <div class="hint">all systems normal</div>
+      <div class="row"><span class="label">Sub Regions</span><span class="icon success"><i
+            class="pi pi-map-marker"></i></span></div>
+      <div><span class="value">{{ totalSubRegions }}</span></div>
+      <div class="hint">level 2</div>
     </div>
     <div class="stat">
-      <div class="row"><span class="label">Degraded</span><span class="icon warning"><i
-            class="pi pi-exclamation-triangle"></i></span></div>
-      <div><span class="value">2</span></div>
-      <div class="hint">attention needed</div>
+      <div class="row"><span class="label">Zones</span><span class="icon warning"><i
+            class="pi pi-map-marker"></i></span></div>
+      <div><span class="value">{{ totalZones }}</span></div>
+      <div class="hint">level 3</div>
     </div>
     <div class="stat">
       <div class="row"><span class="label">Total Devices</span><span class="icon info"><i
             class="pi pi-server"></i></span></div>
-      <div><span class="value">150</span></div>
-      <div class="hint">deployed</div>
+      <div><span class="value">{{ totalDevices }}</span></div>
+      <div class="hint">Deployed</div>
     </div>
   </div>
   <div class="hstack flex justify-between gap-4">

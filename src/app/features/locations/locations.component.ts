@@ -38,6 +38,22 @@ export class LocationsComponent implements OnInit {
     this.loadLocations();
   }
 
+  get totalRegions(): number {
+    return this.locations.filter(loc => Number(loc.level) === 1).length;
+  }
+
+  get totalSubRegions(): number {
+    return this.locations.filter(loc => Number(loc.level) === 2).length;
+  }
+
+  get totalZones(): number {
+    return this.locations.filter(loc => Number(loc.level) === 3).length;
+  }
+
+  get totalDevices(): number {
+    return 0;
+  }
+
   loadLocations() {
     this.loading = true;
     this.locationsService.getAllLocations().subscribe({

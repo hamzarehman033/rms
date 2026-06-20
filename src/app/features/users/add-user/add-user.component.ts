@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ROLE_OPTIONS } from '../../../core/constants/roles';
+import { Menu } from '../../../core/constants/sideMenu';
+import { CustomerService } from '@app/core';
 
 @Component({
   selector: 'app-add-user',
@@ -21,24 +23,29 @@ export class AddUserComponent implements OnInit, OnChanges {
   roles = ROLE_OPTIONS;
   
   modules = [
-    { label: 'Dashboard', value: 'dashboard', icon: 'pi pi-chart-bar' },
-    { label: 'Devices', value: 'devices', icon: 'pi pi-server' },
-    { label: 'Locations', value: 'locations', icon: 'pi pi-map-marker' },
-    { label: 'Users', value: 'users', icon: 'pi pi-users' },
-    { label: 'Rules', value: 'rules', icon: 'pi pi-list' },
-    { label: 'Alarms', value: 'alarms', icon: 'pi pi-bell' },
-    { label: 'Reports', value: 'reports', icon: 'pi pi-file-pdf' },
-    { label: 'Settings', value: 'settings', icon: 'pi pi-cog' }
+
+    { id: Menu.Overview, label: 'Overview', value: 'dashboard', icon: 'pi pi-chart-bar', selected: false },
+    { id: Menu.Sites, label: 'Sites', value: 'devices', icon: 'pi pi-server', selected: false },
+    { id: Menu.Telemetry, label: 'Telemetry', value: 'telemetry', icon: 'pi pi-chart-line', selected: false },
+    { id: Menu.Alarms, label: 'Alarms', value: 'alarms', icon: 'pi pi-bell', selected: false },
+    { id: Menu.Reports, label: 'Reports', value: 'reports', icon: 'pi pi-file-pdf', selected: false },
+    { id: Menu.Locations, label: 'Locations', value: 'locations', icon: 'pi pi-map-marker', selected: false },
+    { id: Menu.Tenants, label: 'Tenant', value: 'tenant', icon: 'pi pi-building', selected: false },
+    { id: Menu.Customers, label: 'Customers', value: 'customers', icon: 'pi pi-user', selected: false },
+    { id: Menu.Users, label: 'Users', value: 'users', icon: 'pi pi-users', selected: false },
+    { id: Menu.Settings, label: 'Settings', value: 'settings', icon: 'pi pi-cog', selected: false }
   ];
 
   constructor(
     private fb: FormBuilder,
     private usersService: UsersService,
+    private customerService: CustomerService,
     private toastService: ToastService
   ) {
     this.userForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
+      password: [''],
       phoneNumber: [''],
       role: ['', Validators.required],
       permissions: [[]]
@@ -72,7 +79,7 @@ export class AddUserComponent implements OnInit, OnChanges {
 
     this.isLoading = true;
     const formValue = this.userForm.value;
-    const permissions = this.getSelectedPermissions();
+    const moduleIds = this.modules.map(module => module.selected ? module.id : null).filter(id => id !== null);
 
     const payload = {
       id: this.isEditMode ? this.userData?.id : 0,
@@ -80,7 +87,8 @@ export class AddUserComponent implements OnInit, OnChanges {
       email: formValue.email,
       phoneNumber: formValue.phoneNumber,
       role: formValue.role,
-      Permissions: permissions
+      modules: moduleIds,
+      customerId: this.customerService.getActiveCustomerId() || ''
     };
 
     if (this.isEditMode) {
@@ -101,7 +109,8 @@ export class AddUserComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.usersService.createUser(payload).subscribe({
+    const addPayload = { ...payload, password: formValue.password };
+    this.usersService.createUser(addPayload).subscribe({
       next: (response: any) => {
         this.isLoading = false;
         this.toastService.showSuccess('Success', 'User created successfully.');
@@ -116,21 +125,8 @@ export class AddUserComponent implements OnInit, OnChanges {
     });
   }
 
-  getSelectedPermissions(): any[] {
-    const permissions: any[] = [];
-    this.modules.forEach(module => {
-      const viewCheckbox = document.querySelector(`input[name="${module.value}-view"]:checked`);
-      const editCheckbox = document.querySelector(`input[name="${module.value}-edit"]:checked`);
-      
-      if (viewCheckbox || editCheckbox) {
-        permissions.push({
-          module: module.value,
-          view: !!viewCheckbox,
-          edit: !!editCheckbox
-        });
-      }
-    });
-    return permissions;
+  onModuleChange(module: any) {
+    module.selected = !module.selected;
   }
 
   private fetchAndPopulateUserData(): void {
@@ -145,7 +141,6 @@ export class AddUserComponent implements OnInit, OnChanges {
         error: (error: any) => {
           this.isLoading = false;
           console.error('Error fetching user details:', error);
-          this.populateFormWithUserData(this.userData);
         }
       });
     }
@@ -164,36 +159,11 @@ export class AddUserComponent implements OnInit, OnChanges {
       phoneNumber: user.phoneNumber || user.PhoneNumber || '',
       role: Array.isArray(roles) ? roles[0] || '' : roles || ''
     });
-
-    this.setSelectedPermissions(user.Permissions || user.permissions || []);
-  }
-
-  private setSelectedPermissions(permissions: any[]): void {
-    if (!Array.isArray(permissions)) {
-      return;
+    if(user.modules && Array.isArray(user.modules)) {
+      this.modules.forEach(module => {
+        module.selected = user.modules.includes(module.id);
+      });
     }
-
-    this.modules.forEach(module => {
-      const permission = permissions.find(
-        p =>
-          String(p?.module || p?.Module || '').toLowerCase() ===
-          String(module.value).toLowerCase()
-      );
-
-      const viewInput = document.querySelector(
-        `input[name="${module.value}-view"]`
-      ) as HTMLInputElement | null;
-      const editInput = document.querySelector(
-        `input[name="${module.value}-edit"]`
-      ) as HTMLInputElement | null;
-
-      if (viewInput) {
-        viewInput.checked = !!(permission?.view || permission?.canView || permission?.View);
-      }
-      if (editInput) {
-        editInput.checked = !!(permission?.edit || permission?.canEdit || permission?.Edit);
-      }
-    });
   }
 
   resetForm() {
@@ -201,11 +171,11 @@ export class AddUserComponent implements OnInit, OnChanges {
       this.userForm.reset({
         userName: '',
         email: '',
+        password: '',
         phoneNumber: '',
         role: '',
         permissions: []
       });
-      this.setSelectedPermissions([]);
       this.isEditMode = false;
       this.userData = null;
     }

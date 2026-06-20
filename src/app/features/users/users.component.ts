@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { UsersService } from '../../core/services/users.service';
 import { ToastService } from '../../core/services/toast.service';
+import { Menu, MenuMapper, MenuOptions } from '../../core/constants/sideMenu';
 
 @Component({
   selector: 'app-users',
@@ -17,6 +18,8 @@ export class UsersComponent {
   users: any[] = [];
   selectedUserForEdit: any = null;
   dialogHeader = 'Invite New User';
+  MenuMapper = MenuMapper;
+  Menu = Menu;
 
   constructor(
     private usersService: UsersService,
@@ -92,6 +95,10 @@ export class UsersComponent {
     this.displayAddUserDialog = false;
     this.selectedUserForEdit = null;
     this.loadUsers();
+  }
+
+  getUserPermission(module: Menu): string {
+    return MenuMapper[module] || 'Undefined';
   }
 
   getPermissionSummary(permissions: any[]): string {

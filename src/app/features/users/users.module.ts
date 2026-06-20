@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { UsersComponent } from './users.component';
 import { AddUserComponent } from './add-user/add-user.component';
 import { ButtonModule } from 'primeng/button';
@@ -21,7 +21,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [UsersComponent, AddUserComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, ModalDialogComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, ModalDialogComponent, FormsModule],
   providers: [ConfirmationService],
 })
 export class UsersModule {}

@@ -25,6 +25,7 @@
           <th>User</th>
           <th>Role</th>
           <th>Permissions</th>
+          <th>Phone</th>
           <th>Status</th>
           <th>Last active</th>
           <th>Actions</th>
@@ -43,11 +44,11 @@
           <td><span class="badge role info">{{ user.roles[0] || '-' }}</span></td>
           <td>
             <div class="flex gap-2 flex-wrap">
-              <!-- <span class="badge primary" *ngIf="user.permissions.length > 0 && !hasEdit(user.permissions)">{{ getPermissionSummary(user.permissions) }}</span> -->
-              <!-- <span class="badge success" *ngIf="hasEdit(user.permissions)">{{ getPermissionSummary(user.permissions) }}</span> -->
-              <!-- <span class="badge info" *ngIf="user.permissions.length === 0">No access</span> -->
+              <span *ngFor="let module of user.modules" class="badge primary">{{ getUserPermission(module)}}</span>
+              <span class="badge info" *ngIf="user.modules.length === 0">No access</span>
             </div>
           </td>
+          <td>{{ user.phoneNumber }}</td>
           <td>{{ user.status }}</td>
           <td class="muted">{{ user.lastActive }}</td>
           <td>
@@ -62,7 +63,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredUsers.length === 0">
-          <td colspan="6" class="text-center py-8 text-muted">No users found</td>
+          <td colspan="7" class="text-center py-8 text-muted">No users found</td>
         </tr>
       </tbody>
     </table>

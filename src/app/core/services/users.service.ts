@@ -29,7 +29,7 @@ export class UsersService {
   }
 
   createUser(payload: any, customerId?: string): Observable<any> {
-    return this.http.post(this.baseUrl + this.url, payload, {
+    return this.http.post(this.baseUrl +'/Auth/admin/create-user', payload, {
       params: this.getCustomerParams(customerId),
     });
   }
