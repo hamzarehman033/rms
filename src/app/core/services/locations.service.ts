@@ -5,8 +5,14 @@ import { environment } from '../../../environments/environment';
 
 export interface Location {
   id?: number;
+  regionId?: number;
+  subRegionId?: number;
+  zoneId?: number;
   name: string;
   code: string;
+  status?: string;
+  address?: string;
+  coordinates?: string;
   parentId: number;
   level: number;
   customerId?: string;
@@ -25,6 +31,11 @@ export class LocationsService {
   // GET all locations
   getAllLocations(): Observable<Location[]> {
     return this.http.get<Location[]>(`${this.baseUrl}${this.url}`);
+  }
+
+  // GET regions tree with nested children
+  getLocationTree(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/location/tree`);
   }
 
   // GET location by ID

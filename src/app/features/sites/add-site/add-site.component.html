@@ -1,4 +1,4 @@
-<p-stepper [value]="1" class="basis-[50rem]">
+<p-stepper [(value)]="activeStep" class="basis-[50rem]">
     <p-step-list>
         <p-step [value]="1">Site Details</p-step>
         <p-step [value]="2">Location Details</p-step>
@@ -7,7 +7,7 @@
     <p-step-panels>
         <p-step-panel [value]="1">
             <ng-template #content let-activateCallback="activateCallback">
-                <form [formGroup]="siteForm" (ngSubmit)="onSubmit()" class="form-section">
+                <form [formGroup]="siteForm" class="form-section">
                     <div class="form-group">
                         <label for="siteName">Site Name</label>
                         <input id="siteName" pInputText type="text" formControlName="siteName"
@@ -19,11 +19,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="siteId">Site ID</label>
-                        <input id="siteId" pInputText type="text" formControlName="siteId" placeholder="e.g., ST-001"
+                        <label for="siteId">Site Code</label>
+                        <input id="siteId" pInputText type="text" formControlName="code" placeholder="e.g., ST-001"
                             class="w-full" />
                         <small class="error" *ngIf="siteForm.get('siteId')?.invalid && siteForm.get('siteId')?.touched">
-                            Site ID is required
+                            Site Code is required
                         </small>
                     </div>
 
@@ -38,15 +38,15 @@
                         </small>
                     </div>
 
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <p-dropdown id="location" formControlName="location" [options]="locations" optionLabel="label"
-                            optionValue="value" placeholder="Select location" class="w-full"></p-dropdown>
+                    <!-- <div class="form-group">
+                        <label for="status">Status</label>
+                        <input id="status" pInputText type="text" formControlName="status" placeholder="Active"
+                            class="w-full" />
                         <small class="error"
-                            *ngIf="siteForm.get('location')?.invalid && siteForm.get('location')?.touched">
-                            Location is required
+                            *ngIf="locationForm.get('status')?.invalid && locationForm.get('status')?.touched">
+                            Status is required
                         </small>
-                    </div>
+                    </div> -->
 
                     <div class="form-group">
                         <label for="installationDate">Installation Date</label>
@@ -61,8 +61,8 @@
                     <div class="form-actions">
                         <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
                             (click)="resetForm()"></button>
-                        <button type="submit" class="btn primary" pButton label="Next" icon="pi pi-check"
-                            [disabled]="!siteForm.valid"></button>
+                        <button type="button" class="btn primary" pButton label="Next" icon="pi pi-check"
+                            [disabled]="!siteForm.valid" (click)="activateCallback(2)"></button>
                     </div>
                 </form>
             </ng-template>
@@ -71,23 +71,14 @@
         <p-step-panel [value]="2">
             <ng-template #content let-activateCallback="activateCallback">
                 <form [formGroup]="locationForm" class="form-section">
-                    <div class="form-group">
-                        <label for="name">Location Name</label>
-                        <input id="name" pInputText type="text" formControlName="name" placeholder="Enter location name"
-                            class="w-full" />
-                        <small class="error"
-                            *ngIf="locationForm.get('name')?.invalid && locationForm.get('name')?.touched">
-                            Location name is required and must be at least 3 characters
-                        </small>
-                    </div>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="region">Region</label>
                             <p-select id="region" [options]="regions" optionLabel="label" optionValue="value"
-                                formControlName="region" placeholder="Select a region" class="w-full"></p-select>
+                                formControlName="regionId" placeholder="Select a region" class="w-full"
+                                (onChange)="onRegionChange()"></p-select>
                             <small class="error"
-                                *ngIf="locationForm.get('region')?.invalid && locationForm.get('region')?.touched">
+                                *ngIf="locationForm.get('regionId')?.invalid && locationForm.get('regionId')?.touched">
                                 Region is required
                             </small>
                         </div>
@@ -95,10 +86,32 @@
                         <div class="form-group">
                             <label for="subRegion">Sub Region</label>
                             <p-select id="subRegion" [options]="subRegions" optionLabel="label" optionValue="value"
-                                formControlName="subRegion" placeholder="Select a sub region" class="w-full"></p-select>
+                                formControlName="subRegionId" placeholder="Select a sub region" class="w-full"
+                                (onChange)="onSubRegionChange()"></p-select>
                             <small class="error"
-                                *ngIf="locationForm.get('subRegion')?.invalid && locationForm.get('subRegion')?.touched">
+                                *ngIf="locationForm.get('subRegionId')?.invalid && locationForm.get('subRegionId')?.touched">
                                 Sub region is required
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="zone">Zone</label>
+                            <p-select id="zone" [options]="zones" optionLabel="label" optionValue="value"
+                                formControlName="zoneId" placeholder="Select a zone" class="w-full"></p-select>
+                            <small class="error"
+                                *ngIf="locationForm.get('zoneId')?.invalid && locationForm.get('zoneId')?.touched">
+                                Zone is required
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="coordinates">Location Coordinates</label>
+                            <input id="coordinates" pInputText type="text" formControlName="coordinates"
+                                placeholder="e.g., 40.7128, -74.0060" class="w-full" />
+                            <small class="error"
+                                *ngIf="locationForm.get('coordinates')?.invalid && locationForm.get('coordinates')?.touched">
+                                Coordinates are required
                             </small>
                         </div>
                     </div>
@@ -113,17 +126,9 @@
                         </small>
                     </div>
 
-                    <div class="form-group">
-                        <label for="coordinates">Location Coordinates</label>
-                        <input id="coordinates" pInputText type="text" formControlName="coordinates"
-                            placeholder="e.g., 40.7128, -74.0060" class="w-full" />
-                        <small class="error"
-                            *ngIf="locationForm.get('coordinates')?.invalid && locationForm.get('coordinates')?.touched">
-                            Coordinates are required
-                        </small>
-                    </div>
+                   
 
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="timeZone">Time Zone</label>
                         <p-select id="timeZone" [options]="timeZones" optionLabel="label" optionValue="value"
                             formControlName="timeZone" placeholder="Select time zone" class="w-full"></p-select>
@@ -131,13 +136,13 @@
                             *ngIf="locationForm.get('timeZone')?.invalid && locationForm.get('timeZone')?.touched">
                             Time zone is required
                         </small>
-                    </div>
+                    </div> -->
                 </form>
                 <div class="form-actions pt-2" dialogFooter>
                     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
                         (click)="resetForm()"></button>
-                    <button type="submit" pButton label="Next" icon="pi pi-check"
-                        [disabled]="!locationForm.valid" (click)="onSubmit()"></button>
+                    <button type="button" pButton label="Next" icon="pi pi-check"
+                        [disabled]="!locationForm.valid" (click)="activateCallback(3)"></button>
                 </div>
             </ng-template>
         </p-step-panel>

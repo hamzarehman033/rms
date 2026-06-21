@@ -24,10 +24,12 @@
       <thead>
         <tr>
           <th>Site</th>
+          <th>Site Code</th>
           <th>Status</th>
-          <th>Type</th>
+          <th>Region</th>
+          <th>Sub Region</th>
+          <th>Zone</th>
           <th>Location</th>
-          <th>Battery</th>
           <th>Last seen</th>
           <th>Actions</th>
         </tr>
@@ -37,13 +39,15 @@
           <td>
             <a routerLink="/site-dashboard" [queryParams]="{id: site.id}">
               <div class="font-medium text-blue-600">{{ site.name }}</div>
-              <div class="muted mono text-xs">{{ site.id }}</div>
+              <div class="muted mono text-xs">{{ site.code }}</div>
             </a>
           </td>
+          <td class="mono">{{ site.siteCode || site.code || '-' }}</td>
           <td><span [ngClass]="'badge ' + site.status">● {{ site.status | titlecase }}</span></td>
-          <td>{{ site.type }}</td>
+          <td>{{ site.regionName || '-' }}</td>
+          <td>{{ site.subRegionName || '-' }}</td>
+          <td>{{ site.zoneName || '-' }}</td>
           <td>{{ site.location }}</td>
-          <td class="mono">{{ site.battery }}</td>
           <td class="muted">{{ site.lastSeen }}</td>
           <td>
             <div class="flex gap-2">
@@ -66,10 +70,14 @@
 
 <!-- Add Site Dialog -->
 <app-modal-dialog [(visible)]="displayAddSiteDialog" header="Add New Site" [width]="'600px'">
-  <app-add-site (siteAdded)="onSiteAdded($event)"></app-add-site>
+  <app-add-site (siteAdded)="onSiteAdded()"></app-add-site>
 </app-modal-dialog>
 
 <!-- Site Configuration Dialog -->
 <app-modal-dialog [(visible)]="displayConfigDialog" header="Configure Site: {{ selectedSiteForConfig?.name }}">
-  <app-site-configuration [site]="selectedSiteForConfig" (siteConfigured)="onSiteConfigured()"></app-site-configuration>
+  <app-site-configuration
+    [site]="selectedSiteForConfig"
+    [deviceId]="selectedSiteForConfig?.deviceId || null"
+    (siteConfigured)="onSiteConfigured()"
+  ></app-site-configuration>
 </app-modal-dialog>
