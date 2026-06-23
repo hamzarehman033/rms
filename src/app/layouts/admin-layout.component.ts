@@ -25,7 +25,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.initializeDeviceSubscriptions();
+    this.signalrService.isConnected$.subscribe((isConnected) => {
+      if(isConnected) {
+        this.initializeDeviceSubscriptions();
+      }
+    });
   }
 
  
