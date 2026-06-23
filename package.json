@@ -17,6 +17,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@microsoft/signalr": "^10.0.0",
     "@primeng/themes": "^19.0.4",
     "echarts": "^6.0.0",
     "leaflet": "^1.9.4",
