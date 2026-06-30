@@ -14,6 +14,7 @@ export interface CustomerContextItem {
 })
 export class CustomerService {
   private readonly CUSTOMERS_CACHE_KEY = 'customers_list';
+  private readonly ACTIVE_CUSTOMER_ID_KEY = 'active_customer_id';
 
   private readonly customersSubject = new BehaviorSubject<CustomerContextItem[]>([]);
   readonly customers$ = this.customersSubject.asObservable();
@@ -71,6 +72,7 @@ export class CustomerService {
     const customers = response.data.pageData;
     this.customersSubject.next(customers);
     localStorage.setItem(this.CUSTOMERS_CACHE_KEY, JSON.stringify(customers));
+    localStorage.setItem(this.ACTIVE_CUSTOMER_ID_KEY, JSON.stringify(customers[0]?.id));
     this.setActiveCustomer(customers[0]);
   }
 
@@ -80,6 +82,9 @@ export class CustomerService {
       return;
     }
 
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
     this.setActiveCustomer(customer);
   }
 
@@ -89,16 +94,19 @@ export class CustomerService {
 
   clear(): void {
     localStorage.removeItem(this.CUSTOMERS_CACHE_KEY);
+    localStorage.removeItem(this.ACTIVE_CUSTOMER_ID_KEY);
     this.customersSubject.next([]);
     this.activeCustomerSubject.next(null);
   }
 
   private setActiveCustomer(customer: CustomerContextItem): void {
     this.activeCustomerSubject.next(customer);
+    localStorage.setItem(this.ACTIVE_CUSTOMER_ID_KEY, JSON.stringify(customer.id));
   }
 
   private restoreCustomers(): void {
     const cached = localStorage.getItem(this.CUSTOMERS_CACHE_KEY);
+    const activeCustomerId = localStorage.getItem(this.ACTIVE_CUSTOMER_ID_KEY);
     if (!cached) {
       return;
     }
@@ -107,9 +115,12 @@ export class CustomerService {
       const customers = JSON.parse(cached);
 
       this.customersSubject.next(customers);
-      this.setActiveCustomer(customers[0]);
+      const id  = activeCustomerId ? JSON.parse(activeCustomerId) : null;
+      const activeCustomer = customers.find((item: CustomerContextItem) => item.id === id) || null;
+      this.setActiveCustomer(activeCustomer);
     } catch {
       localStorage.removeItem(this.CUSTOMERS_CACHE_KEY);
+      localStorage.removeItem(this.ACTIVE_CUSTOMER_ID_KEY);
     }
   }
 

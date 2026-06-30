@@ -43,7 +43,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
       name: ['', [Validators.required, Validators.minLength(2)]],
       logo: [''],
       slug: [''],
-      subscriptionActive: [true],
+      status: [true],
       email: ['', [Validators.required, Validators.email]],
       description: [''],
     });
@@ -100,7 +100,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
         logo: logo,
         slug: customer.slug || '',
         email: customer.email || '',
-        subscriptionActive: customer.subscriptionActive,
+        status: customer.status == 'Active',
         description: customer.description || ''
       });
     }
@@ -120,7 +120,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
       name: `${formValue.name} ${formValue.logo}`,
       description: formValue.description || `${formValue.name} ${formValue.logo}`,
       slug: formValue.slug,
-      subscriptionActive: formValue.subscriptionActive,
+      status: formValue.status ? 'Active' : 'Inactive',
       email: formValue.email
     };
 

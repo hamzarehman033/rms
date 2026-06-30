@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Menu } from '../../../core/constants/sideMenu';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -17,11 +18,12 @@ export class SidebarComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   Menu = Menu;
-  userModules = [1,2,3,4,5,6,7,8,9,10];
+  userModules: number[] = [];
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private customerService: CustomerService, private authService: AuthService) {}
 
   ngOnInit(): void {
+    this.userModules = this.authService.getCurrentUserModules();
     this.customerService.activeCustomer$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(activeCustomer => {

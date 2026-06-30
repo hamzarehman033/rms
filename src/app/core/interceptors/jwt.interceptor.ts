@@ -16,7 +16,7 @@ export const jwtInterceptor: HttpInterceptorFn = (
   const token = authService.getAccessToken();
 
   const activeCustomerId = customerService.getActiveCustomerId();
-  const isAuthRequest = req.url.toLowerCase().includes('/auth/');
+  const isAuthRequest = req.url.toLowerCase().includes('/auth/token');
 
   if (token) {
     const headers: Record<string, string> = {

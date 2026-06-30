@@ -22,6 +22,7 @@ export class AuthService {
   private readonly ACCESS_TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'current_user';
+  private readonly USER_MODULES_KEY = 'current_user_modules';
 
   constructor(
     private router: Router,
@@ -39,6 +40,9 @@ export class AuthService {
     const response = responseObj.data;
     if (response.token) {
       localStorage.setItem(this.ACCESS_TOKEN_KEY, response.token);
+    }
+    if (response.modules) {
+      localStorage.setItem(this.USER_MODULES_KEY, JSON.stringify(response.modules || []));
     }
     if (response.refreshToken) {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
@@ -111,6 +115,11 @@ export class AuthService {
   getCurrentUser(): any {
     const userJson = localStorage.getItem(this.USER_KEY);
     return userJson ? JSON.parse(userJson) : null;
+  }
+
+  getCurrentUserModules(): any[] {
+    const modulesJson = localStorage.getItem(this.USER_MODULES_KEY);
+    return modulesJson ? JSON.parse(modulesJson) : [];
   }
 
   private getUserFromToken(): any {
