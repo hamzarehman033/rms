@@ -1,7 +1,13 @@
 export interface Site {
-  id: string | number;
+  siteId: string | number;
+  siteName?: string;
+  siteStatus?: string;
   locationId?: string | number;
   deviceId?: string | number;
+  deviceName?: string;
+  deviceCode?: string;
+  deviceStatus?: string;
+  deviceInstallationDate?: string;
   siteCode?: string;
   regionId?: number;
   regionName?: string;
@@ -14,6 +20,13 @@ export interface Site {
   code?: string;
   address?: string;
   coordinates?: string;
+  mqttHost?: string;
+  mqttPort?: number;
+  mqttClientId?: string;
+  useTls?: boolean;
+  keepAliveSeconds?: number;
+  rmsSubscribeTopic?: string;
+  aiSubscribeTopic?: string;
   type: string;
   location: string;
   battery: string;

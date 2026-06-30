@@ -10,8 +10,10 @@ import { Site, SitesService, ToastService } from '@app/core';
 })
 export class SitesComponent implements OnInit {
   displayAddSiteDialog = false;
+  displayEditSiteDialog = false;
   displayConfigDialog = false;
   selectedSiteForConfig: Site | null = null;
+  selectedSiteForEdit: Site | null = null;
   selectedTab = 0;
   isLoading = false;
 
@@ -53,6 +55,17 @@ export class SitesComponent implements OnInit {
     this.loadSites();
   }
 
+  onSiteEdited() {
+    this.displayEditSiteDialog = false;
+    this.selectedSiteForEdit = null;
+    this.loadSites();
+  }
+
+  openEditSiteDialog(site: Site): void {
+    this.selectedSiteForEdit = site;
+    this.displayEditSiteDialog = true;
+  }
+
   navigateToSiteDashboard(siteId: string | number) {
     this.router.navigate(['/site-dashboard'], { queryParams: { id: siteId } });
   }
@@ -71,26 +84,39 @@ export class SitesComponent implements OnInit {
     this.selectedSiteForConfig = null;
   }
 
-  private mapApiSite(item: any): Site {
+  private mapApiSite(item: Site ): Site {
     return {
-      id: item.id || item.code || '',
-      deviceId: item.deviceId || item.device?.id || item.device?.deviceId,
+      siteId: item.siteId,
+      siteName: item.siteName || item.name || '',
+      siteStatus: item.siteStatus || item.status || 'active',
+      deviceId: item.deviceId,
+      deviceName: item.deviceName,
+      deviceCode: item.deviceCode,
+      deviceStatus: item.deviceStatus,
+      deviceInstallationDate: item.deviceInstallationDate,
       siteCode: item.siteCode || item.code || '',
       regionId: item.regionId,
-      regionName: item.regionName || item.region?.name || '-',
+      regionName: item.regionName || '-',
       subRegionId: item.subRegionId,
-      subRegionName: item.subRegionName || item.subRegion?.name || '-',
+      subRegionName: item.subRegionName || '-',
       zoneId: item.zoneId,
-      zoneName: item.zoneName || item.zone?.name || '-',
-      name: item.name || item.siteName || '',
-      status: (item.status || 'active').toString().toLowerCase(),
-      code: item.code || '',
+      zoneName: item.zoneName || '-',
+      name: item.siteName || item.name || '',
+      status: (item.siteStatus || item.status || 'active').toString().toLowerCase(),
+      code: item.siteCode || item.code || '',
       address: item.address || '',
       coordinates: item.coordinates || '',
+      mqttHost: item.mqttHost,
+      mqttPort: item.mqttPort,
+      mqttClientId: item.mqttClientId,
+      useTls: item.useTls,
+      keepAliveSeconds: item.keepAliveSeconds,
+      rmsSubscribeTopic: item.rmsSubscribeTopic,
+      aiSubscribeTopic: item.aiSubscribeTopic,
       type: item.type || 'Site',
       location: item.location || item.address || '-',
       battery: item.battery || '-',
-      lastSeen: item.lastSeen || '-'
+      lastSeen: item.lastSeen || item.deviceInstallationDate || '-'
     };
   }
 }

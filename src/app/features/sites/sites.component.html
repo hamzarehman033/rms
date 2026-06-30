@@ -30,14 +30,13 @@
           <th>Sub Region</th>
           <th>Zone</th>
           <th>Location</th>
-          <th>Last seen</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let site of sites">
           <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: site.id}">
+            <a routerLink="/site-dashboard" [queryParams]="{id: site.siteId}">
               <div class="font-medium text-blue-600">{{ site.name }}</div>
               <div class="muted mono text-xs">{{ site.code }}</div>
             </a>
@@ -48,14 +47,16 @@
           <td>{{ site.subRegionName || '-' }}</td>
           <td>{{ site.zoneName || '-' }}</td>
           <td>{{ site.location }}</td>
-          <td class="muted">{{ site.lastSeen }}</td>
           <td>
             <div class="flex gap-2">
-              <button (click)="navigateToSiteDashboard(site.id)" title="Site Dashboard" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+              <button (click)="navigateToSiteDashboard(site.siteId)" title="Site Dashboard" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
                 <i class="pi pi-chart-bar text-base"></i>
               </button>
-              <button (click)="navigateToSiteDetail(site.id)" title="Site Details" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+              <button (click)="navigateToSiteDetail(site.siteId)" title="Site Details" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
                 <i class="pi pi-tablet text-base"></i>
+              </button>
+              <button (click)="openEditSiteDialog(site)" title="Edit Site" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
+                <i class="pi pi-pencil text-base"></i>
               </button>
               <button (click)="openSiteConfiguration(site)" title="Configure Site" class="text-gray-500 hover:text-white hover:bg-gray-600 transition-colors p-2 rounded">
                 <i class="pi pi-cog text-base"></i>
@@ -71,6 +72,19 @@
 <!-- Add Site Dialog -->
 <app-modal-dialog [(visible)]="displayAddSiteDialog" header="Add New Site" [width]="'600px'">
   <app-add-site (siteAdded)="onSiteAdded()"></app-add-site>
+</app-modal-dialog>
+
+<!-- Edit Site Dialog -->
+<app-modal-dialog
+  [(visible)]="displayEditSiteDialog"
+  [header]="'Edit Site: ' + (selectedSiteForEdit?.name || '')"
+  [width]="'600px'"
+>
+  <app-add-site
+    mode="edit"
+    [site]="selectedSiteForEdit"
+    (siteAdded)="onSiteEdited()"
+  ></app-add-site>
 </app-modal-dialog>
 
 <!-- Site Configuration Dialog -->

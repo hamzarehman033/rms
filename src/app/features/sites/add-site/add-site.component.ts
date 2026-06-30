@@ -1,6 +1,6 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DevicesService, LocationsService, SitesService, ToastService } from '@app/core';
+import { DevicePayload, DevicesService, LocationsService, Site, SitesService, ToastService } from '@app/core';
 
 interface OptionItem {
   label: string;
@@ -14,6 +14,8 @@ interface OptionItem {
   styleUrl: './add-site.component.css'
 })
 export class AddSiteComponent implements OnInit {
+  @Input() mode: 'add' | 'edit' = 'add';
+  @Input() site: Site | null = null;
   @Output() siteAdded = new EventEmitter<any>();
   isLoading = false;
   activeStep = 1;
@@ -99,6 +101,12 @@ export class AddSiteComponent implements OnInit {
     this.loadLocationTree();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['mode'] || changes['site']) && this.mode === 'edit' && this.site) {
+      this.prefillForEdit();
+    }
+  }
+
   onRegionChange(): void {
     const selectedRegionId = this.locationForm.get('regionId')?.value;
     const regionNode = this.locationTree.find((region: any) => region.id === selectedRegionId);
@@ -146,7 +154,8 @@ export class AddSiteComponent implements OnInit {
       };
 
       const devicePayload = {
-        siteId: siteValue.code || siteValue.siteId,
+        siteId: siteValue.siteId || this.site?.siteId,
+        id: siteValue.siteId || this.site?.siteId,
         name: siteValue.siteName,
         code: siteValue.code,
         status: siteValue.status,
@@ -161,6 +170,11 @@ export class AddSiteComponent implements OnInit {
         rmsSubscribeTopic: mqttValue.rmsSubscribeTopic,
         aiSubscribeTopic: mqttValue.aiSubscribeTopic
       };
+
+      if (this.mode === 'edit' && this.site) {
+        this.updateSiteAndDevice(sitePayload, devicePayload);
+        return;
+      }
 
       this.isLoading = true;
       this.sitesService.createSiteDetails(sitePayload).subscribe({
@@ -213,5 +227,179 @@ export class AddSiteComponent implements OnInit {
         this.regions = [];
       }
     });
+  }
+
+  get submitLabel(): string {
+    return this.mode === 'edit' ? 'Update Site' : 'Submit';
+  }
+
+  private prefillForEdit(): void {
+    if (!this.site) {
+      return;
+    }
+
+    const siteId = this.site.siteId;
+    if (siteId !== undefined && siteId !== null && siteId !== '') {
+      this.loadSiteDetailsForEdit(siteId);
+      return;
+    }
+  }
+
+  private loadSiteDetailsForEdit(siteId: string | number): void {
+    this.sitesService.getSiteById(siteId).subscribe({
+      next: (response: any) => {
+        const details = this.extractCombinedDetails(response);
+        this.patchEditFormsFromCombinedDetails(details);
+      },
+      error: () => {
+        // Fallback to current table payload if details call fails.
+        this.patchEditFormsFromCombinedDetails(this.site);
+      }
+    });
+  }
+
+  private patchEditFormsFromCombinedDetails(details: any): void {
+    if (!details) {
+      return;
+    }
+
+    this.activeStep = 1;
+    const siteData = details?.site ?? details;
+    const deviceData = this.resolveDeviceData(details);
+
+    const regionId = this.toNumberOrNull(siteData?.regionId ?? details?.regionId);
+    const subRegionId = this.toNumberOrNull(siteData?.subRegionId ?? details?.subRegionId);
+    const zoneId = this.toNumberOrNull(siteData?.zoneId ?? details?.zoneId);
+
+    this.setDependentLocationOptions(regionId, subRegionId);
+
+    this.siteForm.patchValue({
+      siteName: siteData?.siteName || siteData?.name || this.site?.name || '',
+      code: siteData?.siteCode || siteData?.code || this.site?.code || this.site?.siteCode || '',
+      status: (siteData?.siteStatus || siteData?.status || this.site?.status || 'active').toString().toLowerCase(),
+      subscriptionType: 'basic',
+      installationDate: this.toDateInput(
+        deviceData?.deviceInstallationDate || deviceData?.installationDate || new Date().toISOString()
+      )
+    });
+
+    this.locationForm.patchValue({
+      regionId,
+      subRegionId,
+      zoneId,
+      address: siteData?.address || this.site?.address || '',
+      coordinates: siteData?.coordinates || this.site?.coordinates || ''
+    });
+
+    this.mqttForm.patchValue({
+      mqttBrokerUrl: deviceData?.mqttHost ?? '',
+      mqttPort: deviceData?.mqttPort ?? '',
+      mqttUsername: deviceData?.mqttUsername ?? '',
+      mqttPassword: deviceData?.mqttPassword ?? '',
+      clientId: deviceData?.mqttClientId ?? '',
+      publishTopic: deviceData?.publishTopic ?? '',
+      rmsSubscribeTopic: deviceData?.rmsSubscribeTopic ?? '',
+      aiSubscribeTopic: deviceData?.aiSubscribeTopic ?? ''
+    });
+
+    const resolvedDeviceId =
+      deviceData?.deviceId ??
+      siteData?.deviceId ??
+      this.site?.deviceId;
+
+    this.site = {
+      ...(this.site ?? ({} as Site)),
+      siteId: this.site?.siteId ?? siteData?.siteId,
+      deviceId: resolvedDeviceId
+    } as Site;
+  }
+
+  private updateSiteAndDevice(sitePayload: any, devicePayload: Partial<DevicePayload>): void {
+    const siteId = this.site?.siteId;
+    if (!siteId) {
+      this.toastService.showError('Site id is missing, cannot update site');
+      return;
+    }
+
+    this.isLoading = true;
+    this.sitesService.updateSite(siteId, sitePayload).subscribe({
+      next: () => {
+        const deviceId = this.site?.deviceId;
+        if (!deviceId) {
+          this.isLoading = false;
+          this.toastService.showSuccess('Site updated successfully');
+          this.siteAdded.emit({ mode: 'edit' });
+          return;
+        }
+
+        this.devicesService.updateDevice(deviceId, devicePayload).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.toastService.showSuccess('Site updated successfully');
+            this.siteAdded.emit({ mode: 'edit' });
+          },
+          error: () => {
+            this.isLoading = false;
+            this.toastService.showError('Site updated but device update failed');
+          }
+        });
+      },
+      error: () => {
+        this.isLoading = false;
+        this.toastService.showError('Failed to update site');
+      }
+    });
+  }
+
+  private extractCombinedDetails(response: any): any {
+    return response?.data?.pageData ?? response?.data ?? response ?? null;
+  }
+
+  private resolveDeviceData(details: any): any {
+    return details?.device ?? details?.deviceData ?? details;
+  }
+
+  private setDependentLocationOptions(regionId: number | null, subRegionId: number | null): void {
+    if (regionId === null) {
+      this.subRegions = [];
+      this.zones = [];
+      return;
+    }
+
+    const regionNode = this.locationTree.find((region: any) => region.id === regionId);
+    const subRegionNodes = Array.isArray(regionNode?.children) ? regionNode.children : [];
+    this.subRegions = subRegionNodes.map((subRegion: any) => ({
+      label: subRegion.name,
+      value: subRegion.id
+    }));
+
+    if (subRegionId === null) {
+      this.zones = [];
+      return;
+    }
+
+    const selectedSubRegion = subRegionNodes.find((subRegion: any) => subRegion.id === subRegionId);
+    const zoneNodes = Array.isArray(selectedSubRegion?.children) ? selectedSubRegion.children : [];
+    this.zones = zoneNodes.map((zone: any) => ({
+      label: zone.name,
+      value: zone.id
+    }));
+  }
+
+  private toNumberOrNull(value: unknown): number | null {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  private toDateInput(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

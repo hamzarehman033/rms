@@ -22,7 +22,7 @@
                         <label for="siteId">Site Code</label>
                         <input id="siteId" pInputText type="text" formControlName="code" placeholder="e.g., ST-001"
                             class="w-full" />
-                        <small class="error" *ngIf="siteForm.get('siteId')?.invalid && siteForm.get('siteId')?.touched">
+                        <small class="error" *ngIf="siteForm.get('code')?.invalid && siteForm.get('code')?.touched">
                             Site Code is required
                         </small>
                     </div>
@@ -237,7 +237,7 @@
                 <div class="form-actions pt-2" dialogFooter>
                     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
                         (click)="resetForm()"></button>
-                    <button type="submit" pButton label="Submit" icon="pi pi-check"
+                    <button type="submit" pButton [label]="submitLabel" icon="pi pi-check"
                         [disabled]="!mqttForm.valid" (click)="onSubmit()"></button>
                 </div>
             </ng-template>

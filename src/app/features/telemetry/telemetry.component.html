@@ -17,10 +17,10 @@
       </div>
 
       <div class="grid cols-4">
-        <div class="stat"><div class="row"><span class="label">Avg Temp</span><span class="icon primary"><i class="pi pi-chart-line"></i></span></div><div><span class="value">68.2°F</span></div><div class="hint">across 86 sensors</div></div>
-        <div class="stat"><div class="row"><span class="label">Avg Humidity</span><span class="icon info"><i class="pi pi-droplet"></i></span></div><div><span class="value">42%</span></div><div class="hint">within range</div></div>
+        <div class="stat"><div class="row"><span class="label">Avg Temp</span><span class="icon primary"><i class="pi pi-chart-line"></i></span></div><div><span class="value">{{ avgTemperature | number: '1.0-2' }}°C</span></div><div class="hint">from hourly telemetry</div></div>
+        <div class="stat"><div class="row"><span class="label">Avg Humidity</span><span class="icon info"><i class="pi pi-droplet"></i></span></div><div><span class="value">{{ avgHumidity | number: '1.0-2' }}%</span></div><div class="hint">from hourly telemetry</div></div>
         <div class="stat"><div class="row"><span class="label">Pressure</span><span class="icon success"><i class="pi pi-chart-bar"></i></span></div><div><span class="value">1.02 bar</span></div><div class="hint">stable</div></div>
-        <div class="stat"><div class="row"><span class="label">Anomalies</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">3</span></div><div class="hint">in last hour</div></div>
+        <div class="stat"><div class="row"><span class="label">Anomalies</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">{{ anomalyCount }}</span></div><div class="hint">from recent anomalies</div></div>
       </div>
 
       <div class="card">
@@ -34,18 +34,21 @@
           <table class="table" style="margin-top:10px">
             <thead><tr><th>Device</th><th>Reads</th><th>Avg</th></tr></thead>
             <tbody>
-              <tr><td>DV-001 Sector 3</td><td class="mono">3,420</td><td class="mono">71.4°F</td></tr>
-              <tr><td>DV-007 Substation 4</td><td class="mono">2,884</td><td class="mono">238 V</td></tr>
-              <tr><td>DV-008 Line 2</td><td class="mono">2,312</td><td class="mono">1.04 bar</td></tr>
-              <tr><td>DV-003 Warehouse B</td><td class="mono">1,940</td><td class="mono">38.6°F</td></tr>
+              <tr *ngFor="let device of topDeviceActivities">
+                <td>{{ device.deviceLabel }}</td>
+                <td class="mono">{{ device.reads | number: '1.0-0' }}</td>
+                <td class="mono">{{ device.avg }}</td>
+              </tr>
+              <tr *ngIf="topDeviceActivities.length === 0">
+                <td colspan="3" class="muted">No activity data found.</td>
+              </tr>
             </tbody>
           </table>
         </div>
         <div class="card"><h3>Anomaly events</h3><div class="sub">Detected in last 24h</div>
           <div style="margin-top:12px">
-            <div class="alert-item"><div class="sev-bar critical"></div><div><div style="font-weight:500">Temperature spike +12°F</div><div class="meta">DV-001 · 9 min ago</div></div></div>
-            <div class="alert-item"><div class="sev-bar major"></div><div><div style="font-weight:500">Pressure variance 4σ</div><div class="meta">DV-008 · 47 min ago</div></div></div>
-            <div class="alert-item"><div class="sev-bar minor"></div><div><div style="font-weight:500">Humidity drop -18%</div><div class="meta">DV-009 · 2h ago</div></div></div>
+            <div class="alert-item" *ngFor="let event of anomalyEvents"><div class="sev-bar major"></div><div><div style="font-weight:500">{{ event.title }}</div><div class="meta">Device {{ event.deviceId }} · {{ event.timeAgo || (event.eventTime | date: 'MMM d, y h:mm a') }}</div></div></div>
+            <div class="muted" *ngIf="anomalyEvents.length === 0">No anomaly events found.</div>
           </div>
         </div>
       </div>

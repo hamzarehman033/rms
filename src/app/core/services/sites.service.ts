@@ -34,6 +34,10 @@ export class SitesService {
     return this.http.get<any>(`${this.baseUrl}/Site/combined`);
   }
 
+  getSiteById(id: number | string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.url}/${encodeURIComponent(String(id))}`);
+  }
+
   createSite(payload: SiteRecord): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}${this.url}`, payload);
   }
