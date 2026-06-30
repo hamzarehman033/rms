@@ -40,7 +40,7 @@
             optionLabel="label"
             optionValue="value"
             placeholder="Region"
-            (onChange)="onFilterChange()"
+            (onChange)="onRegionFilterChange()"
             [showToggleAll]="false"
             [maxSelectedLabels]="1"
             class="w-full"
@@ -107,32 +107,72 @@
         <span class="label font-semibold">Total Sites</span>
         <span class="icon primary text-xl"><i class="pi pi-server"></i></span>
       </div>
-      <div><span class="value text-3xl font-bold">150</span><span class="delta up font-semibold ml-2">+2.4%</span></div>
-      <div class="hint text-xs">+3 added this week</div>
+      <div>
+        <span class="value text-3xl font-bold">{{ dashboardSummaryView?.totalSites?.current ?? 0 }}</span>
+        <span
+          class="delta font-semibold ml-2"
+          [ngClass]="(dashboardSummaryView?.totalSites?.percentage ?? 0) >= 0 ? 'up' : 'down'"
+        >
+          {{ getSignedValue(dashboardSummaryView?.totalSites?.percentage ?? 0) }}%
+        </span>
+      </div>
+      <div class="hint text-xs">
+        {{ getSignedValue(dashboardSummaryView?.totalSites?.difference ?? 0) }} vs previous period
+      </div>
     </a>
     <a routerLink="/sites" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-success">
       <div class="row">
         <span class="label font-semibold">Online</span>
         <span class="icon success text-xl"><i class="pi pi-wifi"></i></span>
       </div>
-      <div><span class="value text-3xl font-bold">142</span><span class="delta up font-semibold ml-2">+1.1%</span></div>
-      <div class="hint text-xs">94.6% uptime</div>
+      <div>
+        <span class="value text-3xl font-bold">{{ dashboardSummaryView?.onlineOnce?.current ?? 0 }}</span>
+        <span
+          class="delta font-semibold ml-2"
+          [ngClass]="(dashboardSummaryView?.onlineOnce?.percentage ?? 0) >= 0 ? 'up' : 'down'"
+        >
+          {{ getSignedValue(dashboardSummaryView?.onlineOnce?.percentage ?? 0) }}%
+        </span>
+      </div>
+      <div class="hint text-xs">
+        {{ getSignedValue(dashboardSummaryView?.onlineOnce?.difference ?? 0) }} vs previous period
+      </div>
     </a>
     <a routerLink="/alerts" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-warning">
       <div class="row">
         <span class="label font-semibold">Active Alerts</span>
         <span class="icon warning text-xl"><i class="pi pi-exclamation-triangle"></i></span>
       </div>
-      <div><span class="value text-3xl font-bold">7</span><span class="delta down font-semibold ml-2">-12.5%</span></div>
-      <div class="hint text-xs">2 critical · 5 minor</div>
+      <div>
+        <span class="value text-3xl font-bold">{{ dashboardSummaryView?.activeAlerts?.current ?? 0 }}</span>
+        <span
+          class="delta font-semibold ml-2"
+          [ngClass]="(dashboardSummaryView?.activeAlerts?.percentage ?? 0) >= 0 ? 'up' : 'down'"
+        >
+          {{ getSignedValue(dashboardSummaryView?.activeAlerts?.percentage ?? 0) }}%
+        </span>
+      </div>
+      <div class="hint text-xs">
+        {{ getSignedValue(dashboardSummaryView?.activeAlerts?.difference ?? 0) }} vs previous period
+      </div>
     </a>
     <div class="stat border-l-4 border-info">
       <div class="row">
         <span class="label font-semibold">Msgs / min</span>
         <span class="icon info text-xl"><i class="pi pi-chart-line"></i></span>
       </div>
-      <div><span class="value text-3xl font-bold">2,847</span><span class="delta up font-semibold ml-2">+5.8%</span></div>
-      <div class="hint text-xs">ingestion rate</div>
+      <div>
+        <span class="value text-3xl font-bold">{{ (dashboardSummaryView?.messagesPerMinute?.current ?? 0) | number: '1.0-4' }}</span>
+        <span
+          class="delta font-semibold ml-2"
+          [ngClass]="(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) >= 0 ? 'up' : 'down'"
+        >
+          {{ getSignedValue(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) }}%
+        </span>
+      </div>
+      <div class="hint text-xs">
+        {{ getSignedValue(dashboardSummaryView?.messagesPerMinute?.difference ?? 0) }} vs previous period
+      </div>
     </div>
   </div>
 
@@ -312,55 +352,36 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr *ngFor="let location of locationsOverviewRows">
             <td>
-              <a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-001'}">
-                <div class="font-medium text-blue-600">Plant A</div>
-                <div class="muted mono text-xs">LOC-001</div>
+              <a routerLink="/site-dashboard" [queryParams]="{id: location.id}">
+                <div class="font-medium text-blue-600">{{ location.name }}</div>
+                <div class="muted mono text-xs">{{ location.code }}</div>
               </a>
             </td>
-            <td>North</td>
-            <td><span class="badge primary">45</span></td>
-            <td><span class="badge online">● Active</span></td>
+            <td>{{ location.region }}</td>
+            <td><span class="badge primary">{{ location.sites }}</span></td>
             <td>
-              <div class="flex items-center gap-1.5">
-                <div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden">
-                  <div style="height:100%;width:87%;background:#22c55e"></div>
-                </div><span class="text-xs">87%</span>
-              </div>
+              <span
+                class="badge"
+                [ngClass]="(location.status || '').toLowerCase() === 'active' ? 'online' : 'warning'"
+              >● {{ location.status }}</span>
+            </td>
+            <td>
+              <ng-container *ngIf="location.utilization !== null; else noUtilization">
+                <div class="flex items-center gap-1.5">
+                  <div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden">
+                    <div [style.height]="'100%'" [style.width.%]="location.utilization" style="background:#22c55e"></div>
+                  </div><span class="text-xs">{{ location.utilization }}%</span>
+                </div>
+              </ng-container>
+              <ng-template #noUtilization>
+                <span class="text-xs muted">-</span>
+              </ng-template>
             </td>
           </tr>
-          <tr>
-            <td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-002'}">
-                <div class="font-medium text-blue-600">Warehouse B</div>
-                <div class="muted mono text-xs">LOC-002</div>
-              </a></td>
-            <td>Central</td>
-            <td><span class="badge primary">32</span></td>
-            <td><span class="badge online">● Active</span></td>
-            <td>
-              <div class="flex items-center gap-1.5">
-                <div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden">
-                  <div style="height:100%;width:72%;background:#22c55e"></div>
-                </div><span class="text-xs">72%</span>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td><a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-003'}">
-                <div class="font-medium text-blue-600">DC West</div>
-                <div class="muted mono text-xs">LOC-003</div>
-              </a></td>
-            <td>West</td>
-            <td><span class="badge primary">28</span></td>
-            <td><span class="badge online">● Active</span></td>
-            <td>
-              <div class="flex items-center gap-1.5">
-                <div class="flex-1 h-1.5 bg-surface-border rounded overflow-hidden">
-                  <div style="height:100%;width:94%;background:#22c55e"></div>
-                </div><span class="text-xs">94%</span>
-              </div>
-            </td>
+          <tr *ngIf="locationsOverviewRows.length === 0">
+            <td colspan="5" class="text-sm text-muted-foreground">No locations available.</td>
           </tr>
         </tbody>
       </table>
@@ -369,27 +390,20 @@
       <div class="card">
         <h3>Recent Alerts</h3>
         <div class="sub mb-3">Last 24h</div>
-        <div class="alert-item">
-          <div class="sev-bar critical"></div>
-          <div>
-            <div class="font-medium text-sm">Temperature exceeds threshold</div>
-            <div class="meta">DV-003 · 2 min ago</div>
+        <ng-container *ngIf="recentAlerts.length > 0; else noRecentAlerts">
+          <div class="alert-item" *ngFor="let alert of recentAlerts">
+            <div class="sev-bar major"></div>
+            <div>
+              <div class="font-medium text-sm">{{ alert.title }}</div>
+              <div class="meta">
+                Device {{ alert.deviceId }} · {{ alert.timeAgo || (alert.eventTime | date: 'MMM d, y h:mm a') }}
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="alert-item">
-          <div class="sev-bar major"></div>
-          <div>
-            <div class="font-medium text-sm">Device offline > 1h</div>
-            <div class="meta">DV-006 · 1 hr ago</div>
-          </div>
-        </div>
-        <div class="alert-item">
-          <div class="sev-bar minor"></div>
-          <div>
-            <div class="font-medium text-sm">Battery below 30%</div>
-            <div class="meta">DV-009 · 12 min ago</div>
-          </div>
-        </div>
+        </ng-container>
+        <ng-template #noRecentAlerts>
+          <div class="text-sm text-muted-foreground">No recent alerts found.</div>
+        </ng-template>
       </div>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsDirective, NgxEchartsModule } from 'ngx-echarts';
 import * as echarts from 'echarts';
@@ -19,13 +19,19 @@ export interface LineChartOptions {
   templateUrl: './line-chart.component.html',
   styleUrl: './line-chart.component.css'
 })
-export class LineChartComponent implements OnInit {
+export class LineChartComponent implements OnInit, OnChanges {
   @Input() options!: LineChartOptions;
 
   chartOptions: any;
 
   ngOnInit() {
     this.initChart();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['options']) {
+      this.initChart();
+    }
   }
 
   private initChart() {

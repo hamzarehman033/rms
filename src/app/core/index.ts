@@ -2,6 +2,7 @@
 export * from './services/theme.service';
 export * from './services/customer.service';
 export * from './services/dashboard.service';
+export * from './services/statistics.service';
 export * from './services/locations.service';
 export * from './services/profile.service';
 export * from './services/settings.service';
