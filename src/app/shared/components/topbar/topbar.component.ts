@@ -7,6 +7,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MenuModule, Menu } from 'primeng/menu';
 import { AuthService } from '../../../core/services/auth.service';
 import { CustomerService } from '../../../core/services/customer.service';
+import { SignalrService } from '../../../core/services/signalr.service';
 import { AppRole } from '../../../core/constants/roles';
 
 @Component({
@@ -26,11 +27,13 @@ export class TopbarComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private signalrService: SignalrService
   ) {}
   showNotifications = false;
 
   status = 'All systems operational';
+  isSocketConnected = false;
   searchQuery = '';
   showCustomerSelector = false;
   selectedCustomerId: string | null = null;
@@ -63,6 +66,13 @@ export class TopbarComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(activeCustomer => {
         this.selectedCustomerId = activeCustomer?.id ?? null;
+      });
+
+    this.signalrService.isConnected$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isConnected) => {
+        this.isSocketConnected = isConnected;
+        this.status = isConnected ? 'All systems operational' : 'Socket disconnected';
       });
   }
 

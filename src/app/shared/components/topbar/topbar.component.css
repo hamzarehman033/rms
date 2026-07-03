@@ -3,3 +3,9 @@
     border: 1px solid var(--sidebar-border);
 
 }
+
+.pulse-dot.disconnected {
+    background: var(--destructive);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    animation: pulse-red 2s infinite;
+}

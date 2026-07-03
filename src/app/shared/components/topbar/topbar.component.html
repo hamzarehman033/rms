@@ -1,5 +1,5 @@
 <header class="topbar">
-  <div class="status"><span class="pulse-dot"></span><span class="mono">All systems operational</span></div>
+  <div class="status"><span class="pulse-dot" [class.disconnected]="!isSocketConnected"></span><span class="mono">{{ status }}</span></div>
   <p-dropdown
     *ngIf="showCustomerSelector"
     [(ngModel)]="selectedCustomerId"
