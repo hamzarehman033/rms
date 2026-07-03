@@ -19,6 +19,7 @@
         <!-- Live Data Section -->
         <div *ngIf="selectedSection === 'live-data'">
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Live Data</h2>
+          <div class="text-xs text-sidebar-foreground opacity-60 mb-3">{{ selectedDeviceDetails?.rmsSubscribeTopic || '-' }}</div>
           
           <!-- Live Data Grid -->
           <div class="grid grid-cols-2 gap-3 mb-4">
@@ -39,7 +40,7 @@
               <div class="text-xs text-sidebar-foreground opacity-60 mb-2">Battery</div>
               <div class="text-sm font-semibold text-sidebar-foreground mb-1">{{ liveData.battery.soc }}</div>
               <div class="h-1 bg-sidebar rounded-full mt-2" style="background: #273549;">
-                <div class="h-full bg-blue-500 rounded-full" style="width: 100%;"></div>
+                <div class="h-full bg-blue-500 rounded-full" [style.width.%]="liveData.battery.backupMins > 0 ? 100 : 0"></div>
               </div>
             </div>
             <!-- Backup -->
@@ -47,6 +48,9 @@
               <div class="text-xs text-sidebar-foreground opacity-60 mb-2">Backup Runtime</div>
               <div class="text-sm font-semibold text-sidebar-foreground">{{ liveData.backup.remaining }}</div>
             </div>
+          </div>
+          <div class="text-xs text-sidebar-foreground opacity-60" *ngIf="lastPacketAt">
+            Last packet: <span class="font-mono">{{ lastPacketAt | date:'yyyy-MM-dd HH:mm:ss' }}</span>
           </div>
         </div>
 
@@ -66,31 +70,33 @@
 
         <!-- Devices Section -->
         <div *ngIf="selectedSection === 'devices'">
-          <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Site Devices</h2>
+          <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Device Details</h2>
           <div class="space-y-3">
             <div class="bg-sidebar-accent rounded p-3 flex items-center gap-3">
               <i class="pi pi-thermometer text-blue-400"></i>
               <div class="flex-1">
-                <div class="text-sm font-medium text-sidebar-foreground">Power Cabinet Sensor</div>
-                <div class="text-xs text-sidebar-foreground opacity-60 font-mono">DV-001</div>
+                <div class="text-sm font-medium text-sidebar-foreground">{{ selectedDeviceDetails?.name || '-' }}</div>
+                <div class="text-xs text-sidebar-foreground opacity-60 font-mono">{{ selectedDeviceDetails?.code || '-' }}</div>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full bg-green-900 text-green-200">online</span>
+              <span class="text-xs px-2 py-1 rounded-full" [ngClass]="isOperational ? 'bg-green-900 text-green-200' : 'bg-amber-900 text-amber-200'">
+                {{ isOperational ? 'online' : 'offline' }}
+              </span>
             </div>
             <div class="bg-sidebar-accent rounded p-3 flex items-center gap-3">
               <i class="pi pi-server text-cyan-400"></i>
               <div class="flex-1">
-                <div class="text-sm font-medium text-sidebar-foreground">Battery Monitor A</div>
-                <div class="text-xs text-sidebar-foreground opacity-60 font-mono">DV-002</div>
+                <div class="text-sm font-medium text-sidebar-foreground">Manufacturer</div>
+                <div class="text-xs text-sidebar-foreground opacity-60 font-mono">{{ packetDeviceInfo.manufacturer || '-' }}</div>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full bg-green-900 text-green-200">online</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-blue-900 text-blue-200">packet</span>
             </div>
             <div class="bg-sidebar-accent rounded p-3 flex items-center gap-3">
               <i class="pi pi-sun text-yellow-400"></i>
               <div class="flex-1">
-                <div class="text-sm font-medium text-sidebar-foreground">Solar Panel Inverter</div>
-                <div class="text-xs text-sidebar-foreground opacity-60 font-mono">DV-003</div>
+                <div class="text-sm font-medium text-sidebar-foreground">Model</div>
+                <div class="text-xs text-sidebar-foreground opacity-60 font-mono">{{ packetDeviceInfo.model || '-' }}</div>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full bg-green-900 text-green-200">online</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-blue-900 text-blue-200">packet</span>
             </div>
           </div>
         </div>
@@ -98,7 +104,8 @@
         <!-- Charts Section -->
         <div *ngIf="selectedSection === 'charts'">
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Solar Output</h2>
-          <p class="text-xs text-sidebar-foreground opacity-60 mb-4">System voltage, load & solar · 24h</p>
+          <p class="text-xs text-sidebar-foreground opacity-60 mb-4">24-hour packet by portalReceiveTime hour</p>
+          <app-line-chart [options]="chartOptions"></app-line-chart>
         </div>
 
         <!-- Specs Section -->
@@ -110,11 +117,19 @@
               <div class="space-y-3">
                 <div>
                   <p class="text-xs text-sidebar-foreground opacity-60">Device Name</p>
-                  <p class="text-sidebar-foreground font-medium">Tower A-1</p>
+                  <p class="text-sidebar-foreground font-medium">{{ selectedDeviceDetails?.name || '-' }}</p>
                 </div>
                 <div>
                   <p class="text-xs text-sidebar-foreground opacity-60">Device ID</p>
-                  <p class="text-sidebar-foreground font-medium font-mono text-sm">DEV-2024-00147</p>
+                  <p class="text-sidebar-foreground font-medium font-mono text-sm">{{ selectedDeviceDetails?.id || '-' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-sidebar-foreground opacity-60">Device Type</p>
+                  <p class="text-sidebar-foreground font-medium">{{ packetDeviceInfo.deviceType || '-' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-sidebar-foreground opacity-60">Manufacturer / Model</p>
+                  <p class="text-sidebar-foreground font-medium">{{ packetDeviceInfo.manufacturer || '-' }} / {{ packetDeviceInfo.model || '-' }}</p>
                 </div>
               </div>
             </div>
@@ -128,11 +143,15 @@
         <div class="space-y-3">
           <div>
             <p class="text-xs text-sidebar-foreground opacity-60">Location</p>
-            <p class="text-sidebar-foreground font-medium">North Building</p>
+            <p class="text-sidebar-foreground font-medium">{{ selectedDeviceDetails?.address || '-' }}</p>
           </div>
           <div>
-            <p class="text-xs text-sidebar-foreground opacity-60">Firmware</p>
-            <p class="text-sidebar-foreground font-medium">v2.3.1</p>
+            <p class="text-xs text-sidebar-foreground opacity-60">MQTT Host</p>
+            <p class="text-sidebar-foreground font-medium">{{ selectedDeviceDetails?.mqttHost || '-' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-sidebar-foreground opacity-60">RMS Topic</p>
+            <p class="text-sidebar-foreground font-medium font-mono">{{ selectedDeviceDetails?.rmsSubscribeTopic || '-' }}</p>
           </div>
         </div>
       </div>

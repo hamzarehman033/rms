@@ -11,6 +11,10 @@ const routes: Routes = [
     path: '',
     component: DeviceDetailComponent,
   },
+  {
+    path: ':id',
+    component: DeviceDetailComponent,
+  },
 ];
 
 @NgModule({
