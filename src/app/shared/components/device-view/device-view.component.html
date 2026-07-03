@@ -26,23 +26,99 @@
         <!-- Status Badge -->
         <div class="flex items-center gap-2">
             <span
-                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                <span class="w-2 h-2 bg-green-600 rounded-full mr-1.5"></span>
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold"
+                [ngClass]="selectedDevice?.status === 'online' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'">
+                <span class="w-2 h-2 rounded-full mr-1.5"
+                    [ngClass]="selectedDevice?.status === 'online' ? 'bg-green-600' : 'bg-gray-500'"></span>
                 {{ selectedDevice?.status | uppercase }}
             </span>
-            <span class="text-xs text-gray-500">Signal: {{ selectedDevice?.signal }}%</span>
+            <span class="text-xs text-gray-500">Signal: {{ selectedDevice?.signal ?? '-' }}</span>
         </div>
 
         <!-- Metrics Grid -->
         <div class="grid grid-cols-2 gap-3">
             <div class="bg-gray-50 rounded-lg p-3">
                 <p class="text-xs text-gray-500 mb-1">Temperature</p>
-                <p class="text-lg font-bold text-blue-600">{{ selectedDevice?.temperature }}°C</p>
+                <p class="text-lg font-bold text-blue-600">{{ selectedDevice?.temperature ?? '-' }}</p>
             </div>
             <div class="bg-gray-50 rounded-lg p-3">
                 <p class="text-xs text-gray-500 mb-1">Power</p>
-                <p class="text-lg font-bold text-yellow-600">{{ selectedDevice?.power }}W</p>
+                <p class="text-lg font-bold text-yellow-600">{{ selectedDevice?.power ?? '-' }}</p>
             </div>
+        </div>
+
+        <!-- Common Details -->
+        <div class="rounded-lg border border-gray-100 divide-y divide-gray-100 text-sm">
+            <div class="flex items-center justify-between px-3 py-2">
+                <span class="text-gray-500">ID</span>
+                <span class="font-medium text-gray-900">{{ selectedDevice?.id ?? '-' }}</span>
+            </div>
+            <div class="flex items-center justify-between px-3 py-2">
+                <span class="text-gray-500">Last Updated</span>
+                <span class="font-medium text-gray-900">{{ selectedDevice?.lastUpdated ?? '-' }}</span>
+            </div>
+        </div>
+
+        <!-- Tower Details -->
+        <div *ngIf="selectedDevice?.lineACurrent !== undefined" class="rounded-lg border border-gray-100 p-3 space-y-2 text-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tower</p>
+            <div class="flex items-center justify-between"><span>Line A Current</span><span class="font-medium">{{ selectedDevice?.lineACurrent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Line A Voltage</span><span class="font-medium">{{ selectedDevice?.lineAVoltage ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Line B Current</span><span class="font-medium">{{ selectedDevice?.lineBCurrent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Line B Voltage</span><span class="font-medium">{{ selectedDevice?.lineBVoltage ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Line C Current</span><span class="font-medium">{{ selectedDevice?.lineCCurrent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Line C Voltage</span><span class="font-medium">{{ selectedDevice?.lineCVoltage ?? '-' }}</span></div>
+        </div>
+
+        <!-- Generator Details -->
+        <div *ngIf="selectedDevice?.gensetAvailable !== undefined" class="rounded-lg border border-gray-100 p-3 space-y-2 text-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Generator</p>
+            <div class="flex items-center justify-between"><span>Available</span><span class="font-medium">{{ selectedDevice?.gensetAvailable ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Control Mode</span><span class="font-medium">{{ selectedDevice?.gensetControlMode ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Run Hours</span><span class="font-medium">{{ selectedDevice?.gensetRunHours ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Running</span><span class="font-medium">{{ selectedDevice?.gensetRunning ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Start Count</span><span class="font-medium">{{ selectedDevice?.gensetStartCount ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Start Failure</span><span class="font-medium">{{ selectedDevice?.gensetStartFailure ?? '-' }}</span></div>
+        </div>
+
+        <!-- Solar Details -->
+        <div *ngIf="selectedDevice?.solarAvailable !== undefined" class="rounded-lg border border-gray-100 p-3 space-y-2 text-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solar</p>
+            <div class="flex items-center justify-between"><span>Available</span><span class="font-medium">{{ selectedDevice?.solarAvailable ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Charging Hours</span><span class="font-medium">{{ selectedDevice?.solarChargingHours ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Controller Comm Fail</span><span class="font-medium">{{ selectedDevice?.solarControllerCommFail ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Controller Count</span><span class="font-medium">{{ selectedDevice?.solarControllerCount ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Current</span><span class="font-medium">{{ selectedDevice?.solarCurrent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Energy Today (Wh)</span><span class="font-medium">{{ selectedDevice?.solarEnergyTodayWh ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Power (W)</span><span class="font-medium">{{ selectedDevice?.solarPowerW ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Voltage</span><span class="font-medium">{{ selectedDevice?.solarVoltage ?? '-' }}</span></div>
+        </div>
+
+        <!-- Battery Details -->
+        <div *ngIf="selectedDevice?.batteryBackupTimeMin !== undefined" class="rounded-lg border border-gray-100 p-3 space-y-2 text-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Battery</p>
+            <div class="flex items-center justify-between"><span>Backup Time (min)</span><span class="font-medium">{{ selectedDevice?.batteryBackupTimeMin ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Charge/Discharge (kW)</span><span class="font-medium">{{ selectedDevice?.batteryChargeDischargeKw ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Current</span><span class="font-medium">{{ selectedDevice?.batteryCurrent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Remaining Capacity (Ah)</span><span class="font-medium">{{ selectedDevice?.batteryRemainingCapacityAh ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Remaining (%)</span><span class="font-medium">{{ selectedDevice?.batteryRemainingPercent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>SOH</span><span class="font-medium">{{ selectedDevice?.batterySoh ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Status</span><span class="font-medium">{{ selectedDevice?.batteryStatus ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Temperature</span><span class="font-medium">{{ selectedDevice?.batteryTemperature ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Total Capacity (Ah)</span><span class="font-medium">{{ selectedDevice?.batteryTotalCapacityAh ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Voltage</span><span class="font-medium">{{ selectedDevice?.batteryVoltage ?? '-' }}</span></div>
+        </div>
+
+        <!-- Rectifier Details -->
+        <div *ngIf="selectedDevice?.rectifierAcFail !== undefined" class="rounded-lg border border-gray-100 p-3 space-y-2 text-sm">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Rectifier</p>
+            <div class="flex items-center justify-between"><span>AC Fail</span><span class="font-medium">{{ selectedDevice?.rectifierAcFail ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Comm Count</span><span class="font-medium">{{ selectedDevice?.rectifierCommCount ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Installed Count</span><span class="font-medium">{{ selectedDevice?.rectifierInstalledCount ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Max Temperature</span><span class="font-medium">{{ selectedDevice?.rectifierMaxTemperature ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Missing</span><span class="font-medium">{{ selectedDevice?.rectifierMissing ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Total Current</span><span class="font-medium">{{ selectedDevice?.rectifierTotalCurrent ?? '-' }}</span></div>
+            <div class="flex items-center justify-between"><span>Total DC Power (W)</span><span class="font-medium">{{ selectedDevice?.rectifierTotalDcPowerW ?? '-' }}</span></div>
         </div>
 
     </div>
