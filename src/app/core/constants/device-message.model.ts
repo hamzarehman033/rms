@@ -195,7 +195,18 @@ export interface DeviceDataEvent {
   topic: string;
   payload: string;
   receivedAt: string;
-  decodedPayload: RawDecodedPayload | DecodedPayload |null;
+  decodedPayload: DecodedPayload;
+  decodingError: string | null;
+  isHexPayload?: boolean;
+  normalizedHexPayload?: string;
+}
+
+export interface RawDeviceDataEvent {
+  deviceId: number;
+  topic: string;
+  payload: string;
+  receivedAt: string;
+  decodedPayload: RawDecodedPayload;
   decodingError: string | null;
   isHexPayload?: boolean;
   normalizedHexPayload?: string;

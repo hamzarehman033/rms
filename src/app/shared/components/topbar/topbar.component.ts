@@ -72,7 +72,7 @@ export class TopbarComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((isConnected) => {
         this.isSocketConnected = isConnected;
-        this.status = isConnected ? 'All systems operational' : 'Socket disconnected';
+        this.status = isConnected ? 'All systems operational' : 'Connection disconnected';
       });
   }
 

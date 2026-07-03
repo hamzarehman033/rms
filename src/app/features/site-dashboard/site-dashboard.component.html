@@ -15,28 +15,28 @@
   <!-- KPI Cards (4 columns) -->
   <div class="grid cols-4">
     <div class="stat">
-      <div class="row"><span class="label">Devices</span><span class="icon success"><i class="pi pi-server"></i></span>
+      <div class="row"><span class="label">Device</span><span class="icon success"><i class="pi pi-server"></i></span>
       </div>
-      <div><span class="value">38</span><span class="text-xs text-success ml-2">↑ 90%</span></div>
-      <div class="hint">out of 42 total</div>
+      <div><span class="value">{{ packetDeviceInfo.model || '-' }}</span></div>
+      <div class="hint">{{packetDeviceInfo.manufacturer}}</div>
     </div>
     <div class="stat">
-      <div class="row"><span class="label">Uptime</span><span class="icon success"><i
+      <div class="row"><span class="label">Battery</span><span class="icon success"><i
             class="pi pi-check-circle"></i></span></div>
-      <div><span class="value">99.1%</span></div>
-      <div class="hint">30-day average</div>
+      <div><span class="value">{{packetDeviceInfo.batteryStatus}}</span></div>
+      <div class="hint">{{'Backup Available: ' + packetDeviceInfo.batteryRemainingPercent + '%'}}</div>
     </div>
     <div class="stat">
-      <div class="row"><span class="label">Active Alerts</span><span class="icon warning"><i
+      <div class="row"><span class="label">Generator</span><span class="icon warning"><i
             class="pi pi-exclamation-triangle"></i></span></div>
-      <div><span class="value">2</span><span class="text-xs text-success ml-2">↓ 50%</span></div>
-      <div class="hint">1 critical · 1 warning</div>
+      <div><span class="value">{{packetDeviceInfo.gensetRunning}}</span></div>
+      <div class="hint">{{'Control Mode: ' + packetDeviceInfo.gensetControlMode}}</div>
     </div>
     <div class="stat">
-      <div class="row"><span class="label">Avg Temp</span><span class="icon info"><i
+      <div class="row"><span class="label">Avg Humidity</span><span class="icon info"><i
             class="pi pi-thermometer"></i></span></div>
-      <div><span class="value">27.3°C</span></div>
-      <div class="hint">across cabinets</div>
+      <div><span class="value">{{packetDeviceInfo.humidity}}</span></div>
+      <div class="hint">Avg Humidity</div>
     </div>
   </div>
 
@@ -44,31 +44,35 @@
   <div class="grid grid-cols-5 gap-3 mb-6">
     <div class="tile p-4 rounded-lg" style="background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.02))">
       <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">System Status</div>
-      <div class="text-lg font-semibold text-success">● Operational</div>
-      <div class="text-xs text-muted-foreground mt-1.5">All systems nominal</div>
+      <div class="text-lg font-semibold" [ngClass]="isOperational ? 'text-success' : 'text-warning'">
+        ● {{ isOperational ? 'Operational' : 'Offline' }}
+      </div>
+      <div class="text-xs text-muted-foreground mt-1.5">
+        {{ isOperational ? 'Connected' : 'Waiting for Connection' }}
+      </div>
     </div>
     <div class="tile p-4 rounded-lg"
       style="background:linear-gradient(135deg,rgba(91,108,255,.08),rgba(91,108,255,.02))">
       <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Power Source</div>
-      <div class="text-lg font-semibold">Grid (230V)</div>
-      <div class="text-xs text-muted-foreground mt-1.5">L1:230V · L2:226V</div>
+      <div class="text-lg font-semibold">{{ liveData.grid.voltage !== '-' ? 'Grid' : '-' }}</div>
+      <div class="text-xs text-muted-foreground mt-1.5">{{ liveData.grid.voltage }}</div>
     </div>
     <div class="tile p-4 rounded-lg"
       style="background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(56,189,248,.02))">
       <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Battery Backup</div>
-      <div class="text-lg font-semibold">100% SoC</div>
-      <div class="text-xs text-muted-foreground mt-1.5">Est. 6.2 hours</div>
+      <div class="text-lg font-semibold">{{ liveData.battery.soc }}</div>
+      <div class="text-xs text-muted-foreground mt-1.5">Est. {{ liveData.backup.available }}</div>
     </div>
     <div class="tile p-4 rounded-lg"
       style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02))">
       <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Solar Output</div>
-      <div class="text-lg font-semibold">4.92 kW</div>
-      <div class="text-xs text-muted-foreground mt-1.5">Today: 28.4 kWh</div>
+      <div class="text-lg font-semibold">{{ liveData.solar.power }}</div>
+      <div class="text-xs text-muted-foreground mt-1.5">Today: {{ liveData.solar.today }}</div>
     </div>
     <div class="tile p-4 rounded-lg" style="background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.02))">
       <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Site Load</div>
-      <div class="text-lg font-semibold">5.16 kW</div>
-      <div class="text-xs text-muted-foreground mt-1.5">Peak: 6.8 kW</div>
+      <div class="text-lg font-semibold">{{ liveData.backup.load }}</div>
+      <div class="text-xs text-muted-foreground mt-1.5">Peak: -</div>
     </div>
   </div>
 
@@ -81,7 +85,6 @@
           <h3 class="font-display">Live Data</h3>
           <p class="muted-sm">Real-time power inputs &amp; subsystems</p>
         </div>
-        <span class="font-mono kicker">Realtime</span>
       </div>
       <div class="grid live-grid">
         <!-- Grid Data -->
@@ -92,12 +95,12 @@
           </div>
           <div class="live-cells cols-2">
             <div>
-              <div class="cell-lbl">GRIDG001</div>
-              <div class="cell-val ok">230</div>
+              <div class="cell-lbl">{{ liveData.grid.device }}</div>
+              <div class="cell-val ok">{{ liveData.grid.voltage }}</div>
             </div>
             <div>
               <div class="cell-lbl">Status</div>
-              <div class="cell-val ok">ON</div>
+              <div class="cell-val ok">{{ liveData.grid.status }}</div>
             </div>
           </div>
         </div>
@@ -110,16 +113,16 @@
           <div class="live-cells cols-2">
             <div>
               <div class="cell-lbl">Current</div>
-              <div class="cell-val warn">18.2</div>
+              <div class="cell-val warn">{{ liveData.solar.current }}</div>
             </div>
             <div>
               <div class="cell-lbl">Power</div>
-              <div class="cell-val warn">4.92</div>
+              <div class="cell-val warn">{{ liveData.solar.power }}</div>
             </div>
           </div>
           <div class="live-foot">
-            <span>Today: <span class="font-mono">28.4 kWh</span></span>
-            <span>Peak: <span class="font-mono">6.1 kW</span></span>
+            <span>Today: <span class="font-mono">{{ liveData.solar.today }}</span></span>
+            <span>Peak: <span class="font-mono">{{ liveData.solar.peak }}</span></span>
           </div>
         </div>
         <!-- Battery -->
@@ -131,15 +134,15 @@
           <div class="live-cells cols-2">
             <div>
               <div class="cell-lbl">Current</div>
-              <div class="cell-val info">0</div>
+              <div class="cell-val info">{{ liveData.battery.current }}</div>
             </div>
             <div>
               <div class="cell-lbl">SoC</div>
-              <div class="cell-val info">100</div>
+              <div class="cell-val info">{{ liveData.battery.soc }}</div>
             </div>
           </div>
           <div class="bar-track">
-            <div class="bar-fill info" style="width:100%"></div>
+            <div class="bar-fill info" [style.width.%]="liveData.battery.backupMins > 0 ? 100 : 0"></div>
           </div>
         </div>
         <!-- UPS / Backup Runtime -->
@@ -151,18 +154,21 @@
           <div class="live-cells cols-3">
             <div>
               <div class="cell-lbl">Available</div>
-              <div class="cell-val ok">6.2 hrs</div>
+              <div class="cell-val ok">{{ liveData.backup.available }}</div>
             </div>
             <div>
               <div class="cell-lbl">Load</div>
-              <div class="cell-val warn">5.16 kW</div>
+              <div class="cell-val warn">{{ liveData.backup.load }}</div>
             </div>
             <div>
               <div class="cell-lbl">Remaining</div>
-              <div class="cell-val info">1h 12m</div>
+              <div class="cell-val info">{{ liveData.backup.remaining }}</div>
             </div>
           </div>
         </div>
+      </div>
+      <div class="muted-sm mt-2" *ngIf="lastPacketAt">
+        Last packet: <span class="font-mono">{{ lastPacketAt | date:'yyyy-MM-dd HH:mm:ss' }}</span>
       </div>
     </div>
 
@@ -171,26 +177,18 @@
       <div class="card-head">
         <div>
           <h3>Site Alerts</h3>
-          <p>Filtered to Plant A</p>
+          <p>From alerts feed</p>
         </div>
-        <span class="kicker font-mono">2 active</span>
+        <span class="kicker font-mono">-</span>
       </div>
       <ul class="alerts-list">
         <li>
           <div class="alert-icon"><i class="pi pi-exclamation-circle-fill"></i></div>
           <div class="alert-body">
-            <div class="font-medium">Solar Inverter Voltage Warning</div>
-            <div class="alert-meta"><span class="font-mono">DV-003</span> · 42 min ago</div>
+            <div class="font-medium">No alert data</div>
+            <div class="alert-meta"><span class="font-mono">-</span></div>
           </div>
-          <span class="sev sev-major">major</span>
-        </li>
-        <li>
-          <div class="alert-icon"><i class="pi pi-info-circle-fill"></i></div>
-          <div class="alert-body">
-            <div class="font-medium">Firmware Update Available</div>
-            <div class="alert-meta"><span class="font-mono">DV-001</span> · 5 hrs ago</div>
-          </div>
-          <span class="sev sev-info">info</span>
+          <span class="sev sev-info">-</span>
         </li>
       </ul>
     </div>
@@ -203,9 +201,9 @@
       <div class="card-head-inline">
         <div>
           <h3 class="font-display">Solar Output</h3>
-          <p class="muted-sm">System voltage, load &amp; solar · 24h</p>
+          <p class="muted-sm">System voltage, load &amp; solar</p>
         </div>
-        <span class="kicker font-mono">General Site Analysis</span>
+        <span class="kicker font-mono">-</span>
       </div>
       <app-line-chart [options]="solarChartOptions"></app-line-chart>
     </div>
@@ -214,55 +212,56 @@
     <div class="card">
       <div class="card-head">
         <div>
-          <h3>Site Devices</h3>
-          <p>5 devices at this location</p>
+          <h3>Site Details</h3>
+          <p>Metadata from Site</p>
         </div>
-        <span class="kicker font-mono">REALTIME</span>
       </div>
       <div class="table-wrap border-t border-border">
         <table class="data-table border-0">
           <thead>
             <tr class="bg-muted">
-              <th class="border-0 px-2 py-3 font-semibold text-xs uppercase text-muted-foreground">Device</th>
-              <th class="border-0 px-2 py-3 font-semibold text-xs uppercase text-muted-foreground">Status</th>
+              <th class="border-0 px-2 py-3 font-semibold text-xs uppercase text-muted-foreground">Property</th>
+              <th class="border-0 px-2 py-3 font-semibold text-xs uppercase text-muted-foreground">Value</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>
-                <div class="dev-cell">
-                  <div class="dev-icon"><i class="pi pi-thermometer"></i></div>
-                  <div>
-                    <div class="dev-name">Power Cabinet Sensor</div>
-                    <div class="dev-meta font-mono">DV-001</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="tag tag-online"><span class="pulse-dot"></span>online</span></td>
+              <td>Device Name</td>
+              <td class="font-mono">{{ selectedDeviceDetails?.name || '-' }}</td>
             </tr>
             <tr>
-              <td>
-                <div class="dev-cell">
-                  <div class="dev-icon"><i class="pi pi-server"></i></div>
-                  <div>
-                    <div class="dev-name">Battery Monitor A</div>
-                    <div class="dev-meta font-mono">DV-002</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="tag tag-online"><span class="pulse-dot"></span>online</span></td>
+              <td>Manufacturer</td>
+              <td class="font-mono">{{ packetDeviceInfo.manufacturer || '-' }}</td>
             </tr>
             <tr>
-              <td>
-                <div class="dev-cell">
-                  <div class="dev-icon"><i class="pi pi-sun"></i></div>
-                  <div>
-                    <div class="dev-name">Solar Panel Inverter</div>
-                    <div class="dev-meta font-mono">DV-003</div>
-                  </div>
-                </div>
+              <td>Model</td>
+              <td class="font-mono">{{ packetDeviceInfo.model || '-' }}</td>
+            </tr>
+            <tr>
+              <td>Status</td>
+              <td>{{ (selectedDeviceDetails?.status || '-') | titlecase }}</td>
+            </tr>
+            <tr>
+              <td>Coordinates</td>
+              <td class="font-mono">{{ selectedDeviceDetails?.coordinates || '-' }}</td>
+            </tr>
+            <tr>
+              <td>Region</td>
+              <td class="font-mono">
+                {{ selectedDeviceDetails?.regionName || '-' }}
               </td>
-              <td><span class="tag tag-online"><span class="pulse-dot"></span>online</span></td>
+            </tr>
+            <tr>
+              <td>Sub Region</td>
+              <td class="font-mono">
+                {{ selectedDeviceDetails?.subRegionName || '-' }}
+              </td>
+            </tr>
+            <tr>
+              <td>Zone</td>
+              <td class="font-mono">
+                {{ selectedDeviceDetails?.zoneName || '-' }}
+              </td>
             </tr>
           </tbody>
         </table>

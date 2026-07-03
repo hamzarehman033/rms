@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
-import { DeviceDataEvent, mapDecodedPayload, RawDecodedPayload } from '../constants/device-message.model';
+import { DecodedPayload, DeviceDataEvent, mapDecodedPayload, RawDecodedPayload, RawDeviceDataEvent } from '../constants/device-message.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -58,12 +58,16 @@ export class SignalrService {
       console.log('SubscribeConfirmed', data);
     });
 
-    this.hubConnection.on('DeviceDataReceived', (data: DeviceDataEvent) => {
-      data.decodedPayload = mapDecodedPayload(data.decodedPayload as RawDecodedPayload);
-      data.payload = "";
-      data.normalizedHexPayload = "";
-      console.log('DeviceDataReceived', data);
-      this.deviceData$.next(data);
+    this.hubConnection.on('DeviceDataReceived', (data: RawDeviceDataEvent) => {
+      const decodedPayload: DecodedPayload = mapDecodedPayload(data.decodedPayload);
+      const deviceDataEvent: DeviceDataEvent = {
+        ...data,
+        decodedPayload,
+        payload: "",
+        normalizedHexPayload: ""
+      };
+      console.log('DeviceDataReceived', deviceDataEvent);
+      this.deviceData$.next(deviceDataEvent);
     });
 
     this.startPromise = this.hubConnection.start()
