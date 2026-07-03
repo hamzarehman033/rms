@@ -2,8 +2,8 @@
   <!-- Page Header -->
   <div class="page-header hstack justify-between items-start">
     <div>
-      <h1>Plant A · Detroit, MI</h1>
-      <p>Real-time monitoring of power systems, devices, and operational metrics.</p>
+      <h1>{{ selectedDeviceDetails?.name || 'Device Dashboard' }} · {{ selectedDeviceDetails?.code || '-' }}</h1>
+       <p>Real-time monitoring of power systems, devices, and operational metrics.</p>
     </div>
     <div class="hstack gap-2">
       <button routerLink="/device-detail" type="submit" class="btn primary" pButton label="Site View" icon="pi pi-server">

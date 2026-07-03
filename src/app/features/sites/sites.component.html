@@ -36,7 +36,7 @@
       <tbody>
         <tr *ngFor="let site of sites">
           <td>
-            <a routerLink="/site-dashboard" [queryParams]="{id: site.siteId}">
+            <a [routerLink]="['/site-dashboard', site.siteId]">
               <div class="font-medium text-blue-600">{{ site.name }}</div>
               <div class="muted mono text-xs">{{ site.code }}</div>
             </a>

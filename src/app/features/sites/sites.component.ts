@@ -67,7 +67,7 @@ export class SitesComponent implements OnInit {
   }
 
   navigateToSiteDashboard(siteId: string | number) {
-    this.router.navigate(['/site-dashboard'], { queryParams: { id: siteId } });
+    this.router.navigate(['/site-dashboard', siteId]);
   }
 
   navigateToSiteDetail(siteId: string | number) {

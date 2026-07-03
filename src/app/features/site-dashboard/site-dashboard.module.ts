@@ -9,6 +9,10 @@ const routes: Routes = [
     path: '',
     component: SiteDashboardComponent,
   },
+  {
+    path: ':id',
+    component: SiteDashboardComponent,
+  },
 ];
 
 @NgModule({

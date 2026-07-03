@@ -1,5 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { DevicesService, ToastService } from '@app/core';
 import { LineChartOptions } from '../../shared/components/chart-components';
+import { Subject, combineLatest } from 'rxjs';
+import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-site-dashboard',
@@ -7,11 +11,62 @@ import { LineChartOptions } from '../../shared/components/chart-components';
   templateUrl: './site-dashboard.component.html',
   styleUrl: './site-dashboard.component.css'
 })
-export class SiteDashboardComponent {
+export class SiteDashboardComponent implements OnInit, OnDestroy {
   solarChartOptions: LineChartOptions;
+  deviceId: string | null = null;
+  isLoadingDevice = false;
+  selectedDeviceDetails: any = null;
 
-  constructor() {
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private route: ActivatedRoute,
+    private devicesService: DevicesService,
+    private toastService: ToastService,
+  ) {
     this.solarChartOptions = this.initSolarChart();
+  }
+
+  ngOnInit(): void {
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
+      .pipe(
+        map(([params, queryParams]) => params.get('id') || queryParams.get('id')),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((id) => {
+        if (!id) {
+          this.deviceId = null;
+          this.selectedDeviceDetails = null;
+          return;
+        }
+
+        this.deviceId = id;
+        this.loadDeviceDetails(id);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadDeviceDetails(id: string): void {
+    this.isLoadingDevice = true;
+    this.devicesService.getDeviceById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const payload = response?.data ?? response;
+          this.selectedDeviceDetails = payload ?? null;
+          this.isLoadingDevice = false;
+        },
+        error: () => {
+          this.selectedDeviceDetails = null;
+          this.isLoadingDevice = false;
+          this.toastService.showError('Failed to load device details');
+        }
+      });
   }
 
   initSolarChart(): LineChartOptions {
