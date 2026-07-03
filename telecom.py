@@ -40,7 +40,7 @@ from urllib.parse import urlparse
 # =============================================================================
 
 #MQTT_BROKER = "127.0.0.1"       # IP, domain, mqtt://domain:1883, or mqtts://domain:8883
-MQTT_BROKER = "broker.emqx.io"
+MQTT_BROKER = "localhost"
 MQTT_PORT = 1883                # Used when MQTT_BROKER has no port
 MQTT_USERNAME = ""              # Empty string means no username
 MQTT_PASSWORD = ""              # Empty string means no password
@@ -49,8 +49,8 @@ MQTT_QOS = 0
 MQTT_RETAIN = False
 
 TENANT_ID = "mobiserve"
-SITE_ID = "ISB0167"
-DEVICE_ID = "SMU02C-MOCK-001"
+SITE_ID = "ISB"
+DEVICE_ID = "MOCK-001"
 
 MQTT_TOPIC = f"telecom/{TENANT_ID}/{SITE_ID}/{DEVICE_ID}/telemetry"
 #telecom/mobiserve/ISB0167/SMU02C-MOCK-001/telemetry
