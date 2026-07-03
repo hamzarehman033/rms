@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DevicePayload, DevicesService, LocationsService, Site, SitesService, ToastService } from '@app/core';
+import { DevicePayload, DevicesService, LocationsService, Site, ToastService } from '@app/core';
 
 interface OptionItem {
   label: string;
@@ -64,7 +64,6 @@ export class AddSiteComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private locationsService: LocationsService,
-    private sitesService: SitesService,
     private devicesService: DevicesService,
     private toastService: ToastService
   ) {
@@ -154,12 +153,18 @@ export class AddSiteComponent implements OnInit {
       };
 
       const devicePayload = {
-        siteId: siteValue.siteId || this.site?.siteId,
-        id: siteValue.siteId || this.site?.siteId,
+        siteId: siteValue.siteId || this.site?.siteId || this.site?.deviceId,
+        id: siteValue.siteId || this.site?.siteId || this.site?.deviceId,
         name: siteValue.siteName,
         code: siteValue.code,
         status: siteValue.status,
         installationDate: new Date(siteValue.installationDate).toISOString(),
+        regionId: Number(locationValue.regionId) || 0,
+        subRegionId: Number(locationValue.subRegionId) || 0,
+        zoneId: Number(locationValue.zoneId) || 0,
+        address: locationValue.address,
+        coordinates: locationValue.coordinates,
+        publishTopic: mqttValue.publishTopic,
         mqttHost: mqttValue.mqttBrokerUrl,
         mqttPort: Number(mqttValue.mqttPort) || 0,
         mqttClientId: mqttValue.clientId,
@@ -177,22 +182,12 @@ export class AddSiteComponent implements OnInit {
       }
 
       this.isLoading = true;
-      this.sitesService.createSiteDetails(sitePayload).subscribe({
+      this.devicesService.createDevice(devicePayload as DevicePayload).subscribe({
         next: (response: any) => {
-          const siteId = response?.data?.id;
-          devicePayload.siteId = siteId;
-          this.devicesService.createDevice(devicePayload).subscribe({
-            next: (response: any) => {
-              this.isLoading = false;
-              this.toastService.showSuccess('Site and device created successfully');
-              this.siteAdded.emit(response);
-              this.resetForm();
-            },
-            error: () => {
-              this.isLoading = false;
-              this.toastService.showError('Site created but device creation failed');
-            }
-          });
+          this.isLoading = false;
+          this.toastService.showSuccess('Site created successfully');
+          this.siteAdded.emit(response);
+          this.resetForm();
         },
         error: () => {
           this.isLoading = false;
@@ -246,7 +241,8 @@ export class AddSiteComponent implements OnInit {
   }
 
   private loadSiteDetailsForEdit(siteId: string | number): void {
-    this.sitesService.getSiteById(siteId).subscribe({
+    const resolvedDeviceId = this.site?.deviceId || siteId;
+    this.devicesService.getDeviceById(resolvedDeviceId).subscribe({
       next: (response: any) => {
         const details = this.extractCombinedDetails(response);
         this.patchEditFormsFromCombinedDetails(details);
@@ -315,34 +311,21 @@ export class AddSiteComponent implements OnInit {
   }
 
   private updateSiteAndDevice(sitePayload: any, devicePayload: Partial<DevicePayload>): void {
-    const siteId = this.site?.siteId;
-    if (!siteId) {
+    const deviceId = this.site?.deviceId || this.site?.siteId;
+    if (!deviceId) {
       this.toastService.showError('Site id is missing, cannot update site');
       return;
     }
 
     this.isLoading = true;
-    this.sitesService.updateSite(siteId, sitePayload).subscribe({
+    this.devicesService.updateDevice(deviceId, {
+      ...devicePayload,
+      ...sitePayload
+    } as Partial<DevicePayload>).subscribe({
       next: () => {
-        const deviceId = this.site?.deviceId;
-        if (!deviceId) {
-          this.isLoading = false;
-          this.toastService.showSuccess('Site updated successfully');
-          this.siteAdded.emit({ mode: 'edit' });
-          return;
-        }
-
-        this.devicesService.updateDevice(deviceId, devicePayload).subscribe({
-          next: () => {
-            this.isLoading = false;
-            this.toastService.showSuccess('Site updated successfully');
-            this.siteAdded.emit({ mode: 'edit' });
-          },
-          error: () => {
-            this.isLoading = false;
-            this.toastService.showError('Site updated but device update failed');
-          }
-        });
+        this.isLoading = false;
+        this.toastService.showSuccess('Site updated successfully');
+        this.siteAdded.emit({ mode: 'edit' });
       },
       error: () => {
         this.isLoading = false;

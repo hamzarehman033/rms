@@ -9,7 +9,6 @@ export * from './services/settings.service';
 export * from './services/users.service';
 export * from './services/tenant.service';
 export * from './services/toast.service';
-export * from './services/sites.service';
 export * from './services/devices.service';
 export * from './services/signalr.service';
 export * from './guards/auth.guard';

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Site, SitesService, ToastService } from '@app/core';
+import { DevicesService, Site, ToastService } from '@app/core';
 
 @Component({
   selector: 'app-sites',
@@ -21,7 +21,7 @@ export class SitesComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private sitesService: SitesService,
+    private devicesService: DevicesService,
     private toastService: ToastService
   ) {}
 
@@ -31,7 +31,7 @@ export class SitesComponent implements OnInit {
 
   private loadSites(): void {
     this.isLoading = true;
-    this.sitesService.getCombinedSites().subscribe({
+    this.devicesService.getDevices().subscribe({
       next: (response: any) => {
         const list = response?.data?.pageData || response?.data || response || [];
         const normalized = Array.isArray(list) ? list : [];
@@ -86,10 +86,10 @@ export class SitesComponent implements OnInit {
 
   private mapApiSite(item: Site ): Site {
     return {
-      siteId: item.siteId,
+      siteId: item.siteId || item.deviceId || (item as any).id,
       siteName: item.siteName || item.name || '',
       siteStatus: item.siteStatus || item.status || 'active',
-      deviceId: item.deviceId,
+      deviceId: item.deviceId || (item as any).id,
       deviceName: item.deviceName,
       deviceCode: item.deviceCode,
       deviceStatus: item.deviceStatus,
