@@ -1,14 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
+import { DeviceDataEvent, mapDecodedPayload, RawDecodedPayload } from '../constants/device-message.model';
 import { environment } from '../../../environments/environment';
-
-export interface DeviceDataEvent {
-  deviceId: number;
-  topic: string;
-  payload: string;
-  receivedAt: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class SignalrService {
@@ -65,6 +59,9 @@ export class SignalrService {
     });
 
     this.hubConnection.on('DeviceDataReceived', (data: DeviceDataEvent) => {
+      data.decodedPayload = mapDecodedPayload(data.decodedPayload as RawDecodedPayload);
+      data.payload = "";
+      data.normalizedHexPayload = "";
       console.log('DeviceDataReceived', data);
       this.deviceData$.next(data);
     });

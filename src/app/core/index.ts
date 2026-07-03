@@ -17,3 +17,4 @@ export * from './interceptors/token-refresh.interceptor';
 export * from './interceptors/error.interceptor';
 export * from './constants/roles';
 export * from './constants/site';
+export * from './constants/device-message.model';
