@@ -2,7 +2,7 @@
   <div class="page-header">
     <div>
       <h1 class="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Customer Management</h1>
-      <p>Manage and monitor customer accounts, subscriptions, and billing information.</p>
+      <p>Manage and monitor customer accounts.</p>
     </div>
   </div>
 
@@ -10,12 +10,12 @@
     <div class="stat">
       <div class="row"><span class="label">Customers</span></div>
       <div><span class="value">{{ totalCustomers }}</span></div>
-      <div class="hint">total accounts</div>
+      <div class="hint">Total accounts</div>
     </div>
     <div class="stat">
       <div class="row"><span class="label">Active</span></div>
       <div><span class="value">{{ activeCustomers }}</span></div>
-      <div class="hint">paying subscriptions</div>
+      <div class="hint">Active accounts</div>
     </div>
     <!-- <div class="stat">
       <div class="row"><span class="label">Revenue</span></div>
@@ -28,10 +28,9 @@
       <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalCustomers }}</span></button>
       <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Active <span class="muted">{{ activeCustomers }}</span></button>
       <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Inactive <span class="muted">{{ inactiveCustomers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Pending <span class="muted">{{ pendingCustomers }}</span></button>
     </div>
     <div class="hstack">
-      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…" (input)="searchTerm = $any($event).target.value"></div>
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by name…" (input)="searchTerm = $any($event).target.value"></div>
       <button class="btn primary" (click)="openAddCustomerDialog()"><i class="pi pi-plus"></i><span>Add
           customer</span></button>
     </div>
@@ -45,8 +44,6 @@
           <th>Email</th>
           <th>Status</th>
           <th>Plan</th>
-          <th>Permissions</th>
-          <th>Joined</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -64,14 +61,6 @@
             <span class="badge primary" *ngIf="customer.plan === 'Standard'">Standard</span>
             <span class="badge info" *ngIf="customer.plan === 'Enterprise'">Enterprise</span>
           </td>
-          <td>
-            <div class="flex flex-wrap gap-1">
-              <span class="badge info" *ngIf="!customer.permissions || customer.permissions.length === 0">No access</span>
-              <span class="badge success" *ngIf="customer.permissions && customer.permissions.length === 8">Full access</span>
-              <span class="muted text-xs" *ngIf="customer.permissions && customer.permissions.length > 0 && customer.permissions.length < 8">{{ customer.permissions.length }} of 8 modules</span>
-            </div>
-          </td>
-          <td class="muted">{{ customer.joined }}</td>
           <td>
             <div class="flex items-center gap-2">
               <button class="btn sm" (click)="openEditCustomerDialog(customer)" title="Edit customer" aria-label="Edit customer">
@@ -95,7 +84,7 @@
 <!-- Add Customer Dialog -->
 <app-modal-dialog [(visible)]="displayAddCustomerDialog" [header]="dialogHeader"
   (onHide)="displayAddCustomerDialog = false">
-  <app-add-customer [customerData]="selectedCustomerForEdit" (customerAdded)="onCustomerAdded($event)" (customerUpdated)="onCustomerUpdated($event)"></app-add-customer>
+  <app-add-customer [customerId]="selectedCustomerIdForEdit" (customerAdded)="onCustomerAdded($event)" (customerUpdated)="onCustomerUpdated($event)"></app-add-customer>
 </app-modal-dialog>
 
 <p-confirmDialog></p-confirmDialog>

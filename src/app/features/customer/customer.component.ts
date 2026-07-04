@@ -15,7 +15,7 @@ export class CustomerComponent implements OnInit {
   isLoading = false;
   searchTerm = '';
   customers: any[] = [];
-  selectedCustomerForEdit: any = null;
+  selectedCustomerIdForEdit: number | string | null = null;
   dialogHeader = 'Add New Customer';
 
   constructor(
@@ -54,13 +54,13 @@ export class CustomerComponent implements OnInit {
   }
 
   openAddCustomerDialog() {
-    this.selectedCustomerForEdit = null;
+    this.selectedCustomerIdForEdit = null;
     this.dialogHeader = 'Add New Customer';
     this.displayAddCustomerDialog = true;
   }
 
   openEditCustomerDialog(customer: any) {
-    this.selectedCustomerForEdit = customer;
+    this.selectedCustomerIdForEdit = customer?.id ?? null;
     this.dialogHeader = 'Edit Customer';
     this.displayAddCustomerDialog = true;
   }
@@ -93,13 +93,13 @@ export class CustomerComponent implements OnInit {
 
   onCustomerAdded(response: any) {
     this.displayAddCustomerDialog = false;
-    this.selectedCustomerForEdit = null;
+    this.selectedCustomerIdForEdit = null;
     this.loadCustomers();
   }
 
   onCustomerUpdated(response: any) {
     this.displayAddCustomerDialog = false;
-    this.selectedCustomerForEdit = null;
+    this.selectedCustomerIdForEdit = null;
     this.loadCustomers();
   }
 
@@ -134,11 +134,7 @@ export class CustomerComponent implements OnInit {
     // Apply search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(c => 
-        c.id.toLowerCase().includes(term) || 
-        c.name.toLowerCase().includes(term) ||
-        c.email.toLowerCase().includes(term)
-      );
+      filtered = filtered.filter(c => String(c.name ?? '').toLowerCase().includes(term));
     }
 
     return filtered;

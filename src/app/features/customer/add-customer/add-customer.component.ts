@@ -10,7 +10,7 @@ import { ToastService } from '../../../core/services/toast.service';
   styleUrl: './add-customer.component.css'
 })
 export class AddCustomerComponent implements OnInit, OnChanges {
-  @Input() customerData: any = null;
+  @Input() customerId: number | string | null = null;
   @Output() customerAdded = new EventEmitter<any>();
   @Output() customerUpdated = new EventEmitter<any>();
 
@@ -50,15 +50,15 @@ export class AddCustomerComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    if (this.customerData) {
+    if (this.customerId !== null && this.customerId !== undefined) {
       this.isEditMode = true;
       this.fetchAndPopulateCustomerData();
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['customerData'] && !changes['customerData'].firstChange) {
-      if (this.customerData) {
+    if (changes['customerId'] && !changes['customerId'].firstChange) {
+      if (this.customerId !== null && this.customerId !== undefined) {
         this.isEditMode = true;
         this.fetchAndPopulateCustomerData();
       } else {
@@ -69,35 +69,31 @@ export class AddCustomerComponent implements OnInit, OnChanges {
   }
 
   private fetchAndPopulateCustomerData(): void {
-    if (this.customerData && this.customerData.id) {
-      this.isLoading = true;
-      this.customerService.getCustomerById(this.customerData.id).subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-          const customer = response.data || response;
-          this.populateFormWithCustomerData(customer);
-        },
-        error: (error: any) => {
-          this.isLoading = false;
-          console.error('Error fetching customer details:', error);
-          // Fallback to using the passed customer data
-          this.populateFormWithCustomerData(this.customerData);
-        }
-      });
+    if (this.customerId === null || this.customerId === undefined) {
+      return;
     }
+
+    this.isLoading = true;
+    this.customerService.getCustomerById(this.customerId).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+        const customer = response.data || response;
+        this.populateFormWithCustomerData(customer);
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        console.error('Error fetching customer details:', error);
+        this.toastService.showError('Error', 'Failed to load customer details. Please try again.');
+      }
+    });
   }
 
   private populateFormWithCustomerData(customer: any): void {
     if (customer) {
-      // Extract name and logo from the combined name field if in edit mode
-      const fullName = customer.name || '';
-      const nameParts = fullName.split(' ');
-      const name = nameParts.slice(0, -1).join(' ') || '';
-      const logo = nameParts[nameParts.length - 1] || '';
 
       this.customerForm.patchValue({
-        name: name,
-        logo: logo,
+        name: customer.name || '',
+        logo: customer.logo || '',
         slug: customer.slug || '',
         email: customer.email || '',
         status: customer.status == 'Active',
@@ -116,16 +112,16 @@ export class AddCustomerComponent implements OnInit, OnChanges {
     const formValue = this.customerForm.value;
 
     const payload = {
-      id: this.isEditMode ? this.customerData.id : 0,
-      name: `${formValue.name} ${formValue.logo}`,
-      description: formValue.description || `${formValue.name} ${formValue.logo}`,
-      slug: formValue.slug,
+      id: this.isEditMode ? this.customerId : 0,
+      name: `${formValue.name}`,
+      description: formValue.description || '',
+      slug: formValue?.slug,
       status: formValue.status ? 'Active' : 'Inactive',
       email: formValue.email
     };
 
     if (this.isEditMode) {
-      this.customerService.updateCustomer(this.customerData.id, payload).subscribe({
+      this.customerService.updateCustomer(this.customerId!, payload).subscribe({
         next: (response: any) => {
           this.isLoading = false;
           this.toastService.showSuccess('Success', 'Customer updated successfully.');
@@ -165,7 +161,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
     if (!this.isLoading) {
       this.customerForm.reset();
       this.isEditMode = false;
-      this.customerData = null;
+      this.customerId = null;
     }
   }
 }
