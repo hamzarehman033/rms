@@ -11,8 +11,8 @@
           <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">7d</button>
           <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">30d</button>
         </div>
-        <select class="select" style="width:auto">
-          <option>All devices</option><option>DV-001 · Sector 3</option><option>DV-003 · Warehouse B</option>
+        <select class="select" style="width:auto" [value]="selectedDevice" (change)="onDeviceFilterChange($any($event.target).value)">
+          <option *ngFor="let option of deviceOptions" [value]="option.value">{{ option.label }}</option>
         </select>
       </div>
 

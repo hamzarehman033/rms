@@ -113,11 +113,11 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.totalSites?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          {{ getSignedValue(dashboardSummaryView?.totalSites?.percentage ?? 0) }}%
+          <!-- {{ getSignedValue(dashboardSummaryView?.totalSites?.percentage ?? 0) }} -->
         </span>
       </div>
       <div class="hint text-xs">
-        {{ getSignedValue(dashboardSummaryView?.totalSites?.difference ?? 0) }} vs previous period
+        {{ "Total Site count"}}
       </div>
     </a>
     <a routerLink="/sites" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-success">
@@ -131,11 +131,11 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.onlineOnce?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          {{ getSignedValue(dashboardSummaryView?.onlineOnce?.percentage ?? 0) }}%
+          <!-- {{ getSignedValue(dashboardSummaryView?.onlineOnce?.percentage ?? 0) }}% -->
         </span>
       </div>
       <div class="hint text-xs">
-        {{ getSignedValue(dashboardSummaryView?.onlineOnce?.difference ?? 0) }} vs previous period
+        {{ "Total Online Devices"}} 
       </div>
     </a>
     <a routerLink="/alerts" class="stat cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-warning">
@@ -149,11 +149,11 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.activeAlerts?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          {{ getSignedValue(dashboardSummaryView?.activeAlerts?.percentage ?? 0) }}%
+          <!-- {{ getSignedValue(dashboardSummaryView?.activeAlerts?.percentage ?? 0) }}% -->
         </span>
       </div>
       <div class="hint text-xs">
-        {{ getSignedValue(dashboardSummaryView?.activeAlerts?.difference ?? 0) }} vs previous period
+        {{ "Total Active Alerts"}} 
       </div>
     </a>
     <div class="stat border-l-4 border-info">
@@ -167,11 +167,11 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          {{ getSignedValue(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) }}%
+          <!-- {{ getSignedValue(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) }}% -->
         </span>
       </div>
       <div class="hint text-xs">
-        {{ getSignedValue(dashboardSummaryView?.messagesPerMinute?.difference ?? 0) }} vs previous period
+        {{ "Messages per minute"}} 
       </div>
     </div>
   </div>
@@ -204,43 +204,21 @@
       <div class="sub">Site status summary</div>
       <div class="mt-4 pt-4 border-t border-surface-border">
         <h4 class="text-sm mb-2">Notifications This Week</h4>
-        <div class="bar-row h-62 gap-1">
-          <div class="bar-col">
+        <div class="bar-row h-62 gap-1" *ngIf="hasWeeklyAlertsData(); else noWeeklyAlertsData">
+          <div class="bar-col" *ngFor="let alert of weeklyAlerts">
             <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 130px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Mon</span>
-          </div>
-          <div class="bar-col">
-            <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 145px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Tue</span>
-          </div>
-          <div class="bar-col">
-            <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 120px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Wed</span>
-          </div>
-          <div class="bar-col">
-            <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 135px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Thu</span>
-          </div>
-          <div class="bar-col">
-            <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 128px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Fri</span>
-          </div>
-          <div class="bar-col">
-            <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 150px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Sat</span>
-          </div>
-          <div class="bar-col">
-            <div class="bar-stack h-full">
-              <div class="bar warning" style="height: 115px; background: #eab308;"></div>
-            </div><span class="bar-label text-xs">Sun</span>
+              <div
+                class="bar warning"
+                [style.height.px]="getWeeklyAlertBarHeight(alert.value)"
+                style="background: #eab308;"
+              ></div>
+            </div>
+            <span class="bar-label text-xs">{{ alert.day }}</span>
           </div>
         </div>
+        <ng-template #noWeeklyAlertsData>
+          <div class="text-sm text-muted-foreground">-</div>
+        </ng-template>
       </div>
     </div>
   </div>
@@ -258,18 +236,39 @@
         </div>
       </div>
       <div class="chart">
-        <app-line-chart [options]="telemetryChartOptions"></app-line-chart>
+        <ng-container *ngIf="hasTelemetryData(); else noTelemetryData">
+          <app-line-chart [options]="telemetryChartOptions"></app-line-chart>
+        </ng-container>
+        <ng-template #noTelemetryData>
+          <div class="text-sm text-muted-foreground">-</div>
+        </ng-template>
       </div>
     </div>
 
     <div class="card">
-      <h3>Site Breakdown</h3>
-      <div class="sub">By type · 150 total</div>
-      <app-pie-chart [options]="siteBreakdownOptions"></app-pie-chart>
+      <h3>Recent Devices</h3>
+      <div class="sub">Top 5 by activity in last hour</div>
+      <ng-container *ngIf="hasRecentDevicesData(); else noRecentDevicesData">
+        <div class="vstack gap-3 mt-3">
+          <div class="flex items-center justify-between" *ngFor="let device of recentDevices">
+            <div>
+              <div class="font-medium text-sm">{{ device.name }}</div>
+              <div class="muted mono text-xs">{{ device.id }}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-semibold text-sm">{{ device.messageCount }} msgs</div>
+              <div class="muted text-xs">{{ device.lastSeen }}</div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #noRecentDevicesData>
+        <div class="text-sm text-muted-foreground">-</div>
+      </ng-template>
     </div>
   </div>
 
-  <div class="grid cols-3">
+  <!-- <div class="grid cols-3">
     <div class="card span-2 p-0">
       <div class="px-5 py-4 border-b border-surface-border">
         <h3>Recent Sites</h3>
@@ -286,41 +285,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr *ngFor="let site of recentSites">
             <td>
-              <a routerLink="/site-dashboard" [queryParams]="{id: 'LOC-001'}">
-                <div class="font-medium text-blue-600">Sector 3</div>
-                <div class="muted mono text-xs">DV-001</div>
+              <a routerLink="/site-dashboard" [queryParams]="{id: site.id}">
+                <div class="font-medium text-blue-600">{{ site.name }}</div>
+                <div class="muted mono text-xs">{{ site.code }}</div>
               </a>
             </td>
-            <td><span class="badge online">● Online</span></td>
-            <td>Plant A · Sector 3</td>
-            <td class="mono">87%</td>
-            <td class="muted">2s ago</td>
+            <td><span class="badge" [ngClass]="getStatusBadgeClass(site.status)">● {{ site.status }}</span></td>
+            <td>{{ site.location }}</td>
+            <td class="mono">{{ site.battery }}</td>
+            <td class="muted">{{ site.lastSeen }}</td>
           </tr>
-          <tr>
-            <td>
-              <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-002'}">
-                <div class="font-medium text-blue-600">North Perimeter</div>
-                <div class="muted mono text-xs">DV-002</div>
-              </a>
-            </td>
-            <td><span class="badge online">● Online</span></td>
-            <td>Perimeter · North</td>
-            <td class="mono">100%</td>
-            <td class="muted">5s ago</td>
-          </tr>
-          <tr>
-            <td>
-              <a routerLink="/site-dashboard" [queryParams]="{id: 'DV-003'}">
-                <div class="font-medium text-blue-600">Warehouse B</div>
-                <div class="muted mono text-xs">DV-003</div>
-              </a>
-            </td>
-            <td><span class="badge warning">● Warning</span></td>
-            <td>Warehouse B</td>
-            <td class="mono">22%</td>
-            <td class="muted">1m ago</td>
+          <tr *ngIf="recentSites.length === 0">
+            <td colspan="5" class="text-sm text-muted-foreground">No recent sites found.</td>
           </tr>
         </tbody>
       </table>
@@ -330,10 +308,15 @@
       <div class="card">
         <h3>Weekly Activity</h3>
         <div class="sub">Online vs offline counts</div>
-        <app-bar-chart [options]="weeklyActivityOptions"></app-bar-chart>
+        <ng-container *ngIf="hasWeeklyActivityData(); else noWeeklyActivityData">
+          <app-bar-chart [options]="weeklyActivityOptions"></app-bar-chart>
+        </ng-container>
+        <ng-template #noWeeklyActivityData>
+          <div class="text-sm text-muted-foreground">-</div>
+        </ng-template>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <div class="grid cols-3">
     <div class="card span-2 p-0">

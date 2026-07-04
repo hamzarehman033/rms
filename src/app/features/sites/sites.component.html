@@ -8,10 +8,9 @@
   </div>
   <div class="hstack justify-between flex-wrap gap-3">
     <div class="tabs">
-      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">150</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Online <span class="muted">142</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Warning <span class="muted">5</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Offline <span class="muted">3</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="onTabChange(0)">All <span class="muted">{{ getAllCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="onTabChange(1)">Online <span class="muted">{{ getOnlineCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="onTabChange(2)">Offline <span class="muted">{{ getOfflineCount() }}</span></button>
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>

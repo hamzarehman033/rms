@@ -10,6 +10,7 @@ interface TelemetryHourlyStat {
 }
 
 interface TopDeviceActivity {
+  deviceId: string;
   deviceLabel: string;
   reads: number;
   avg: string;
@@ -20,6 +21,11 @@ interface AnomalyEvent {
   deviceId: string;
   timeAgo: string;
   eventTime: string;
+}
+
+interface DeviceFilterOption {
+  value: string;
+  label: string;
 }
 
 @Component({
@@ -36,8 +42,13 @@ export class TelemetryComponent implements OnInit {
   avgTemperature = 0;
   avgHumidity = 0;
   anomalyCount = 0;
+  selectedDevice = 'all';
 
+  deviceOptions: DeviceFilterOption[] = [{ value: 'all', label: 'All devices' }];
+
+  allTopDeviceActivities: TopDeviceActivity[] = [];
   topDeviceActivities: TopDeviceActivity[] = [];
+  allAnomalyEvents: AnomalyEvent[] = [];
   anomalyEvents: AnomalyEvent[] = [];
 
   constructor(private statisticsService: StatisticsService) {}
@@ -90,10 +101,15 @@ export class TelemetryComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
-          this.topDeviceActivities = this.extractTopDeviceActivities(result);
+          this.allTopDeviceActivities = this.extractTopDeviceActivities(result);
+          this.syncDeviceOptions();
+          this.applyDeviceFilter();
         },
         error: () => {
+          this.allTopDeviceActivities = [];
           this.topDeviceActivities = [];
+          this.syncDeviceOptions();
+          this.applyDeviceFilter();
         }
       });
 
@@ -102,14 +118,78 @@ export class TelemetryComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
-          this.anomalyEvents = this.extractAnomalyEvents(result);
-          this.anomalyCount = this.anomalyEvents.length;
+          this.allAnomalyEvents = this.extractAnomalyEvents(result);
+          this.syncDeviceOptions();
+          this.applyDeviceFilter();
         },
         error: () => {
+          this.allAnomalyEvents = [];
           this.anomalyEvents = [];
-          this.anomalyCount = 0;
+          this.syncDeviceOptions();
+          this.applyDeviceFilter();
         }
       });
+  }
+
+  onDeviceFilterChange(value: string): void {
+    this.selectedDevice = value || 'all';
+    this.applyDeviceFilter();
+  }
+
+  private applyDeviceFilter(): void {
+    if (this.selectedDevice === 'all') {
+      this.topDeviceActivities = [...this.allTopDeviceActivities];
+      this.anomalyEvents = [...this.allAnomalyEvents];
+      this.anomalyCount = this.anomalyEvents.length;
+      return;
+    }
+
+    this.topDeviceActivities = this.allTopDeviceActivities.filter(
+      item => item.deviceId === this.selectedDevice
+    );
+
+    this.anomalyEvents = this.allAnomalyEvents.filter(
+      item => item.deviceId === this.selectedDevice
+    );
+
+    this.anomalyCount = this.anomalyEvents.length;
+  }
+
+  private syncDeviceOptions(): void {
+    const map = new Map<string, string>();
+
+    this.allTopDeviceActivities.forEach(item => {
+      if (!item.deviceId || item.deviceId === '-') {
+        return;
+      }
+
+      if (!map.has(item.deviceId)) {
+        map.set(item.deviceId, item.deviceLabel);
+      }
+    });
+
+    this.allAnomalyEvents.forEach(item => {
+      const deviceId = String(item?.deviceId ?? '').trim();
+      if (!deviceId) {
+        return;
+      }
+
+      if (!map.has(deviceId)) {
+        map.set(deviceId, deviceId);
+      }
+    });
+
+    this.deviceOptions = [
+      { value: 'all', label: 'All devices' },
+      ...Array.from(map.entries())
+        .map(([value, label]) => ({ value, label: `${value} · ${label}` }))
+        .sort((a, b) => a.label.localeCompare(b.label))
+    ];
+
+    const selectedStillExists = this.deviceOptions.some(option => option.value === this.selectedDevice);
+    if (!selectedStillExists) {
+      this.selectedDevice = 'all';
+    }
   }
 
   private extractPayloadArray(response: any): any[] {
@@ -180,6 +260,7 @@ export class TelemetryComponent implements OnInit {
 
   private extractTopDeviceActivities(response: any): TopDeviceActivity[] {
     return this.extractPayloadArray(response).map((item: any) => ({
+      deviceId: String(item?.deviceId ?? item?.id ?? item?.deviceName ?? item?.name ?? '-'),
       deviceLabel: String(item?.deviceName ?? item?.name ?? item?.deviceId ?? '-'),
       reads: Number(item?.reads ?? item?.activityCount ?? item?.count ?? 0),
       avg: this.extractDeviceAverage(item)

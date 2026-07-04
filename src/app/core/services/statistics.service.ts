@@ -3,6 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface RecentSitesFilterRequest {
+  regionId: number;
+  subRegionId: number;
+  zoneId: number;
+  status: number;
+  deviceId: number;
+  timeRange: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -30,5 +39,13 @@ export class StatisticsService {
 
   getRecentAnomalies(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}${this.url}/GetRecentAnomalies`);
+  }
+
+  getWeeklyAlerts(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.url}/weekly-alerts`);
+  }
+
+  getRecentSites(filters: RecentSitesFilterRequest): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.url}/recent-sites`, filters);
   }
 }

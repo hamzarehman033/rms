@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
 import { CustomerService } from '../../core/services/customer.service';
 import { LocationsService } from '../../core/services/locations.service';
-import { StatisticsService } from '../../core/services/statistics.service';
+import { RecentSitesFilterRequest, StatisticsService } from '../../core/services/statistics.service';
 
 interface RecentAnomaly {
   title: string;
@@ -30,6 +30,28 @@ interface DashboardSummary {
   onlineOnce: DashboardMetric;
   activeAlerts: DashboardMetric;
   messagesPerMinute: DashboardMetric;
+}
+
+interface WeeklyAlert {
+  day: string;
+  value: number;
+}
+
+interface RecentSite {
+  id: string;
+  name: string;
+  code: string;
+  status: string;
+  location: string;
+  battery: string;
+  lastSeen: string;
+}
+
+interface RecentDeviceActivity {
+  id: string;
+  name: string;
+  messageCount: number;
+  lastSeen: string;
 }
 
 interface FilterOption {
@@ -60,6 +82,8 @@ interface LocationOverviewRow {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
+  private readonly weekDayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
   hasActiveCustomer = false;
   private readonly destroyRef = inject(DestroyRef);
   private pendingStatsRequests = 0;
@@ -70,8 +94,11 @@ export class DashboardComponent implements OnInit {
   telemetryEnvironmentCounts: any = null;
   telemetryHourlyTempHumidityStats: any = null;
   top5DevicesByActivityInLastHour: any = null;
+  recentDevices: RecentDeviceActivity[] = [];
   recentAnomalies: any = null;
   recentAlerts: RecentAnomaly[] = [];
+  weeklyAlerts: WeeklyAlert[] = this.weekDayOrder.map(day => ({ day, value: 0 }));
+  recentSites: RecentSite[] = [];
   private locationTree: LocationTreeNode[] = [];
   locationsOverviewRows: LocationOverviewRow[] = [];
 
@@ -82,16 +109,16 @@ export class DashboardComponent implements OnInit {
   ) {}
   // Live Telemetry Chart Data
   telemetryChartOptions = {
-    xAxisData: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am'],
+    xAxisData: [] as string[],
     seriesData: [
-      { 
-        name: 'Temperature °C', 
-        data: [65, 62, 60, 68, 75, 78, 72, 68, 65],
+      {
+        name: 'Temperature °C',
+        data: [] as number[],
         color: '#5b6cff'
       },
-      { 
-        name: 'Humidity %', 
-        data: [55, 58, 62, 65, 60, 55, 58, 62, 60],
+      {
+        name: 'Humidity %',
+        data: [] as number[],
         color: '#38bdf8'
       }
     ],
@@ -100,31 +127,18 @@ export class DashboardComponent implements OnInit {
     showSymbol: false
   };
 
-  // Device Breakdown Chart Data
-  siteBreakdownOptions = {
-    data: [
-      { name: 'Sensors', value: 86, color: '#5b6cff' },
-      { name: 'Gateways', value: 24, color: '#8a7bff' },
-      { name: 'Actuators', value: 28, color: '#38bdf8' },
-      { name: 'Cameras', value: 12, color: '#22c55e' }
-    ],
-    height: '280px',
-    donut: true,
-    showLegend: false
-  };
-
   // Weekly Activity Chart Data
   weeklyActivityOptions = {
-    xAxisData: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    xAxisData: [...this.weekDayOrder],
     seriesData: [
-      { 
-        name: 'Online', 
-        data: [140, 150, 135, 160, 148, 130, 155],
+      {
+        name: 'Online',
+        data: [] as number[],
         color: '#22c55e'
       },
-      { 
-        name: 'Offline', 
-        data: [6, 4, 8, 3, 5, 10, 4],
+      {
+        name: 'Offline',
+        data: [] as number[],
         color: '#ef4444'
       }
     ],
@@ -188,8 +202,53 @@ export class DashboardComponent implements OnInit {
     this.loadTelemetryHourlyTempHumidityStats();
     this.loadTop5DevicesByActivityInLastHour();
     this.loadRecentAnomalies();
+    this.loadWeeklyAlerts();
+    this.loadRecentSites();
     this.loadLocationsOverview();
   }
+
+  private loadWeeklyAlerts(): void {
+    this.startStatsRequest();
+    this.statisticsService
+      .getWeeklyAlerts()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.endStatsRequest();
+        })
+      )
+      .subscribe({
+        next: result => {
+          this.weeklyAlerts = this.extractWeeklyAlerts(result);
+        },
+        error: () => {
+          this.weeklyAlerts = this.weekDayOrder.map(day => ({ day, value: 0 }));
+        }
+      });
+  }
+
+  private loadRecentSites(): void {
+    const filters = {};
+
+    this.startStatsRequest();
+    this.statisticsService
+      .getRecentSites(filters as RecentSitesFilterRequest)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.endStatsRequest();
+        })
+      )
+      .subscribe({
+        next: result => {
+          this.recentSites = this.extractRecentSites(result);
+        },
+        error: () => {
+          this.recentSites = [];
+        }
+      });
+  }
+
 
   private loadLocationsOverview(): void {
     this.startStatsRequest();
@@ -354,11 +413,46 @@ export class DashboardComponent implements OnInit {
       .subscribe({
         next: result => {
           this.top5DevicesByActivityInLastHour = result;
+          this.recentDevices = this.extractRecentDevices(result);
         },
         error: () => {
           this.top5DevicesByActivityInLastHour = null;
+          this.recentDevices = [];
         }
       });
+  }
+
+  private extractRecentDevices(response: any): RecentDeviceActivity[] {
+    const payload = Array.isArray(response)
+      ? response
+      : Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response?.data?.pageData)
+      ? response.data.pageData
+      : [];
+
+    return payload
+      .filter((item: any) => !!item && typeof item === 'object')
+      .map((item: any, index: number) => {
+        const id = String(item?.id ?? item?.deviceId ?? item?.code ?? `DEVICE-${index + 1}`);
+        const name = String(item?.name ?? item?.deviceName ?? item?.title ?? item?.deviceId ?? '-');
+        const messageCount = Number(item?.reads ?? item?.messageCount ?? item?.count ?? item?.messages ?? 0);
+        const lastSeenValue = item?.lastSeen ?? item?.eventTime ?? item?.updatedAt;
+        const avgTemperature = Number(item?.avgTemperature);
+        const avgTempText = Number.isFinite(avgTemperature) ? `Avg ${avgTemperature.toFixed(2)} C` : '-';
+        const lastSeenText =
+          lastSeenValue !== undefined && lastSeenValue !== null
+            ? this.formatLastSeen(lastSeenValue)
+            : avgTempText;
+
+        return {
+          id,
+          name,
+          messageCount: Number.isFinite(messageCount) ? Math.max(0, Math.round(messageCount)) : 0,
+          lastSeen: lastSeenText
+        };
+      })
+      .slice(0, 5);
   }
 
   private loadRecentAnomalies(): void {
@@ -410,6 +504,88 @@ export class DashboardComponent implements OnInit {
     }));
   }
 
+  private extractWeeklyAlerts(response: any): WeeklyAlert[] {
+    const payload = Array.isArray(response)
+      ? response
+      : Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response?.data?.pageData)
+      ? response.data.pageData
+      : response?.data?.pageData && typeof response.data.pageData === 'object'
+      ? [response.data.pageData]
+      : response?.data && typeof response.data === 'object'
+      ? [response.data]
+      : response && typeof response === 'object'
+      ? [response]
+      : [];
+
+    const valuesByDay = new Map<string, number>();
+
+    payload.forEach((item: any) => {
+      if (!item || typeof item !== 'object') {
+        return;
+      }
+
+      const day =
+        this.normalizeWeekDay(item?.day ?? item?.label ?? item?.name) ??
+        this.getWeekDayFromDate(item?.date);
+      const value = Number(item?.value ?? item?.count ?? item?.alerts ?? item?.total ?? 0);
+
+      if (day) {
+        const previous = valuesByDay.get(day) ?? 0;
+        valuesByDay.set(day, previous + (Number.isFinite(value) ? value : 0));
+        return;
+      }
+
+      this.weekDayOrder.forEach(weekDay => {
+        const key = this.getWeekDayKey(weekDay);
+        const matchedKey = Object.keys(item).find(k => this.getWeekDayKey(k) === key);
+
+        if (matchedKey) {
+          const dayValue = Number(item[matchedKey]);
+          valuesByDay.set(weekDay, Number.isFinite(dayValue) ? dayValue : 0);
+        }
+      });
+    });
+
+    return this.weekDayOrder.map(day => ({
+      day,
+      value: Math.max(0, valuesByDay.get(day) ?? 0)
+    }));
+  }
+
+  private extractRecentSites(response: any): RecentSite[] {
+    const payload = Array.isArray(response)
+      ? response
+      : Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response?.data?.pageData)
+      ? response.data.pageData
+      : [];
+
+    return payload
+      .filter((item: any) => !!item && typeof item === 'object')
+      .map((item: any, index: number) => {
+        const siteId = String(item?.id ?? item?.siteId ?? item?.code ?? `SITE-${index + 1}`);
+        const lastSeenValue = item?.lastSeen ?? item?.lastSeenAt ?? item?.updatedAt ?? item?.eventTime;
+        const lastSeenText = item?.lastSeenText ?? item?.timeAgo;
+        const batteryNumeric = Number(item?.battery ?? item?.batteryLevel ?? item?.batteryPercentage);
+        const battery = Number.isFinite(batteryNumeric)
+          ? `${Math.max(0, Math.min(100, Math.round(batteryNumeric)))}%`
+          : String(item?.battery ?? item?.batteryLevel ?? '-');
+
+        return {
+          id: siteId,
+          name: String(item?.name ?? item?.siteName ?? item?.title ?? '-'),
+          code: String(item?.code ?? item?.deviceCode ?? item?.deviceId ?? siteId),
+          status: String(item?.status ?? item?.siteStatus ?? 'Unknown'),
+          location: String(item?.location ?? item?.region ?? item?.address ?? '-'),
+          battery,
+          lastSeen: String(lastSeenText ?? this.formatLastSeen(lastSeenValue))
+        };
+      });
+  }
+
   private extractDashboardSummary(response: any): DashboardSummary | null {
     const source = response?.data?.pageData ?? response?.data ?? response;
 
@@ -417,18 +593,29 @@ export class DashboardComponent implements OnInit {
       return null;
     }
 
-    const toMetric = (value: any): DashboardMetric => ({
-      current: Number(value?.current ?? 0),
-      previous: Number(value?.previous ?? 0),
-      difference: Number(value?.difference ?? 0),
-      percentage: Number(value?.percentage ?? 0)
-    });
+    const toMetric = (value: any): DashboardMetric => {
+      if (typeof value === 'number') {
+        return {
+          current: Number.isFinite(value) ? value : 0,
+          previous: 0,
+          difference: 0,
+          percentage: 0
+        };
+      }
+
+      return {
+        current: Number(value?.current ?? 0),
+        previous: Number(value?.previous ?? 0),
+        difference: Number(value?.difference ?? 0),
+        percentage: Number(value?.percentage ?? 0)
+      };
+    };
 
     return {
-      totalSites: toMetric(source.totalSites),
+      totalSites: toMetric(source.totalSites ?? source.activeDevices),
       onlineOnce: toMetric(source.onlineOnce),
       activeAlerts: toMetric(source.activeAlerts),
-      messagesPerMinute: toMetric(source.messagesPerMinute)
+      messagesPerMinute: toMetric(source.messagesPerMinute ?? source.packetsPerMinute)
     };
   }
 
@@ -531,6 +718,112 @@ export class DashboardComponent implements OnInit {
     return value > 0 ? `+${value}` : `${value}`;
   }
 
+  getWeeklyAlertBarHeight(alertValue: number): number {
+    const values = this.weeklyAlerts.map(item => item.value);
+    const maxValue = Math.max(1, ...values);
+    const normalized = (Math.max(0, alertValue) / maxValue) * 150;
+
+    if (alertValue <= 0) {
+      return 0;
+    }
+
+    return Math.max(8, Math.round(normalized));
+  }
+
+  hasWeeklyAlertsData(): boolean {
+    return this.weeklyAlerts.some(item => item.value > 0);
+  }
+
+  hasTelemetryData(): boolean {
+    return this.telemetryChartOptions.seriesData.some(series =>
+      series.data.some(value => Number.isFinite(value))
+    );
+  }
+
+  hasRecentDevicesData(): boolean {
+    return this.recentDevices.length > 0;
+  }
+
+  hasWeeklyActivityData(): boolean {
+    return this.weeklyActivityOptions.seriesData.some(series =>
+      series.data.some(value => Number(value) > 0)
+    );
+  }
+
+  getStatusBadgeClass(status: string): string {
+    const normalized = String(status ?? '').trim().toLowerCase();
+
+    if (normalized.includes('online') || normalized.includes('active')) {
+      return 'online';
+    }
+
+    if (normalized.includes('offline') || normalized.includes('inactive') || normalized.includes('down')) {
+      return 'offline';
+    }
+
+    return 'warning';
+  }
+
+  private normalizeWeekDay(value: any): string | null {
+    const key = this.getWeekDayKey(value);
+    const byKey = new Map<string, string>([
+      ['mon', 'Mon'],
+      ['monday', 'Mon'],
+      ['tue', 'Tue'],
+      ['tues', 'Tue'],
+      ['tuesday', 'Tue'],
+      ['wed', 'Wed'],
+      ['wednesday', 'Wed'],
+      ['thu', 'Thu'],
+      ['thur', 'Thu'],
+      ['thurs', 'Thu'],
+      ['thursday', 'Thu'],
+      ['fri', 'Fri'],
+      ['friday', 'Fri'],
+      ['sat', 'Sat'],
+      ['saturday', 'Sat'],
+      ['sun', 'Sun'],
+      ['sunday', 'Sun']
+    ]);
+
+    return byKey.get(key) ?? null;
+  }
+
+  private getWeekDayFromDate(value: any): string | null {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    const byIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return byIndex[date.getUTCDay()] ?? null;
+  }
+
+  private getWeekDayKey(value: any): string {
+    return String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z]/g, '');
+  }
+
+  private formatLastSeen(value: any): string {
+    if (!value) {
+      return '-';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
   private patchTelemetryChart(response: any): void {
     const stats = this.extractTelemetryStats(response);
     if (!stats.length) {
@@ -604,14 +897,47 @@ export class DashboardComponent implements OnInit {
   }
 
   onFilterChange() {
-    // TODO: Implement filter logic to update dashboard data
-    console.log('Filters changed:', {
-      searchTerm: this.searchTerm,
-      regions: this.selectedRegions,
-      subRegions: this.selectedSubRegions,
-      statuses: this.selectedStatuses,
-      siteTypes: this.selectedSiteTypes,
-      timeframe: this.selectedTimeframe
-    });
+    if (!this.hasActiveCustomer) {
+      return;
+    }
+
+    this.loadRecentSites();
+  }
+
+  private toPositiveInt(value: any): number {
+    const parsed = Number(value);
+
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return 0;
+    }
+
+    return parsed;
+  }
+
+  private mapTimeRangeToCode(value: string): number {
+    const lookup = new Map<string, number>([
+      ['24h', 24],
+      ['7d', 7],
+      ['30d', 30],
+      ['90d', 90]
+    ]);
+
+    return lookup.get(String(value ?? '').trim().toLowerCase()) ?? 0;
+  }
+
+  private mapStatusToCode(value: string): number {
+    const numeric = this.toPositiveInt(value);
+    if (numeric > 0) {
+      return numeric;
+    }
+
+    const lookup = new Map<string, number>([
+      ['online', 1],
+      ['offline', 2],
+      ['warning', 3],
+      ['error', 4]
+    ]);
+
+    return lookup.get(String(value ?? '').trim().toLowerCase()) ?? 0;
   }
 }

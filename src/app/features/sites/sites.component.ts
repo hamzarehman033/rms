@@ -18,6 +18,7 @@ export class SitesComponent implements OnInit {
   isLoading = false;
 
   sites: Site[] = [];
+  allSites: Site[] = [];
 
   constructor(
     private router: Router,
@@ -35,15 +36,56 @@ export class SitesComponent implements OnInit {
       next: (response: any) => {
         const list = response?.data?.pageData || response?.data || response || [];
         const normalized = Array.isArray(list) ? list : [];
-        this.sites = normalized.map((item: any) => this.mapApiSite(item));
+        this.allSites = normalized.map((item: any) => this.mapApiSite(item));
+        this.sites = this.getFilteredSites();
         this.isLoading = false;
       },
       error: () => {
+        this.allSites = [];
         this.sites = [];
         this.isLoading = false;
         this.toastService.showError('Failed to load sites');
       }
     });
+  }
+
+  onTabChange(tab: number): void {
+    this.selectedTab = tab;
+    this.sites = this.getFilteredSites();
+  }
+
+  getAllCount(): number {
+    return this.allSites.length;
+  }
+
+  getOnlineCount(): number {
+    return this.allSites.filter(site => this.isOnlineStatus(site.status)).length;
+  }
+
+  getOfflineCount(): number {
+    return this.allSites.filter(site => this.isOfflineStatus(site.status)).length;
+  }
+
+  private getFilteredSites(): Site[] {
+    if (this.selectedTab === 1) {
+      return this.allSites.filter(site => this.isOnlineStatus(site.status));
+    }
+
+    if (this.selectedTab === 2) {
+      return this.allSites.filter(site => this.isOfflineStatus(site.status));
+    }
+
+    return this.allSites;
+  }
+
+  private isOnlineStatus(status: any): boolean {
+    const normalized = String(status ?? '').trim().toLowerCase();
+    return normalized === 'online' || normalized === 'active';
+  }
+
+  private isOfflineStatus(status: any): boolean {
+    const normalized = String(status ?? '').trim().toLowerCase();
+    return normalized === 'offline' || normalized === 'inactive' || normalized === 'down';
   }
 
   openAddSiteDialog() {
