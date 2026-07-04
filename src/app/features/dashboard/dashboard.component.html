@@ -395,20 +395,20 @@
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#ff7b72"></div>
               <div class="s-lbl"><i class="ti ti-alert-octagon" style="color:#ff7b72"></i> Critical</div>
-              <div class="s-num" style="color:#ff7b72">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#ff7b72">{{ getCriticalAlarmCount() }}</div>
+              <div class="s-sub">Devices with 3+ alarms</div>
             </div>
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#d29922"></div>
               <div class="s-lbl"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Major Alarm</div>
-              <div class="s-num" style="color:#d29922">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#d29922">{{ getMajorAlarmCount() }}</div>
+              <div class="s-sub">Devices with 2 alarms</div>
             </div>
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#6b7280"></div>
               <div class="s-lbl"><i class="ti ti-info-circle" style="color:#6b7280"></i> Minor Alarm</div>
-              <div class="s-num" style="color:#6b7280">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#6b7280">{{ getMinorAlarmCount() }}</div>
+              <div class="s-sub">Devices with 1 alarm</div>
             </div>
           </div>
         </div>
@@ -458,16 +458,9 @@
             <!-- Donut: active power source -->
             <div class="pie-card">
               <div class="pie-card-title"><i class="ti ti-chart-donut" style="font-size:12px"></i> Live Power Source — Online Sites</div>
-              <div class="donut-wrap">
-                <canvas id="donutHealth" width="90" height="90"></canvas>
-                <div class="donut-legend">
-                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#0ea5e9"></div><span>CP (Grid)</span></div><span class="legend-val">-</span></div>
-                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#3fb950"></div><span>Battery</span></div><span class="legend-val">-</span></div>
-                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#d29922"></div><span>Solar</span></div><span class="legend-val">-</span></div>
-                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#f78166"></div><span>Generator</span></div><span class="legend-val">-</span></div>
-                </div>
+              <div class="donut-wrap" *ngIf="distributionDonutData.length > 0">
+                <app-pie-chart [options]="getFleetDistributionDonutOptions()"></app-pie-chart>
               </div>
-              <div style="font-size:9px;color:var(--muted-foreground);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">Primary active source per site right now · {{ getOnlineSitesCount() }} online</div>
             </div>
 
             <!-- Power source breakdown table -->
@@ -484,28 +477,28 @@
                 <tbody>
                   <tr>
                     <td style="color:var(--foreground);font-weight:500">CP Only</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#0ea5e9;font-weight:700">-</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#1f4f91"></div></div></td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#0ea5e9;font-weight:700">{{ getFleetDistributionConfigCount('cpOnly') }}</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpOnly')" style="background:#1f4f91"></div></div></td>
                   </tr>
                   <tr>
                     <td style="color:var(--foreground);font-weight:500">CP + Battery</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#3fb950;font-weight:700">-</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#196127"></div></div></td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#3fb950;font-weight:700">{{ getFleetDistributionConfigCount('cpBattery') }}</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpBattery')" style="background:#196127"></div></div></td>
                   </tr>
                   <tr>
                     <td style="color:var(--foreground);font-weight:500">CP + Bat + Solar</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#d29922;font-weight:700">-</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#5a3c07"></div></div></td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#d29922;font-weight:700">{{ getFleetDistributionConfigCount('cpBatterySolar') }}</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpBatterySolar')" style="background:#5a3c07"></div></div></td>
                   </tr>
                   <tr>
                     <td style="color:var(--foreground);font-weight:500">CP + Bat + Gen</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#f78166;font-weight:700">-</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#7d1e1e"></div></div></td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#f78166;font-weight:700">{{ getFleetDistributionConfigCount('cpBatteryGen') }}</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpBatteryGen')" style="background:#7d1e1e"></div></div></td>
                   </tr>
                   <tr>
                     <td style="color:var(--foreground);font-weight:500">All Sources</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#bc8cff;font-weight:700">-</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#3d1f74"></div></div></td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#bc8cff;font-weight:700">{{ getFleetDistributionConfigCount('allSources') }}</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('allSources')" style="background:#3d1f74"></div></div></td>
                   </tr>
                 </tbody>
               </table>
@@ -525,7 +518,7 @@
           <div class="kpi-body">
             <div class="kpi-label"><i class="ti ti-server" style="color:#0ea5e9"></i> Total Sites</div>
             <div class="kpi-num" style="color:#0ea5e9">{{ getTotalSitesCount() }}</div>
-            <div class="kpi-sub">Total site count</div>
+            <div class="kpi-sub">Realtime power {{ getTotalPowerText() }}</div>
           </div>
         </div>
 
@@ -534,7 +527,7 @@
           <div class="kpi-body">
             <div class="kpi-label"><i class="ti ti-wifi" style="color:#3fb950"></i> Online</div>
             <div class="kpi-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
-            <div class="kpi-sub">{{ getFleetPercentageText(getOnlineSitesCount()) }} of fleet</div>
+            <div class="kpi-sub">Avg temp {{ getAverageTemperatureText() }}</div>
           </div>
         </div>
 
@@ -543,7 +536,7 @@
           <div class="kpi-body">
             <div class="kpi-label"><i class="ti ti-wifi-off" style="color:#f85149"></i> Offline</div>
             <div class="kpi-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
-            <div class="kpi-sub">{{ getFleetPercentageText(getOfflineSitesCount()) }} of fleet</div>
+            <div class="kpi-sub">Avg humidity {{ getAverageHumidityText() }}</div>
           </div>
         </div>
 
@@ -552,7 +545,7 @@
           <div class="kpi-body">
             <div class="kpi-label"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Active Alerts</div>
             <div class="kpi-num" style="color:#d29922">{{ getActiveAlertsCount() }}</div>
-            <div class="kpi-sub">Live active alerts</div>
+            <div class="kpi-sub">{{ getPacketsPerMinute() }} packets/min</div>
           </div>
         </div>
 

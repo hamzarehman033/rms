@@ -11,6 +11,7 @@ export * from './services/tenant.service';
 export * from './services/toast.service';
 export * from './services/devices.service';
 export * from './services/signalr.service';
+export * from './services/realtime-data-source.service';
 export * from './guards/auth.guard';
 export * from './interceptors/jwt.interceptor';
 export * from './interceptors/token-refresh.interceptor';

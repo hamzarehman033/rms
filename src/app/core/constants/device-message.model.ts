@@ -110,7 +110,7 @@ export interface DecodedPayload {
   model: string;
   deviceIdHash: number;
   packetSequence: number;
-  systemStatus: string;
+  systemStatus: number;
   activeAlarmCount: number;
   lineAVoltage: number;
   lineBVoltage: number;
@@ -253,13 +253,14 @@ export const ALARM_LEVEL_LABELS: Record<number, string> = {
   4: 'Warning'
 };
 
-export const SYSTEM_STATUS_FLAGS: string[] = [
-  'Normal',
-  'Major Alarm',
-  'Critical Alarm',
-  'Warning',
-  'Comms Issue'
-];
+
+export const SYSTEM_STATUS_ENUM: Record<number, string> = {
+  1: 'Normal',
+  2: 'Major Alarm',
+  3: 'Critical Alarm',
+  4: 'Warning',
+  5: 'Comms Issue'
+};
 
 
 
@@ -269,7 +270,7 @@ export function mapDecodedPayload(raw:RawDecodedPayload): DecodedPayload {
     deviceType: DEVICE_TYPE_LABELS[raw.deviceType] ?? `Unknown (${raw.deviceType})`,
     manufacturer: MANUFACTURER_LABELS[raw.manufacturer] ?? `Unknown (${raw.manufacturer})`,
     model: MODEL_LABELS[raw.model] ?? `Unknown (${raw.model})`,
-    systemStatus: SYSTEM_STATUS_FLAGS[raw.systemStatus] ?? `Unknown (${raw.systemStatus})`,
+    systemStatus: raw.systemStatus,
     batteryStatus: BATTERY_STATUS_LABELS[raw.batteryStatus] ?? `Unknown (${raw.batteryStatus})`,
     gensetControlMode: GENSET_CONTROL_MODE_LABELS[raw.gensetControlMode] ?? `Unknown (${raw.gensetControlMode})`,
     alarm1Level: raw.alarm1Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm1Level] ?? `Unknown (${raw.alarm1Level})`,

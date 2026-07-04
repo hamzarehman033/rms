@@ -2,7 +2,13 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
 import { CustomerService } from '../../core/services/customer.service';
+import { DevicesService } from '../../core/services/devices.service';
 import { LocationsService } from '../../core/services/locations.service';
+import {
+  DeviceRealtimeData,
+  FleetRealtimeMetrics,
+  RealtimeDataSourceService
+} from '../../core/services/realtime-data-source.service';
 import { TenantService } from '../../core/services/tenant.service';
 import { RecentSitesFilterRequest, StatisticsService } from '../../core/services/statistics.service';
 
@@ -76,6 +82,21 @@ interface LocationOverviewRow {
   utilization: number | null;
 }
 
+interface FleetDistributionSummary {
+  totalDevices: number;
+  cpCount: number;
+  batteryCount: number;
+  solarCount: number;
+  generatorCount: number;
+  configCounts: Record<string, number>;
+}
+
+interface DistributionDonutPoint {
+  name: string;
+  value: number;
+  color: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: false,
@@ -100,13 +121,32 @@ export class DashboardComponent implements OnInit {
   recentAlerts: RecentAnomaly[] = [];
   weeklyAlerts: WeeklyAlert[] = this.weekDayOrder.map(day => ({ day, value: 0 }));
   recentSites: RecentSite[] = [];
+  realtimeFleetMetrics: FleetRealtimeMetrics | null = null;
+  realtimeDevices: DeviceRealtimeData[] = [];
+  fleetDistribution: FleetDistributionSummary = {
+    totalDevices: 0,
+    cpCount: 0,
+    batteryCount: 0,
+    solarCount: 0,
+    generatorCount: 0,
+    configCounts: {
+      cpOnly: 0,
+      cpBattery: 0,
+      cpBatterySolar: 0,
+      cpBatteryGen: 0,
+      allSources: 0
+    }
+  };
+  distributionDonutData: DistributionDonutPoint[] = [];
   private locationTree: LocationTreeNode[] = [];
   locationsOverviewRows: LocationOverviewRow[] = [];
 
   constructor(
     private customerService: CustomerService,
+    private devicesService: DevicesService,
     private locationsService: LocationsService,
     private statisticsService: StatisticsService,
+    private realtimeDataSourceService: RealtimeDataSourceService,
     private tenantService: TenantService
   ) {}
   // Live Telemetry Chart Data
@@ -187,6 +227,8 @@ export class DashboardComponent implements OnInit {
   tenantOptions: FilterOption[] = [];
 
   ngOnInit(): void {
+    this.initializeRealtimeDataSource();
+
     this.customerService.activeCustomer$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(activeCustomer => {
@@ -200,6 +242,20 @@ export class DashboardComponent implements OnInit {
       });
   }
 
+  private initializeRealtimeDataSource(): void {
+    this.realtimeDataSourceService.fleetMetrics$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(metrics => {
+        this.realtimeFleetMetrics = metrics;
+      });
+
+    this.realtimeDataSourceService.devices$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(devicesMap => {
+        this.realtimeDevices = Object.values(devicesMap ?? {});
+      });
+  }
+
   private loadDashboardStatistics(): void {
     this.loadDashboardSummary();
     this.loadTelemetryEnvironmentCounts();
@@ -208,7 +264,103 @@ export class DashboardComponent implements OnInit {
     this.loadRecentAnomalies();
     this.loadWeeklyAlerts();
     this.loadRecentSites();
+    this.loadFleetDistribution();
     this.loadLocationsOverview();
+  }
+
+  private loadFleetDistribution(): void {
+    this.startStatsRequest();
+    this.devicesService
+      .getDevices()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.endStatsRequest();
+        })
+      )
+      .subscribe({
+        next: response => {
+          const list = response?.data?.pageData ?? response?.data ?? response ?? [];
+          const devices = Array.isArray(list) ? list : [];
+          this.fleetDistribution = this.buildFleetDistribution(devices);
+          this.distributionDonutData = this.buildFleetDistributionDonutData(this.fleetDistribution);
+        },
+        error: () => {
+          this.fleetDistribution = {
+            totalDevices: 0,
+            cpCount: 0,
+            batteryCount: 0,
+            solarCount: 0,
+            generatorCount: 0,
+            configCounts: {
+              cpOnly: 0,
+              cpBattery: 0,
+              cpBatterySolar: 0,
+              cpBatteryGen: 0,
+              allSources: 0
+            }
+          };
+          this.distributionDonutData = [];
+        }
+      });
+  }
+
+  private buildFleetDistribution(devices: any[]): FleetDistributionSummary {
+    const summary: FleetDistributionSummary = {
+      totalDevices: devices.length,
+      cpCount: 0,
+      batteryCount: 0,
+      solarCount: 0,
+      generatorCount: 0,
+      configCounts: {
+        cpOnly: 0,
+        cpBattery: 0,
+        cpBatterySolar: 0,
+        cpBatteryGen: 0,
+        allSources: 0
+      }
+    };
+
+    devices.forEach(device => {
+      const source = device?.infrastructure ?? device?.deviceInfrastructure ?? device ?? {};
+      const supportsCp = this.hasPositiveCapability(source?.rectifierQty ?? source?.rectifierInstalledCount);
+      const supportsBattery = this.hasPositiveCapability(source?.batteryQty);
+      const supportsSolar = this.hasPositiveCapability(source?.solarQty);
+      const supportsGenerator = this.hasPositiveCapability(source?.generatorQty);
+
+      if (supportsCp) summary.cpCount += 1;
+      if (supportsBattery) summary.batteryCount += 1;
+      if (supportsSolar) summary.solarCount += 1;
+      if (supportsGenerator) summary.generatorCount += 1;
+
+      if (supportsCp && !supportsBattery && !supportsSolar && !supportsGenerator) {
+        summary.configCounts['cpOnly'] += 1;
+      } else if (supportsCp && supportsBattery && !supportsSolar && !supportsGenerator) {
+        summary.configCounts['cpBattery'] += 1;
+      } else if (supportsCp && supportsBattery && supportsSolar && !supportsGenerator) {
+        summary.configCounts['cpBatterySolar'] += 1;
+      } else if (supportsCp && supportsBattery && !supportsSolar && supportsGenerator) {
+        summary.configCounts['cpBatteryGen'] += 1;
+      } else if (supportsCp && supportsBattery && supportsSolar && supportsGenerator) {
+        summary.configCounts['allSources'] += 1;
+      }
+    });
+
+    return summary;
+  }
+
+  private hasPositiveCapability(value: unknown): boolean {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && numeric > 0;
+  }
+
+  private buildFleetDistributionDonutData(summary: FleetDistributionSummary): DistributionDonutPoint[] {
+    return [
+      { name: 'CP (Grid)', value: summary.cpCount, color: '#0ea5e9' },
+      { name: 'Battery', value: summary.batteryCount, color: '#3fb950' },
+      { name: 'Solar', value: summary.solarCount, color: '#d29922' },
+      { name: 'Generator', value: summary.generatorCount, color: '#f78166' }
+    ];
   }
 
   private loadTenantOptions(): void {
@@ -269,9 +421,9 @@ export class DashboardComponent implements OnInit {
   }
 
   private buildRecentSitesFilters(): RecentSitesFilterRequest {
-    const regionId = this.toPositiveInt(this.selectedRegions[0]);
-    const subRegionId = this.toPositiveInt(this.selectedSubRegions[0]);
-    const status = this.mapStatusToCode(this.selectedStatuses[0] ?? '');
+    const regionId = this.toPositiveInt(this.selectedRegions);
+    const subRegionId = this.toPositiveInt(this.selectedSubRegions);
+    const status = this.mapStatusToCode(this.selectedStatuses);
 
     return {
       regionId,
@@ -954,10 +1106,21 @@ export class DashboardComponent implements OnInit {
   }
 
   getTotalSitesCount(): number {
+    const realtimeTotal = Number(this.realtimeFleetMetrics?.totalDevices ?? 0);
+    if (realtimeTotal > 0) {
+      return realtimeTotal;
+    }
+
     return Number(this.dashboardSummaryView?.totalSites?.current ?? 0);
   }
 
   getOnlineSitesCount(): number {
+    const realtimeTotal = Number(this.realtimeFleetMetrics?.totalDevices ?? 0);
+    const realtimeOnline = Number(this.realtimeFleetMetrics?.onlineDevices ?? 0);
+    if (realtimeTotal > 0) {
+      return Math.max(realtimeOnline, 0);
+    }
+
     return Number(this.dashboardSummaryView?.onlineOnce?.current ?? 0);
   }
 
@@ -968,7 +1131,55 @@ export class DashboardComponent implements OnInit {
   }
 
   getActiveAlertsCount(): number {
+    const realtimeTotal = Number(this.realtimeFleetMetrics?.totalDevices ?? 0);
+    if (realtimeTotal > 0) {
+      return Number(this.realtimeFleetMetrics?.devicesWithAlarms ?? 0);
+    }
+
     return Number(this.dashboardSummaryView?.activeAlerts?.current ?? 0);
+  }
+
+  getPacketsPerMinute(): number {
+    return Number(this.realtimeFleetMetrics?.packetsPerMinute ?? 0);
+  }
+
+  getAverageTemperatureText(): string {
+    const value = this.realtimeFleetMetrics?.avgTemperatureC;
+    return Number.isFinite(value) ? `${Number(value).toFixed(1)} C` : '-';
+  }
+
+  getAverageHumidityText(): string {
+    const value = this.realtimeFleetMetrics?.avgHumidityPercent;
+    return Number.isFinite(value) ? `${Number(value).toFixed(1)}%` : '-';
+  }
+
+  getTotalPowerText(): string {
+    const value = this.realtimeFleetMetrics?.totalPowerKw;
+    return Number.isFinite(value) ? `${Number(value).toFixed(2)} kW` : '-';
+  }
+
+  getCriticalAlarmCount(): number | string {
+    if (!this.realtimeDevices.length) {
+      return '-';
+    }
+
+    return this.realtimeDevices.filter(device => device.activeAlarmCount >= 3).length;
+  }
+
+  getMajorAlarmCount(): number | string {
+    if (!this.realtimeDevices.length) {
+      return '-';
+    }
+
+    return this.realtimeDevices.filter(device => device.activeAlarmCount === 2).length;
+  }
+
+  getMinorAlarmCount(): number | string {
+    if (!this.realtimeDevices.length) {
+      return '-';
+    }
+
+    return this.realtimeDevices.filter(device => device.activeAlarmCount === 1).length;
   }
 
   getFleetPercentageText(count: number): string {
@@ -979,6 +1190,58 @@ export class DashboardComponent implements OnInit {
 
     const percentage = (count / total) * 100;
     return `${percentage.toFixed(1)}%`;
+  }
+
+  getFleetDistributionCategoryCount(category: 'cp' | 'battery' | 'solar' | 'generator'): number | string {
+    const total = this.fleetDistribution.totalDevices;
+    if (total <= 0) {
+      return '-';
+    }
+
+    if (category === 'cp') return this.fleetDistribution.cpCount;
+    if (category === 'battery') return this.fleetDistribution.batteryCount;
+    if (category === 'solar') return this.fleetDistribution.solarCount;
+    return this.fleetDistribution.generatorCount;
+  }
+
+  getFleetDistributionDonutOptions(): any {
+    const donutData = this.distributionDonutData;
+    const total = donutData.reduce((sum, item) => sum + item.value, 0);
+
+    if (total <= 0) {
+      return {
+        donut: true,
+        showLegend: false,
+        height: '180px',
+        data: [{ name: 'No Data', value: 1, color: '#cbd5e1' }]
+      };
+    }
+
+    return {
+      donut: true,
+      showLegend: false,
+      height: '180px',
+      data: donutData
+    };
+  }
+
+  getFleetDistributionConfigCount(configKey: 'cpOnly' | 'cpBattery' | 'cpBatterySolar' | 'cpBatteryGen' | 'allSources'): number | string {
+    const total = this.fleetDistribution.totalDevices;
+    if (total <= 0) {
+      return '-';
+    }
+
+    return this.fleetDistribution.configCounts[configKey] ?? 0;
+  }
+
+  getFleetDistributionConfigShare(configKey: 'cpOnly' | 'cpBattery' | 'cpBatterySolar' | 'cpBatteryGen' | 'allSources'): number {
+    const total = this.fleetDistribution.totalDevices;
+    if (total <= 0) {
+      return 0;
+    }
+
+    const count = this.fleetDistribution.configCounts[configKey] ?? 0;
+    return Math.max(0, Math.min(100, (count / total) * 100));
   }
 
   private toPositiveInt(value: any): number {

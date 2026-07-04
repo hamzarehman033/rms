@@ -34,14 +34,6 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    const activeIds = Array.from(this.activeStreamingDeviceIds);
-    if (!activeIds.length) {
-      return;
-    }
-
-    this.signalrService.unsubscribeFromDevices(activeIds).catch(() => {
-      // No-op on destroy cleanup failure.
-    });
     this.activeStreamingDeviceIds.clear();
   }
 
