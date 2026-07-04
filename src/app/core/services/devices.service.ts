@@ -69,6 +69,14 @@ export class DevicesService {
     return this.http.delete<any>(`${this.baseUrl}${this.url}/${encodeURIComponent(String(id))}`);
   }
 
+  startDeviceListening(id: number | string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/device/${encodeURIComponent(String(id))}/mqtt/subscribe`, {});
+  }
+
+  stopDeviceListening(id: number | string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/device/${encodeURIComponent(String(id))}/mqtt/unsubscribe`, {});
+  }
+
   updateDeviceInfrastructure(deviceId: number | string, payload: DeviceInfrastructurePayload): Observable<any> {
     return this.http.patch<any>(`${this.baseUrl}/device/${encodeURIComponent(String(deviceId))}/infrastructure`, payload);
   }

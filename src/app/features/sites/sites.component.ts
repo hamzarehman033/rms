@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DevicesService, Site, ToastService } from '@app/core';
+import { DevicesService, SignalrService, Site, ToastService } from '@app/core';
 
 @Component({
   selector: 'app-sites',
@@ -8,7 +8,7 @@ import { DevicesService, Site, ToastService } from '@app/core';
   styleUrl: './sites.component.css',
   standalone: false,
 })
-export class SitesComponent implements OnInit {
+export class SitesComponent implements OnInit, OnDestroy {
   displayAddSiteDialog = false;
   displayEditSiteDialog = false;
   displayConfigDialog = false;
@@ -19,15 +19,30 @@ export class SitesComponent implements OnInit {
 
   sites: Site[] = [];
   allSites: Site[] = [];
+  private readonly activeStreamingDeviceIds = new Set<number>();
+  private readonly streamActionInProgressIds = new Set<number>();
 
   constructor(
     private router: Router,
     private devicesService: DevicesService,
+    private signalrService: SignalrService,
     private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
     this.loadSites();
+  }
+
+  ngOnDestroy(): void {
+    const activeIds = Array.from(this.activeStreamingDeviceIds);
+    if (!activeIds.length) {
+      return;
+    }
+
+    this.signalrService.unsubscribeFromDevices(activeIds).catch(() => {
+      // No-op on destroy cleanup failure.
+    });
+    this.activeStreamingDeviceIds.clear();
   }
 
   private loadSites(): void {
@@ -121,9 +136,80 @@ export class SitesComponent implements OnInit {
     this.displayConfigDialog = true;
   }
 
+  isDeviceStreaming(device: Site): boolean {
+    const deviceId = this.toDeviceNumericId(device);
+    return deviceId !== null && this.activeStreamingDeviceIds.has(deviceId);
+  }
+
+  isStreamActionInProgress(device: Site): boolean {
+    const deviceId = this.toDeviceNumericId(device);
+    return deviceId !== null && this.streamActionInProgressIds.has(deviceId);
+  }
+
+  async toggleDeviceStream(device: Site): Promise<void> {
+    const deviceId = this.toDeviceNumericId(device);
+    if (deviceId === null) {
+      this.toastService.showError('Invalid device id');
+      return;
+    }
+
+    if (this.streamActionInProgressIds.has(deviceId)) {
+      return;
+    }
+
+    const isActive = this.activeStreamingDeviceIds.has(deviceId);
+    this.streamActionInProgressIds.add(deviceId);
+
+    if (!isActive) {
+      this.devicesService.startDeviceListening(deviceId).subscribe({
+        next: async (response: any) => {
+          try {
+            await this.signalrService.start();
+            await this.signalrService.subscribeToDevice(deviceId);
+            this.activeStreamingDeviceIds.add(deviceId);
+            this.toastService.showSuccess(response.message || 'Stream started');
+          } catch (error) {
+            this.toastService.showError('Failed to open socket subscription');
+          } finally {
+            this.streamActionInProgressIds.delete(deviceId);
+          }
+        },
+        error: (error: any) => {
+          this.streamActionInProgressIds.delete(deviceId);
+          this.toastService.showError(error?.error?.message || 'Failed to start MQTT listener');
+        }
+      });
+      return;
+    }
+
+    this.devicesService.stopDeviceListening(deviceId).subscribe({
+      next: async (response: any) => {
+        try {
+          await this.signalrService.unsubscribeFromDevice(deviceId);
+          this.activeStreamingDeviceIds.delete(deviceId);
+          this.toastService.showSuccess(response.message || 'Stream stopped');
+        } catch (error) {
+          this.toastService.showError('Failed to close socket subscription');
+        } finally {
+          this.streamActionInProgressIds.delete(deviceId);
+        }
+      },
+      error: (error: any) => {
+        this.streamActionInProgressIds.delete(deviceId);
+        this.toastService.showError(error?.error?.message || 'Failed to stop MQTT listener');
+      }
+    });
+  }
+
   onSiteConfigured() {
     this.displayConfigDialog = false;
     this.selectedSiteForConfig = null;
+  }
+
+  private toDeviceNumericId(site: Site): number | null {
+    const idValue = site?.deviceId ?? site?.siteId;
+    const parsed = Number(idValue);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
 
   private mapApiSite(item: Site ): Site {

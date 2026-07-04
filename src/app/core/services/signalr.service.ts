@@ -15,13 +15,7 @@ export class SignalrService {
   isConnected$ = this.connected$.asObservable();
   onDeviceData$ = this.deviceData$.asObservable();
 
-  constructor() {
-    this.start().then(() => {
-      console.log('[SignalR] Hub connection started');
-    }).catch((error) => {
-      console.error('[SignalR] Failed to start hub connection', error);
-    });
-  }
+  constructor() {}
 
   async start(token?: string): Promise<void> {
     if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
@@ -84,8 +78,13 @@ export class SignalrService {
 
   async subscribeToDevice(deviceId: number): Promise<void> {
     if (!this.hubConnection || this.hubConnection.state !== signalR.HubConnectionState.Connected) {
+      await this.start();
+    }
+
+    if (!this.hubConnection || this.hubConnection.state !== signalR.HubConnectionState.Connected) {
       throw new Error('SignalR hub is not connected');
     }
+
     console.log(`[SignalR] Subscribing device ${deviceId}`);
     await this.hubConnection.invoke('SubscribeToDevice', deviceId);
     this.subscribedDeviceIds.add(deviceId);
