@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { TreeNode } from 'primeng/api';
-import { LocationsService, Location, CustomerService } from '@app/core';
+import { LocationsService, Location, CustomerService, DevicesService } from '@app/core';
 import { ToastService } from '@app/core';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-locations',
@@ -23,6 +24,8 @@ export class LocationsComponent implements OnInit {
   currentLevel = 1; // 1 for region, 2 for subregion, 3 for zone
   currentParentId = 0;
   selectedParentForSubitem: Location | undefined = undefined;
+  devices: any[] = [];
+  private readonly deviceCountsByLocation = new Map<number, number>();
   levelNames: { [key: number]: string } = {
     1: 'Region',
     2: 'SubRegion',
@@ -30,6 +33,7 @@ export class LocationsComponent implements OnInit {
   };
   constructor(
     private locationsService: LocationsService,
+    private devicesService: DevicesService,
     private customerService: CustomerService,
     private toastService: ToastService
   ) {}
@@ -47,18 +51,25 @@ export class LocationsComponent implements OnInit {
   }
 
   get totalZones(): number {
-    return this.locations.filter(loc => Number(loc.level) === 3).length;
-  }
+    let zoneCount = 0;
+    zoneCount = this.locations.filter(loc => Number(loc.level) === 3).length;
+    return zoneCount;
+  } 
 
   get totalDevices(): number {
-    return 0;
+    return this.devices.length;
   }
 
   loadLocations() {
     this.loading = true;
-    this.locationsService.getAllLocations().subscribe({
-      next: (response: any) => {
-        this.locations = response.data.pageData;
+    forkJoin({
+      locationsResponse: this.locationsService.getAllLocations(),
+      devicesResponse: this.devicesService.getDevices()
+    }).subscribe({
+      next: ({ locationsResponse, devicesResponse }) => {
+        this.locations = locationsResponse?.data?.pageData;
+        this.devices = devicesResponse?.data?.pageData as any[];
+        this.rebuildDeviceCounts();
         this.buildLocationTree();
         this.loading = false;
       },
@@ -83,13 +94,50 @@ export class LocationsComponent implements OnInit {
       key: location.id?.toString() || '',
       data: {
         ...location,
-        devices: 0, // These would come from backend
+        devices: this.getDeviceCountByLocation(location),
         uptime: '100%',
         status: 'Operational'
       },
       children: children.length > 0 ? children.map(child => this.buildTreeNode(child)) : undefined
     };
   }
+
+  private rebuildDeviceCounts(): void {
+    this.deviceCountsByLocation.clear();
+
+    this.devices.forEach(device => {
+      const regionId = device?.regionId || 0;
+      const subRegionId = device?.subRegionId || 0;
+      const zoneId = device?.zoneId || 0;
+
+      if (regionId !== 0) {
+        this.incrementDeviceCount(regionId);
+      }
+
+      if (subRegionId !== 0) {
+        this.incrementDeviceCount(subRegionId);
+      }
+
+      if (zoneId !== 0) {
+        this.incrementDeviceCount(zoneId);
+      }
+    });
+  }
+
+  private getDeviceCountByLocation(location: Location): number {
+    const locationId =  location?.id || 0;
+    if (locationId === 0) {
+      return 0;
+    }
+
+    return this.deviceCountsByLocation.get(locationId) ?? 0;
+  }
+
+  private incrementDeviceCount(locationId: number): void {
+    const currentCount = this.deviceCountsByLocation.get(locationId) ?? 0;
+    this.deviceCountsByLocation.set(locationId, currentCount + 1);
+  }
+
 
   openAddRegionDialog() {
     this.displayAddRegionDialog = true;

@@ -29,8 +29,8 @@ export class LocationsService {
   constructor(private http: HttpClient) {}
 
   // GET all locations
-  getAllLocations(): Observable<Location[]> {
-    return this.http.get<Location[]>(`${this.baseUrl}${this.url}`);
+  getAllLocations(): Observable<{ data: { pageData: Location[] } }> {
+    return this.http.get<{ data: { pageData: Location[] } }>(`${this.baseUrl}${this.url}`);
   }
 
   // GET regions tree with nested children
