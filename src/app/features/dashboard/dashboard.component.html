@@ -1,5 +1,6 @@
-<main class="content">
-  <!-- No Customer Selected Message -->
+<!-- OLD TEMPLATE -->
+
+<!-- <main class="content">
   <div *ngIf="!hasActiveCustomer" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">    
     <div class="text-center">
       <h2 class="text-2xl font-semibold mb-2">No Active Customer</h2>
@@ -7,21 +8,18 @@
     </div>
   </div>
 
-  <!-- Dashboard Content (only visible with active customer) -->
   <ng-container *ngIf="hasActiveCustomer">
   <div class="page-header">
     <div>
       <h1>Operations Overview</h1>
       <p>Real-time fleet health, telemetry, and incidents at a glance.</p>
     </div>
-    <!-- <span class="tag"><span class="pulse-dot"></span>Updated just now</span> -->
   </div>
 
   
   <div class="grid cols-1">
     <div class="card">
       <div class="hstack gap-2 items-end">
-        <!-- Search Input -->
         <div class="flex-1">
           <input 
             type="text" 
@@ -32,7 +30,6 @@
           />
         </div>
 
-        <!-- Region Multiselect -->
         <div class="w-32">
           <p-multiSelect
             [options]="regionOptions"
@@ -47,7 +44,6 @@
           ></p-multiSelect>
         </div>
 
-        <!-- Sub Region Multiselect -->
         <div class="w-32">
           <p-multiSelect
             [options]="subRegionOptions"
@@ -62,7 +58,6 @@
           ></p-multiSelect>
         </div>
 
-        <!-- Status Multiselect -->
         <div class="w-32">
           <p-multiSelect
             [options]="statusOptions"
@@ -77,7 +72,6 @@
           ></p-multiSelect>
         </div>
 
-        <!-- Type Multiselect -->
         <div class="w-32">
           <p-multiSelect
             [options]="siteTypeOptions"
@@ -92,7 +86,6 @@
           ></p-multiSelect>
         </div>
 
-        <!-- Timeframe Split Button -->
         <p-splitButton
           [label]="selectedTimeframe"
           [model]="timeframeMenuItems"
@@ -113,7 +106,6 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.totalSites?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          <!-- {{ getSignedValue(dashboardSummaryView?.totalSites?.percentage ?? 0) }} -->
         </span>
       </div>
       <div class="hint text-xs">
@@ -131,7 +123,6 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.onlineOnce?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          <!-- {{ getSignedValue(dashboardSummaryView?.onlineOnce?.percentage ?? 0) }}% -->
         </span>
       </div>
       <div class="hint text-xs">
@@ -149,7 +140,6 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.activeAlerts?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          <!-- {{ getSignedValue(dashboardSummaryView?.activeAlerts?.percentage ?? 0) }}% -->
         </span>
       </div>
       <div class="hint text-xs">
@@ -167,7 +157,6 @@
           class="delta font-semibold ml-2"
           [ngClass]="(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) >= 0 ? 'up' : 'down'"
         >
-          <!-- {{ getSignedValue(dashboardSummaryView?.messagesPerMinute?.percentage ?? 0) }}% -->
         </span>
       </div>
       <div class="hint text-xs">
@@ -268,56 +257,6 @@
     </div>
   </div>
 
-  <!-- <div class="grid cols-3">
-    <div class="card span-2 p-0">
-      <div class="px-5 py-4 border-b border-surface-border">
-        <h3>Recent Sites</h3>
-        <div class="sub">Latest fleet status</div>
-      </div>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Site</th>
-            <th>Status</th>
-            <th>Location</th>
-            <th>Battery</th>
-            <th>Last seen</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let site of recentSites">
-            <td>
-              <a routerLink="/site-dashboard" [queryParams]="{id: site.id}">
-                <div class="font-medium text-blue-600">{{ site.name }}</div>
-                <div class="muted mono text-xs">{{ site.code }}</div>
-              </a>
-            </td>
-            <td><span class="badge" [ngClass]="getStatusBadgeClass(site.status)">● {{ site.status }}</span></td>
-            <td>{{ site.location }}</td>
-            <td class="mono">{{ site.battery }}</td>
-            <td class="muted">{{ site.lastSeen }}</td>
-          </tr>
-          <tr *ngIf="recentSites.length === 0">
-            <td colspan="5" class="text-sm text-muted-foreground">No recent sites found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="vstack gap-4">
-      <div class="card">
-        <h3>Weekly Activity</h3>
-        <div class="sub">Online vs offline counts</div>
-        <ng-container *ngIf="hasWeeklyActivityData(); else noWeeklyActivityData">
-          <app-bar-chart [options]="weeklyActivityOptions"></app-bar-chart>
-        </ng-container>
-        <ng-template #noWeeklyActivityData>
-          <div class="text-sm text-muted-foreground">-</div>
-        </ng-template>
-      </div>
-    </div>
-  </div> -->
-
   <div class="grid cols-3">
     <div class="card span-2 p-0">
       <div class="px-5 py-4 border-b border-surface-border">
@@ -391,4 +330,235 @@
     </div>
   </div>
   </ng-container>
-</main>
+</main> -->
+
+
+
+<div class="main">
+  <div class="content">
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <select [ngModel]="selectedRegions" (ngModelChange)="setRegionFilter($event)">
+        <option value="">All Regions</option>
+        <option *ngFor="let option of regionOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <select [ngModel]="selectedSubRegions" (ngModelChange)="setSubRegionFilter($event)">
+        <option value="">All Sub-Regions</option>
+        <option *ngFor="let option of subRegionOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <select [ngModel]="selectedSiteTypes" (ngModelChange)="setSiteTypeFilter($event)">
+        <option value="">All Site Types</option>
+        <option *ngFor="let option of siteTypeOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <select>
+        <option>All Power Sources</option>
+        <option>CP Only</option>
+        <option>CP + Battery</option>
+        <option>CP + Bat + Solar</option>
+        <option>CP + Bat + Gen</option>
+        <option>CP + Bat + Gen + Solar</option>
+      </select>
+      <select [ngModel]="selectedStatuses" (ngModelChange)="setStatusFilter($event)">
+        <option value="">All Statuses</option>
+        <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <select [ngModel]="selectedTenant" (ngModelChange)="setTenantFilter($event)">
+        <option value="">All Tenants</option>
+        <option *ngFor="let option of tenantOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <div style="flex:1"></div>
+      <button class="apply" (click)="applyFilters()">Apply</button>
+    </div>
+
+    <!-- BODY LAYOUT: LEFT rows + RIGHT column -->
+    <div class="body-layout">
+
+      <!-- ══ LEFT COLUMN ══ -->
+      <div class="left-col">
+
+        <!-- ROW 1: ONLINE SITE STATUS -->
+        <div>
+          <div class="sec-title"><i class="ti ti-signal"></i> Online Site Status</div>
+          <div class="status-row">
+            <div class="s-card online-card">
+              <div class="s-card-bar" style="background:#3fb950"></div>
+              <div class="s-lbl"><i class="ti ti-circle-check" style="color:#3fb950"></i> Healthy</div>
+              <div class="s-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
+              <div class="s-sub">{{ getFleetPercentageText(getOnlineSitesCount()) }} of fleet</div>
+            </div>
+            <div class="s-card online-card">
+              <div class="s-card-bar" style="background:#f85149"></div>
+              <div class="s-lbl"><i class="ti ti-bolt-off" style="color:#f85149"></i> Power Outage</div>
+              <div class="s-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
+              <div class="s-sub">{{ getFleetPercentageText(getOfflineSitesCount()) }} of fleet</div>
+            </div>
+            <div class="s-card online-card">
+              <div class="s-card-bar" style="background:#ff7b72"></div>
+              <div class="s-lbl"><i class="ti ti-alert-octagon" style="color:#ff7b72"></i> Critical</div>
+              <div class="s-num" style="color:#ff7b72">-</div>
+              <div class="s-sub">-</div>
+            </div>
+            <div class="s-card online-card">
+              <div class="s-card-bar" style="background:#d29922"></div>
+              <div class="s-lbl"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Major Alarm</div>
+              <div class="s-num" style="color:#d29922">-</div>
+              <div class="s-sub">-</div>
+            </div>
+            <div class="s-card online-card">
+              <div class="s-card-bar" style="background:#6b7280"></div>
+              <div class="s-lbl"><i class="ti ti-info-circle" style="color:#6b7280"></i> Minor Alarm</div>
+              <div class="s-num" style="color:#6b7280">-</div>
+              <div class="s-sub">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 2: DG SITE STATUS -->
+        <div>
+          <div class="sec-title"><i class="ti ti-engine"></i> Generator (DG) Sites Status</div>
+          <div class="status-row">
+            <div class="s-card dg-card">
+              <div class="s-card-bar" style="background:#3fb950"></div>
+              <div class="s-lbl"><i class="ti ti-circle-check" style="color:#3fb950"></i> Healthy</div>
+              <div class="s-num" style="color:#3fb950">-</div>
+              <div class="s-sub">-</div>
+            </div>
+            <div class="s-card dg-card">
+              <div class="s-card-bar" style="background:#f85149"></div>
+              <div class="s-lbl"><i class="ti ti-bolt-off" style="color:#f85149"></i> On Outage</div>
+              <div class="s-num" style="color:#f85149">-</div>
+              <div class="s-sub">-</div>
+            </div>
+            <div class="s-card dg-card">
+              <div class="s-card-bar" style="background:#ff7b72"></div>
+              <div class="s-lbl"><i class="ti ti-alert-octagon" style="color:#ff7b72"></i> Critical</div>
+              <div class="s-num" style="color:#ff7b72">-</div>
+              <div class="s-sub">-</div>
+            </div>
+            <div class="s-card dg-card">
+              <div class="s-card-bar" style="background:#d29922"></div>
+              <div class="s-lbl"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Major Alarm</div>
+              <div class="s-num" style="color:#d29922">-</div>
+              <div class="s-sub">-</div>
+            </div>
+            <div class="s-card dg-card">
+              <div class="s-card-bar" style="background:#6b7280"></div>
+              <div class="s-lbl"><i class="ti ti-info-circle" style="color:#6b7280"></i> Minor Alarm</div>
+              <div class="s-num" style="color:#6b7280">-</div>
+              <div class="s-sub">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3: CHARTS — pie + power source table -->
+        <div>
+          <div class="sec-title"><i class="ti ti-chart-pie"></i> Fleet Distribution</div>
+          <div class="pie-row">
+
+            <!-- Donut: active power source -->
+            <div class="pie-card">
+              <div class="pie-card-title"><i class="ti ti-chart-donut" style="font-size:12px"></i> Live Power Source — Online Sites</div>
+              <div class="donut-wrap">
+                <canvas id="donutHealth" width="90" height="90"></canvas>
+                <div class="donut-legend">
+                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#0ea5e9"></div><span>CP (Grid)</span></div><span class="legend-val">-</span></div>
+                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#3fb950"></div><span>Battery</span></div><span class="legend-val">-</span></div>
+                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#d29922"></div><span>Solar</span></div><span class="legend-val">-</span></div>
+                  <div class="legend-row"><div class="legend-left"><div class="legend-dot" style="background:#f78166"></div><span>Generator</span></div><span class="legend-val">-</span></div>
+                </div>
+              </div>
+              <div style="font-size:9px;color:var(--muted-foreground);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">Primary active source per site right now · {{ getOnlineSitesCount() }} online</div>
+            </div>
+
+            <!-- Power source breakdown table -->
+            <div class="pie-card">
+              <div class="pie-card-title"><i class="ti ti-plug" style="font-size:12px"></i> Sites by Power Source</div>
+              <table class="pwr-table">
+                <thead>
+                  <tr>
+                    <th>Configuration</th>
+                    <th>Sites</th>
+                    <th>Share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="color:var(--foreground);font-weight:500">CP Only</td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#0ea5e9;font-weight:700">-</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#1f4f91"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--foreground);font-weight:500">CP + Battery</td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#3fb950;font-weight:700">-</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#196127"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--foreground);font-weight:500">CP + Bat + Solar</td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#d29922;font-weight:700">-</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#5a3c07"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--foreground);font-weight:500">CP + Bat + Gen</td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#f78166;font-weight:700">-</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#7d1e1e"></div></div></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--foreground);font-weight:500">All Sources</td>
+                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#bc8cff;font-weight:700">-</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" style="width:0;background:#3d1f74"></div></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- ══ RIGHT COLUMN — Device KPIs (vertical) ══ -->
+      <div class="right-col">
+        <div class="right-sec-title"><i class="ti ti-devices" style="font-size:11px"></i> Device Status</div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#0ea5e9"></div>
+          <div class="kpi-body">
+            <div class="kpi-label"><i class="ti ti-server" style="color:#0ea5e9"></i> Total Sites</div>
+            <div class="kpi-num" style="color:#0ea5e9">{{ getTotalSitesCount() }}</div>
+            <div class="kpi-sub">Total site count</div>
+          </div>
+        </div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#3fb950"></div>
+          <div class="kpi-body">
+            <div class="kpi-label"><i class="ti ti-wifi" style="color:#3fb950"></i> Online</div>
+            <div class="kpi-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
+            <div class="kpi-sub">{{ getFleetPercentageText(getOnlineSitesCount()) }} of fleet</div>
+          </div>
+        </div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#f85149"></div>
+          <div class="kpi-body">
+            <div class="kpi-label"><i class="ti ti-wifi-off" style="color:#f85149"></i> Offline</div>
+            <div class="kpi-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
+            <div class="kpi-sub">{{ getFleetPercentageText(getOfflineSitesCount()) }} of fleet</div>
+          </div>
+        </div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#d29922"></div>
+          <div class="kpi-body">
+            <div class="kpi-label"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Active Alerts</div>
+            <div class="kpi-num" style="color:#d29922">{{ getActiveAlertsCount() }}</div>
+            <div class="kpi-sub">Live active alerts</div>
+          </div>
+        </div>
+
+      </div><!-- /right-col -->
+
+    </div><!-- /body-layout -->
+
+  </div><!-- /content -->
+</div>

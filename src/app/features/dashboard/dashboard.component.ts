@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
 import { CustomerService } from '../../core/services/customer.service';
 import { LocationsService } from '../../core/services/locations.service';
+import { TenantService } from '../../core/services/tenant.service';
 import { RecentSitesFilterRequest, StatisticsService } from '../../core/services/statistics.service';
 
 interface RecentAnomaly {
@@ -105,7 +106,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private locationsService: LocationsService,
-    private statisticsService: StatisticsService
+    private statisticsService: StatisticsService,
+    private tenantService: TenantService
   ) {}
   // Live Telemetry Chart Data
   telemetryChartOptions = {
@@ -148,11 +150,12 @@ export class DashboardComponent implements OnInit {
 
   // Filter Properties
   searchTerm = '';
-  selectedRegions: string[] = [];
-  selectedSubRegions: string[] = [];
-  selectedStatuses: string[] = [];
-  selectedSiteTypes: string[] = [];
-  selectedTimeframe = '24h';
+  selectedRegions: string = '';
+  selectedSubRegions: string = '';
+  selectedStatuses: string = '';
+  selectedSiteTypes: string = '';
+  selectedPowerSource = '';
+  selectedTenant = '';
 
   // Filter Options
   regionOptions: FilterOption[] = [];
@@ -173,14 +176,15 @@ export class DashboardComponent implements OnInit {
     { label: 'Office', value: 'office' }
   ];
 
-  timeframeOptions = [
-    { label: '24h', value: '24h' },
-    { label: '7d', value: '7d' },
-    { label: '30d', value: '30d' },
-    { label: '90d', value: '90d' }
+  powerSourceOptions = [
+    { label: 'CP Only', value: 'cp-only' },
+    { label: 'CP + Battery', value: 'cp-battery' },
+    { label: 'CP + Bat + Solar', value: 'cp-battery-solar' },
+    { label: 'CP + Bat + Gen', value: 'cp-battery-gen' },
+    { label: 'CP + Bat + Gen + Solar', value: 'all' }
   ];
 
-  timeframeMenuItems: any[] = [];
+  tenantOptions: FilterOption[] = [];
 
   ngOnInit(): void {
     this.customerService.activeCustomer$
@@ -190,10 +194,10 @@ export class DashboardComponent implements OnInit {
 
         if (this.hasActiveCustomer) {
           this.loadLocationTree();
+          this.loadTenantOptions();
           this.loadDashboardStatistics();
         }
       });
-    this.initializeTimeframeMenu();
   }
 
   private loadDashboardStatistics(): void {
@@ -205,6 +209,21 @@ export class DashboardComponent implements OnInit {
     this.loadWeeklyAlerts();
     this.loadRecentSites();
     this.loadLocationsOverview();
+  }
+
+  private loadTenantOptions(): void {
+    this.tenantService
+      .getTenants()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: response => {
+          this.tenantOptions = response?.data?.pageData
+        },
+        error: () => {
+          this.tenantOptions = [];
+          this.selectedTenant = '';
+        }
+      });
   }
 
   private loadWeeklyAlerts(): void {
@@ -228,7 +247,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadRecentSites(): void {
-    const filters = {};
+    const filters = this.buildRecentSitesFilters();
 
     this.startStatsRequest();
     this.statisticsService
@@ -247,6 +266,21 @@ export class DashboardComponent implements OnInit {
           this.recentSites = [];
         }
       });
+  }
+
+  private buildRecentSitesFilters(): RecentSitesFilterRequest {
+    const regionId = this.toPositiveInt(this.selectedRegions[0]);
+    const subRegionId = this.toPositiveInt(this.selectedSubRegions[0]);
+    const status = this.mapStatusToCode(this.selectedStatuses[0] ?? '');
+
+    return {
+      regionId,
+      subRegionId,
+      zoneId: 0,
+      status,
+      deviceId: 0,
+      timeRange: 0
+    };
   }
 
 
@@ -292,8 +326,8 @@ export class DashboardComponent implements OnInit {
           this.locationTree = [];
           this.regionOptions = [];
           this.subRegionOptions = [];
-          this.selectedRegions = [];
-          this.selectedSubRegions = [];
+          this.selectedRegions = '';
+          this.selectedSubRegions = '';
         }
       });
   }
@@ -304,7 +338,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private syncSubRegionOptions(): void {
-    const selectedRegionSet = new Set(this.selectedRegions.map(value => String(value)));
+    const selectedRegionSet = new Set([String(this.selectedRegions)]);
     const selectedRegions = selectedRegionSet.size
       ? this.locationTree.filter(region => selectedRegionSet.has(String(region?.id ?? '')))
       : this.locationTree;
@@ -332,9 +366,9 @@ export class DashboardComponent implements OnInit {
     }));
 
     const validSubRegionValues = new Set(this.subRegionOptions.map(option => option.value));
-    this.selectedSubRegions = this.selectedSubRegions.filter(value =>
-      validSubRegionValues.has(String(value))
-    );
+    this.selectedSubRegions = validSubRegionValues.has(String(this.selectedSubRegions))
+      ? this.selectedSubRegions
+      : '';
   }
 
   private loadDashboardSummary(): void {
@@ -886,22 +920,65 @@ export class DashboardComponent implements OnInit {
     return Number(value.toFixed(2));
   }
 
-  initializeTimeframeMenu() {
-    this.timeframeMenuItems = this.timeframeOptions.map(option => ({
-      label: option.label,
-      command: () => {
-        this.selectedTimeframe = option.value;
-        this.onFilterChange();
-      }
-    }));
-  }
-
   onFilterChange() {
     if (!this.hasActiveCustomer) {
       return;
     }
 
     this.loadRecentSites();
+  }
+
+  setRegionFilter(value: string): void {
+    this.selectedRegions = value ? value : '';
+    this.onRegionFilterChange();
+  }
+
+  setSubRegionFilter(value: string): void {
+    this.selectedSubRegions = value ? value : '';
+  }
+
+  setStatusFilter(value: string): void {
+    this.selectedStatuses = value ? value : '';
+  }
+
+  setSiteTypeFilter(value: string): void {
+    this.selectedSiteTypes = value ? value : '';
+  }
+
+  setTenantFilter(value: string): void {
+    this.selectedTenant = String(value ?? '').trim();
+  }
+
+  applyFilters(): void {
+    this.onFilterChange();
+  }
+
+  getTotalSitesCount(): number {
+    return Number(this.dashboardSummaryView?.totalSites?.current ?? 0);
+  }
+
+  getOnlineSitesCount(): number {
+    return Number(this.dashboardSummaryView?.onlineOnce?.current ?? 0);
+  }
+
+  getOfflineSitesCount(): number {
+    const total = this.getTotalSitesCount();
+    const online = this.getOnlineSitesCount();
+    return Math.max(total - online, 0);
+  }
+
+  getActiveAlertsCount(): number {
+    return Number(this.dashboardSummaryView?.activeAlerts?.current ?? 0);
+  }
+
+  getFleetPercentageText(count: number): string {
+    const total = this.getTotalSitesCount();
+    if (total <= 0 || count <= 0) {
+      return '-';
+    }
+
+    const percentage = (count / total) * 100;
+    return `${percentage.toFixed(1)}%`;
   }
 
   private toPositiveInt(value: any): number {
@@ -912,17 +989,6 @@ export class DashboardComponent implements OnInit {
     }
 
     return parsed;
-  }
-
-  private mapTimeRangeToCode(value: string): number {
-    const lookup = new Map<string, number>([
-      ['24h', 24],
-      ['7d', 7],
-      ['30d', 30],
-      ['90d', 90]
-    ]);
-
-    return lookup.get(String(value ?? '').trim().toLowerCase()) ?? 0;
   }
 
   private mapStatusToCode(value: string): number {

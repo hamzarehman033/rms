@@ -15,7 +15,9 @@ export class SignalrService {
   isConnected$ = this.connected$.asObservable();
   onDeviceData$ = this.deviceData$.asObservable();
 
-  constructor() {}
+  constructor() {
+    this.start();
+  }
 
   async start(token?: string): Promise<void> {
     if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {

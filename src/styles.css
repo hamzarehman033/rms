@@ -119,10 +119,10 @@ input, select, textarea { font-family: inherit; color: inherit; }
   border: none;
 }
 
-main.content { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+main.content { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
 .page-header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
-.page-header h1 { font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -.02em; }
-.page-header p { margin: 4px 0 0; color: var(--muted-foreground); font-size: 14px; }
+.page-header h1 { font-family: var(--font-display); font-size: 24px; font-weight: 600; margin: 0; letter-spacing: -.02em; }
+.page-header p { color: var(--muted-foreground); font-size: 14px; }
 .tag {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 10px; border: 1px solid var(--border); background: var(--card);
@@ -151,7 +151,7 @@ main.content { flex: 1; padding: 24px; display: flex; flex-direction: column; ga
 /* Cards */
 .card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 20px;
+  border-radius: 12px; padding: 12px;
   box-shadow: var(--shadow-card);
 }
 .card h3 { font-family: var(--font-display); font-size: 15px; font-weight: 600; margin: 0 0 4px; }
