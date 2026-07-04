@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { TenantService } from '../../core/services/tenant.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -50,6 +50,14 @@ export class TenantComponent {
 
   get totalTenants(): number {
     return this.tenants.length;
+  }
+
+  get activeTenants(): number {
+    return this.tenants.filter(t => t?.status === 'Active').length;
+  }
+
+  get disabledTenants(): number {
+    return this.tenants.filter(t => t?.status !== 'Active').length;
   }
 
  
