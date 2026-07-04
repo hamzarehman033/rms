@@ -3,6 +3,7 @@ import { ConfirmationService } from 'primeng/api';
 import { UsersService } from '../../core/services/users.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Menu, MenuMapper, MenuOptions } from '../../core/constants/sideMenu';
+import { AppRole } from '../../core/constants/roles';
 
 @Component({
   selector: 'app-users',
@@ -20,6 +21,7 @@ export class UsersComponent {
   dialogHeader = 'Invite New User';
   MenuMapper = MenuMapper;
   Menu = Menu;
+  AppRole = AppRole;
 
   constructor(
     private usersService: UsersService,
@@ -119,26 +121,32 @@ export class UsersComponent {
   }
 
   get adminUsers(): number {
-    return this.users.filter(u => u.role === 'admin').length;
+    return this.users.filter(u => this.getPrimaryRole(u) === AppRole.Admin).length;
   }
 
-  get operatorUsers(): number {
-    return this.users.filter(u => u.role === 'operator').length;
+  get userUsers(): number {
+    return this.users.filter(u => this.getPrimaryRole(u) === AppRole.User).length;
+  }
+
+  get technicianUsers(): number {
+    return this.users.filter(u => this.getPrimaryRole(u) === AppRole.Technician).length;
   }
 
   get viewerUsers(): number {
-    return this.users.filter(u => u.role === 'viewer').length;
+    return this.users.filter(u => this.getPrimaryRole(u) === AppRole.Viewer).length;
   }
 
   get filteredUsers(): any[] {
     let filtered = this.users;
 
     if (this.selectedTab === 1) {
-      filtered = filtered.filter(u => u.role === 'admin');
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Admin);
     } else if (this.selectedTab === 2) {
-      filtered = filtered.filter(u => u.role === 'operator');
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.User);
     } else if (this.selectedTab === 3) {
-      filtered = filtered.filter(u => u.role === 'viewer');
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Technician);
+    } else if (this.selectedTab === 4) {
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Viewer);
     }
 
     if (this.searchTerm) {
@@ -153,5 +161,20 @@ export class UsersComponent {
     }
 
     return filtered;
+  }
+
+  private getPrimaryRole(user: any): AppRole | null {
+    const role = Array.isArray(user?.roles) ? user.roles[0] : user?.role;
+    const normalized = String(role ?? '').trim().toLowerCase();
+
+    const roleMap: Record<string, AppRole> = {
+      admin: AppRole.Admin,
+      user: AppRole.User,
+      technician: AppRole.Technician,
+      viewer: AppRole.Viewer,
+      sysadmin: AppRole.SysAdmin
+    };
+
+    return roleMap[normalized] ?? null;
   }
 }

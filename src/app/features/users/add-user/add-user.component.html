@@ -1,10 +1,10 @@
 <form [formGroup]="userForm" class="form-section">
     <div class="form-group">
-        <label for="userName">User Name</label>
+        <label for="userName">Username</label>
         <input id="userName" pInputText type="text" formControlName="userName" placeholder="Enter user name"
             class="w-full" />
         <small class="error" *ngIf="userForm.get('userName')?.invalid && userForm.get('userName')?.touched">
-            User name is required and must be at least 2 characters
+            Username must be at least 2 characters and contain only letters or digits
         </small>
     </div>
     <div class="form-group" *ngIf="!isEditMode">

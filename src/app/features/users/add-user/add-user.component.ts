@@ -31,7 +31,6 @@ export class AddUserComponent implements OnInit, OnChanges {
     { id: Menu.Reports, label: 'Reports', value: 'reports', icon: 'pi pi-file-pdf', selected: false },
     { id: Menu.Locations, label: 'Locations', value: 'locations', icon: 'pi pi-map-marker', selected: false },
     { id: Menu.Tenants, label: 'Tenant', value: 'tenant', icon: 'pi pi-building', selected: false },
-    { id: Menu.Customers, label: 'Customers', value: 'customers', icon: 'pi pi-user', selected: false },
     { id: Menu.Users, label: 'Users', value: 'users', icon: 'pi pi-users', selected: false },
     { id: Menu.Settings, label: 'Settings', value: 'settings', icon: 'pi pi-cog', selected: false }
   ];
@@ -43,7 +42,7 @@ export class AddUserComponent implements OnInit, OnChanges {
     private toastService: ToastService
   ) {
     this.userForm = this.fb.group({
-      userName: ['', [Validators.required, Validators.minLength(2)]],
+      userName: ['', [Validators.required, Validators.minLength(2), Validators.pattern('^[A-Za-z0-9]+$')]],
       email: ['', [Validators.required, Validators.email]],
       password: [''],
       phoneNumber: [''],

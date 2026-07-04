@@ -10,8 +10,9 @@
     <div class="tabs">
       <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalUsers }}</span></button>
       <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Admins <span class="muted">{{ adminUsers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Operators <span class="muted">{{ operatorUsers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Viewers <span class="muted">{{ viewerUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Users <span class="muted">{{ userUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Technicians <span class="muted">{{ technicianUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">Viewers <span class="muted">{{ viewerUsers }}</span></button>
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID, name, or email..." (input)="searchTerm = $any($event).target.value"></div>
@@ -26,8 +27,7 @@
           <th>Role</th>
           <th>Permissions</th>
           <th>Phone</th>
-          <th>Status</th>
-          <th>Last active</th>
+          <!-- <th>Status</th> -->
           <th>Actions</th>
         </tr>
       </thead>
@@ -49,8 +49,7 @@
             </div>
           </td>
           <td>{{ user.phoneNumber }}</td>
-          <td>{{ user.status }}</td>
-          <td class="muted">{{ user.lastActive }}</td>
+          <!-- <td>{{ user.status }}</td> -->
           <td>
             <div class="flex items-center gap-2">
               <button class="btn sm" (click)="openEditUserDialog(user)" title="Edit user" aria-label="Edit user">
