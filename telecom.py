@@ -40,11 +40,17 @@ from urllib.parse import urlparse
 # =============================================================================
 
 #MQTT_BROKER = "127.0.0.1"       # IP, domain, mqtt://domain:1883, or mqtts://domain:8883
-MQTT_BROKER = "localhost"
-MQTT_PORT = 1883                # Used when MQTT_BROKER has no port
-MQTT_USERNAME = ""              # Empty string means no username
-MQTT_PASSWORD = ""              # Empty string means no password
-MQTT_TLS = False                # True for TLS, or use mqtts:// in MQTT_BROKER
+MQTT_BROKER = "101c718374a04285ab37b8eee7fd1030.s1.eu.hivemq.cloud"
+MQTT_PORT = 8883                # Used when MQTT_BROKER has no port
+MQTT_USERNAME = "hamzarehman"              # Empty string means no username
+MQTT_PASSWORD = "password"              # Empty string means no password
+MQTT_TLS = True                # True for TLS, or use mqtts:// in MQTT_BROKER
+
+# MQTT_BROKER = "localhost"
+# MQTT_PORT = 1883                # Used when MQTT_BROKER has no port
+# MQTT_USERNAME = ""              # Empty string means no username
+# MQTT_PASSWORD = ""              # Empty string means no password
+# MQTT_TLS = False                # True for TLS, or use mqtts:// in MQTT_BROKER
 MQTT_QOS = 0
 MQTT_RETAIN = False
 
@@ -53,7 +59,7 @@ SITE_ID = "ISB"
 DEVICE_ID = "MOCK-001"
 
 MQTT_TOPIC = f"telecom/{TENANT_ID}/{SITE_ID}/{DEVICE_ID}/telemetry"
-#telecom/mobiserve/ISB0167/SMU02C-MOCK-001/telemetry
+#telecom/mobiserve/ISB/MOCK-001/telemetry
 
 INTERVAL_SECONDS = 10            # Send interval
 PAYLOAD_MODE = "binary"         # "binary" or "hex"
