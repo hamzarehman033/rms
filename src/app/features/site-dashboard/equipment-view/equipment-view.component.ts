@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-equipment-view',
@@ -8,4 +8,24 @@ import { Component, Input } from '@angular/core';
 })
 export class EquipmentViewComponent {
   @Input() deviceDetails: any = null;
+  selectedDeviceDetails: any = null;
+
+  ngOnInit(): void {
+    this.syncDeviceSelection(this.deviceDetails);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('deviceDetails' in changes) {
+      this.syncDeviceSelection(this.deviceDetails);
+    }
+  }
+
+  private syncDeviceSelection(details: any): void {
+    if (!details) {
+      this.selectedDeviceDetails = null;
+      return;
+    }
+    this.selectedDeviceDetails = details;
+  }
+
 }

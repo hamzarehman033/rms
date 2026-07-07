@@ -1,1 +1,12 @@
-<app-device-view></app-device-view>
+<main class="content">
+    <!-- Page Header -->
+    <div class="page-header hstack justify-between items-start">
+        <div>
+            <h1>{{ selectedDeviceDetails?.name || 'Device Dashboard' }} · {{ selectedDeviceDetails?.code || '-' }}</h1>
+            <p>Real-time monitoring of power systems, devices, and operational metrics.</p>
+        </div>
+    </div>
+    <div class="card">
+        <app-device-view></app-device-view>
+    </div>
+</main>
