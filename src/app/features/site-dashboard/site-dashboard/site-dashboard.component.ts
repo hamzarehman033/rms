@@ -16,9 +16,17 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
   @Input() deviceDetails: any = null;
   isLoadingDevice = false;
   isOperational = false;
+  activeAlarmCount = 0;
   selectedDeviceDetails: any = null;
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;
+
+  tenantCards = [
+    { name: 'Jazz', meta: 'VEON · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+    { name: 'Zong', meta: 'CMPak · 4G/5G', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+    { name: 'Telenor', meta: 'Telenor Group · LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+    { name: 'Ufone', meta: 'PTCL Group · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+  ];
 
   liveData = {
     grid: { voltage: '-', status: '-', device: '-' },
@@ -117,6 +125,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
 
     this.selectedDeviceDetails = details;
     this.isOperational = false;
+    this.activeAlarmCount = 0;
     this.lastPacketAt = null;
     this.packetDeviceInfo = {
       deviceType: '-',
@@ -173,6 +182,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         status: '-',
       },
     };
+    this.tenantCards = [
+      { name: 'Jazz', meta: 'VEON · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+      { name: 'Zong', meta: 'CMPak · 4G/5G', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+      { name: 'Telenor', meta: 'Telenor Group · LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+      { name: 'Ufone', meta: 'PTCL Group · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
+    ];
     this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
   }
 
@@ -267,6 +282,8 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
     };
 
     const activeAlarmCount = payload.activeAlarmCount ?? 0;
+    this.activeAlarmCount = activeAlarmCount;
+
     const alarmTitle = activeAlarmCount > 0
       ? `Alarm ${payload.alarm1Code ?? '-'}`
       : 'No active alarms';
@@ -317,7 +334,45 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       },
     };
 
+    const tenantLoads = [
+      this.toSafeNumber(payload.tenant1LoadW, [0xFFFFFFFF]),
+      this.toSafeNumber(payload.tenant2LoadW, [0xFFFFFFFF]),
+      this.toSafeNumber(payload.tenant3LoadW, [0xFFFFFFFF]),
+      this.toSafeNumber(payload.tenant4LoadW, [0xFFFFFFFF]),
+    ];
+    const tenantCurrents = [
+      this.toSafeNumber(payload.tenant1Current, [0x7FFF]),
+      this.toSafeNumber(payload.tenant2Current, [0x7FFF]),
+      this.toSafeNumber(payload.tenant3Current, [0x7FFF]),
+      this.toSafeNumber(payload.tenant4Current, [0x7FFF]),
+    ];
+    const totalTenantLoad = tenantLoads.reduce<number>((acc, value) => acc + Number(value ?? 0), 0);
+    const dcBusVoltage = this.toSafeNumber(payload.dcBusVoltage, [0xFFFF]);
+
+    this.tenantCards = this.tenantCards.map((card, index) => {
+      const load = tenantLoads[index];
+      const current = tenantCurrents[index];
+      const allocation = totalTenantLoad > 0 && load !== null ? Math.round((load / totalTenantLoad) * 100) : 0;
+      return {
+        ...card,
+        status: load !== null && load > 0 ? 'ACTIVE' : 'STANDBY',
+        statusClass: load !== null && load > 0 ? 'status-active' : 'status-warn',
+        load: load !== null ? `${(load / 1000).toFixed(2)} kW` : '-',
+        current: current !== null ? `${current.toFixed(1)} A` : '-',
+        voltage: dcBusVoltage !== null ? `${dcBusVoltage.toFixed(1)} V` : '-',
+        today: '-',
+        allocation,
+      };
+    });
+
     this.lastPacketAt = portalReceiveTime ? String(portalReceiveTime) : null;
+  }
+
+  private toSafeNumber(value: number | null | undefined, invalidValues: number[] = []): number | null {
+    if (value === null || value === undefined || !Number.isFinite(value) || invalidValues.includes(value)) {
+      return null;
+    }
+    return value;
   }
 
   private formatMetric(

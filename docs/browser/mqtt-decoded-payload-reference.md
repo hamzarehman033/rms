@@ -91,6 +91,15 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
   "alarm3Level": null,
   "alarmBitmap1": 0,
   "crc16": 59182,
+  "gensetPowerW": 0,
+  "tenant1LoadW": 2500,
+  "tenant1Current": 45.9,
+  "tenant2LoadW": 2000,
+  "tenant2Current": 36.7,
+  "tenant3LoadW": 1500,
+  "tenant3Current": 27.5,
+  "tenant4LoadW": 1117,
+  "tenant4Current": 20.5,
   "isCrcValid": false,
   "receivedAtUtc": "2026-07-03T07:47:17.6140498Z",
   "error": null,
@@ -255,6 +264,15 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
 | alarm3Level | Third active alarm severity level enum. |
 | alarmBitmap1 | Generic alarm flags bitmap (mains, rectifier, battery, door, generator, solar, fuel, environment). |
 | crc16 | CRC checksum from packet. |
+| gensetPowerW | Generator output/load power. If generator power meter is unavailable, protocol may carry sentinel 0xFFFFFFFF. |
+| tenant1LoadW | Tenant 1 DC load power for shared sites. |
+| tenant1Current | Tenant 1 DC load current. |
+| tenant2LoadW | Tenant 2 DC load power for shared sites. |
+| tenant2Current | Tenant 2 DC load current. |
+| tenant3LoadW | Tenant 3 DC load power for shared sites. |
+| tenant3Current | Tenant 3 DC load current. |
+| tenant4LoadW | Tenant 4 DC load power for shared sites. |
+| tenant4Current | Tenant 4 DC load current. |
 | isCrcValid | CRC validation result. |
 | receivedAtUtc | Backend receive/insert timestamp in UTC. |
 | error | Parse/decode error text, null when no error. |
@@ -265,5 +283,7 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
 ## Notes
 
 - `site_id_hash` was provided in protocol notes as CRC32/hash of site code (for example `ISB0167`), but it is not currently present in the decoded payload sample above.
+- Base payload bytes `0x00` through `0x9F` remain unchanged. Extended fields are appended from `0xA0` onward.
+- CRC at `0x9E` is still computed over base bytes `0x00` through `0x9D` for backward compatibility.
 - Backend currently sends camelCase fields in `decodedPayload`, so Angular model uses camelCase naming.
 - Where protocol docs mention `0/1`, backend may already normalize into boolean values for alarm/availability flags.

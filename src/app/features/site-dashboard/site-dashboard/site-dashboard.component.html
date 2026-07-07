@@ -71,8 +71,8 @@
     </div>
     <div class="tile p-4 rounded-lg" style="background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.02))">
       <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Active Alarms</div>
-      <div class="text-lg font-semibold">-</div>
-      <div class="text-xs text-muted-foreground mt-1.5">From alerts feed</div>
+      <div class="text-lg font-semibold">{{ activeAlarmCount }}</div>
+      <div class="text-xs text-muted-foreground mt-1.5">Real-time alarm count</div>
     </div>
   </div>
 
@@ -136,80 +136,80 @@
     <div class="tenant-card accent-jazz">
       <div class="tenant-head">
         <div>
-          <div class="tenant-name">Jazz</div>
-          <div class="tenant-meta">VEON · GSM/LTE</div>
+          <div class="tenant-name">{{ tenantCards[0].name }}</div>
+          <div class="tenant-meta">{{ tenantCards[0].meta }}</div>
         </div>
-        <span class="tenant-status status-active">ACTIVE</span>
+        <span class="tenant-status" [ngClass]="tenantCards[0].statusClass">{{ tenantCards[0].status }}</span>
       </div>
       <div class="tenant-metrics">
-        <div class="tenant-row"><span>Load</span><strong>2.14 kW</strong></div>
-        <div class="tenant-row"><span>Current</span><strong>39.6 A</strong></div>
-        <div class="tenant-row"><span>Voltage</span><strong>54.0 V</strong></div>
-        <div class="tenant-row"><span>Today</span><strong>24.8 kWh</strong></div>
+        <div class="tenant-row"><span>Load</span><strong>{{ tenantCards[0].load }}</strong></div>
+        <div class="tenant-row"><span>Current</span><strong>{{ tenantCards[0].current }}</strong></div>
+        <div class="tenant-row"><span>Voltage</span><strong>{{ tenantCards[0].voltage }}</strong></div>
+        <div class="tenant-row"><span>Today</span><strong>{{ tenantCards[0].today }}</strong></div>
       </div>
       <div class="tenant-foot">
-        <div class="tenant-foot-top"><span>Allocation</span><strong>62%</strong></div>
-        <div class="tenant-progress"><div class="tenant-progress-fill" style="width:62%"></div></div>
+        <div class="tenant-foot-top"><span>Allocation</span><strong>{{ tenantCards[0].allocation }}%</strong></div>
+        <div class="tenant-progress"><div class="tenant-progress-fill" [style.width.%]="tenantCards[0].allocation"></div></div>
       </div>
     </div>
 
     <div class="tenant-card accent-zong">
       <div class="tenant-head">
         <div>
-          <div class="tenant-name">Zong</div>
-          <div class="tenant-meta">CMPak · 4G/5G</div>
+          <div class="tenant-name">{{ tenantCards[1].name }}</div>
+          <div class="tenant-meta">{{ tenantCards[1].meta }}</div>
         </div>
-        <span class="tenant-status status-active">ACTIVE</span>
+        <span class="tenant-status" [ngClass]="tenantCards[1].statusClass">{{ tenantCards[1].status }}</span>
       </div>
       <div class="tenant-metrics">
-        <div class="tenant-row"><span>Load</span><strong>1.86 kW</strong></div>
-        <div class="tenant-row"><span>Current</span><strong>34.2 A</strong></div>
-        <div class="tenant-row"><span>Voltage</span><strong>53.7 V</strong></div>
-        <div class="tenant-row"><span>Today</span><strong>19.3 kWh</strong></div>
+        <div class="tenant-row"><span>Load</span><strong>{{ tenantCards[1].load }}</strong></div>
+        <div class="tenant-row"><span>Current</span><strong>{{ tenantCards[1].current }}</strong></div>
+        <div class="tenant-row"><span>Voltage</span><strong>{{ tenantCards[1].voltage }}</strong></div>
+        <div class="tenant-row"><span>Today</span><strong>{{ tenantCards[1].today }}</strong></div>
       </div>
       <div class="tenant-foot">
-        <div class="tenant-foot-top"><span>Allocation</span><strong>54%</strong></div>
-        <div class="tenant-progress"><div class="tenant-progress-fill" style="width:54%"></div></div>
+        <div class="tenant-foot-top"><span>Allocation</span><strong>{{ tenantCards[1].allocation }}%</strong></div>
+        <div class="tenant-progress"><div class="tenant-progress-fill" [style.width.%]="tenantCards[1].allocation"></div></div>
       </div>
     </div>
 
     <div class="tenant-card accent-telenor">
       <div class="tenant-head">
         <div>
-          <div class="tenant-name">Telenor</div>
-          <div class="tenant-meta">Telenor Group · LTE</div>
+          <div class="tenant-name">{{ tenantCards[2].name }}</div>
+          <div class="tenant-meta">{{ tenantCards[2].meta }}</div>
         </div>
-        <span class="tenant-status status-warn">STANDBY</span>
+        <span class="tenant-status" [ngClass]="tenantCards[2].statusClass">{{ tenantCards[2].status }}</span>
       </div>
       <div class="tenant-metrics">
-        <div class="tenant-row"><span>Load</span><strong>0.98 kW</strong></div>
-        <div class="tenant-row"><span>Current</span><strong>18.1 A</strong></div>
-        <div class="tenant-row"><span>Voltage</span><strong>54.3 V</strong></div>
-        <div class="tenant-row"><span>Today</span><strong>11.8 kWh</strong></div>
+        <div class="tenant-row"><span>Load</span><strong>{{ tenantCards[2].load }}</strong></div>
+        <div class="tenant-row"><span>Current</span><strong>{{ tenantCards[2].current }}</strong></div>
+        <div class="tenant-row"><span>Voltage</span><strong>{{ tenantCards[2].voltage }}</strong></div>
+        <div class="tenant-row"><span>Today</span><strong>{{ tenantCards[2].today }}</strong></div>
       </div>
       <div class="tenant-foot">
-        <div class="tenant-foot-top"><span>Allocation</span><strong>37%</strong></div>
-        <div class="tenant-progress"><div class="tenant-progress-fill" style="width:37%"></div></div>
+        <div class="tenant-foot-top"><span>Allocation</span><strong>{{ tenantCards[2].allocation }}%</strong></div>
+        <div class="tenant-progress"><div class="tenant-progress-fill" [style.width.%]="tenantCards[2].allocation"></div></div>
       </div>
     </div>
 
     <div class="tenant-card accent-ufone">
       <div class="tenant-head">
         <div>
-          <div class="tenant-name">Ufone</div>
-          <div class="tenant-meta">PTCL Group · GSM/LTE</div>
+          <div class="tenant-name">{{ tenantCards[3].name }}</div>
+          <div class="tenant-meta">{{ tenantCards[3].meta }}</div>
         </div>
-        <span class="tenant-status status-active">ACTIVE</span>
+        <span class="tenant-status" [ngClass]="tenantCards[3].statusClass">{{ tenantCards[3].status }}</span>
       </div>
       <div class="tenant-metrics">
-        <div class="tenant-row"><span>Load</span><strong>1.42 kW</strong></div>
-        <div class="tenant-row"><span>Current</span><strong>26.5 A</strong></div>
-        <div class="tenant-row"><span>Voltage</span><strong>53.9 V</strong></div>
-        <div class="tenant-row"><span>Today</span><strong>15.6 kWh</strong></div>
+        <div class="tenant-row"><span>Load</span><strong>{{ tenantCards[3].load }}</strong></div>
+        <div class="tenant-row"><span>Current</span><strong>{{ tenantCards[3].current }}</strong></div>
+        <div class="tenant-row"><span>Voltage</span><strong>{{ tenantCards[3].voltage }}</strong></div>
+        <div class="tenant-row"><span>Today</span><strong>{{ tenantCards[3].today }}</strong></div>
       </div>
       <div class="tenant-foot">
-        <div class="tenant-foot-top"><span>Allocation</span><strong>48%</strong></div>
-        <div class="tenant-progress"><div class="tenant-progress-fill" style="width:48%"></div></div>
+        <div class="tenant-foot-top"><span>Allocation</span><strong>{{ tenantCards[3].allocation }}%</strong></div>
+        <div class="tenant-progress"><div class="tenant-progress-fill" [style.width.%]="tenantCards[3].allocation"></div></div>
       </div>
     </div>
   </div>
