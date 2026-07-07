@@ -27,6 +27,49 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
     backup: { available: '-', load: '-', remaining: '-' },
   };
 
+  detailCards = {
+    gridCp: {
+      voltageL1: '-',
+      voltageL2: '-',
+      voltageL3: '-',
+      frequency: '-',
+      currentDraw: '-',
+      power: '-',
+    },
+    rectifier: {
+      outputVoltage: '-',
+      outputCurrent: '-',
+      outputPower: '-',
+      efficiency: '-',
+      dcBus: '-',
+    },
+    batteryBank: {
+      stateOfCharge: '-',
+      voltage: '-',
+      current: '-',
+      capacity: '-',
+      backupTime: '-',
+      temp: '-',
+    },
+    solarPv: {
+      dcVoltage: '-',
+      dcCurrent: '-',
+      powerOutput: '-',
+      irradiance: '-',
+    },
+    generator: {
+      model: '-',
+      fuelLevel: '-',
+      runHours: '-',
+      oilPressure: '-',
+      coolantTemp: '-',
+    },
+    activeAlarms: {
+      title: '-',
+      status: '-',
+    },
+  };
+
   packetDeviceInfo = {
     deviceType: '-',
     manufacturer: '-',
@@ -88,6 +131,48 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       humidity: '-',
       temperature: '-',
     };
+    this.detailCards = {
+      gridCp: {
+        voltageL1: '-',
+        voltageL2: '-',
+        voltageL3: '-',
+        frequency: '-',
+        currentDraw: '-',
+        power: '-',
+      },
+      rectifier: {
+        outputVoltage: '-',
+        outputCurrent: '-',
+        outputPower: '-',
+        efficiency: '-',
+        dcBus: '-',
+      },
+      batteryBank: {
+        stateOfCharge: '-',
+        voltage: '-',
+        current: '-',
+        capacity: '-',
+        backupTime: '-',
+        temp: '-',
+      },
+      solarPv: {
+        dcVoltage: '-',
+        dcCurrent: '-',
+        powerOutput: '-',
+        irradiance: '-',
+      },
+      generator: {
+        model: '-',
+        fuelLevel: '-',
+        runHours: '-',
+        oilPressure: '-',
+        coolantTemp: '-',
+      },
+      activeAlarms: {
+        title: '-',
+        status: '-',
+      },
+    };
     this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
   }
 
@@ -131,6 +216,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
     const batteryRemainingPercent = payload.batteryRemainingPercent ?? null;
     const batteryBackupTimeMin = payload.batteryBackupTimeMin ?? null;
     const dcLoadPowerW = payload.dcLoadPowerW ?? null;
+    const temperature =
+      payload.batteryTemperature ??
+      payload.ambientTemperature1 ??
+      payload.ambientTemperature2 ??
+      payload.rectifierMaxTemperature ??
+      null;
 
     const solarPowerKw = solarPowerW !== null ? solarPowerW / 1000 : null;
     if (solarPowerKw !== null && solarPowerKw > this.peakSolarPowerKw) {
@@ -147,8 +238,8 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       gensetRunning: payload?.gensetRunning ? String(payload.gensetRunning) : '-',
       gensetStartFailure: payload?.gensetStartFailure ? String(payload.gensetStartFailure) : '-',
       gensetControlMode: payload?.gensetControlMode ? String(payload.gensetControlMode) : '-',
-      humidity: payload?.humidity ? String(payload.humidity) : '-',
-      temperature: ""
+      humidity: payload?.humidity !== null && payload?.humidity !== undefined ? String(payload.humidity) : '-',
+      temperature: temperature !== null ? `${temperature}°C` : '-',
     };
 
     this.liveData = {
@@ -175,7 +266,89 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       },
     };
 
+    const activeAlarmCount = payload.activeAlarmCount ?? 0;
+    const alarmTitle = activeAlarmCount > 0
+      ? `Alarm ${payload.alarm1Code ?? '-'}`
+      : 'No active alarms';
+    const alarmStatus = activeAlarmCount > 0
+      ? String(payload.alarm1Level ?? 'Active')
+      : 'Normal';
+
+    this.detailCards = {
+      gridCp: {
+        voltageL1: this.formatMetric(payload.lineAVoltage, 'V', 1),
+        voltageL2: this.formatMetric(payload.lineBVoltage, 'V', 1, [65535]),
+        voltageL3: this.formatMetric(payload.lineCVoltage, 'V', 1, [65535]),
+        frequency: this.formatMetric(payload.acFrequency, 'Hz', 1),
+        currentDraw: this.formatMetric(payload.dcLoadCurrent, 'A', 1, [32767]),
+        power: this.formatMetric(payload.totalAcInputPowerW, 'kW', 2, [], 1000),
+      },
+      rectifier: {
+        outputVoltage: this.formatMetric(payload.dcBusVoltage, 'V', 1),
+        outputCurrent: this.formatMetric(payload.rectifierTotalCurrent, 'A', 1),
+        outputPower: this.formatMetric(payload.rectifierTotalDcPowerW, 'kW', 2, [], 1000),
+        efficiency: this.calculateEfficiency(payload.rectifierTotalDcPowerW, payload.totalAcInputPowerW),
+        dcBus: this.formatMetric(payload.dcBusVoltage, 'V', 1),
+      },
+      batteryBank: {
+        stateOfCharge: this.formatMetric(payload.batteryRemainingPercent, '%', 0),
+        voltage: this.formatMetric(payload.batteryVoltage, 'V', 1),
+        current: this.formatMetric(payload.batteryCurrent, 'A', 1),
+        capacity: this.formatMetric(payload.batteryRemainingCapacityAh, 'Ah', 1),
+        backupTime: this.formatMinutesAsDuration(payload.batteryBackupTimeMin ?? null),
+        temp: this.formatMetric(payload.batteryTemperature, '°C', 1),
+      },
+      solarPv: {
+        dcVoltage: this.formatMetric(payload.solarVoltage, 'V', 1),
+        dcCurrent: this.formatMetric(payload.solarCurrent, 'A', 1),
+        powerOutput: this.formatMetric(payload.solarPowerW, 'kW', 2, [], 1000),
+        irradiance: '-',
+      },
+      generator: {
+        model: this.selectedDeviceDetails?.model || this.packetDeviceInfo.model || '-',
+        fuelLevel: this.formatMetric(payload.fuelLevelPercent, '%', 0),
+        runHours: this.formatMetric(payload.gensetRunHours, 'h', 0),
+        oilPressure: '-',
+        coolantTemp: this.formatMetric(payload.ambientTemperature2, '°C', 1),
+      },
+      activeAlarms: {
+        title: alarmTitle,
+        status: alarmStatus,
+      },
+    };
+
     this.lastPacketAt = portalReceiveTime ? String(portalReceiveTime) : null;
+  }
+
+  private formatMetric(
+    value: number | null | undefined,
+    unit: string,
+    decimals = 1,
+    invalidValues: number[] = [],
+    scale = 1,
+  ): string {
+    if (value === null || value === undefined || !Number.isFinite(value) || invalidValues.includes(value)) {
+      return '-';
+    }
+
+    const scaled = value / scale;
+    const fixed = scaled.toFixed(decimals);
+    return `${Number(fixed)}${unit}`;
+  }
+
+  private calculateEfficiency(outputPowerW: number | null | undefined, inputPowerW: number | null | undefined): string {
+    if (
+      outputPowerW === null ||
+      outputPowerW === undefined ||
+      inputPowerW === null ||
+      inputPowerW === undefined ||
+      inputPowerW <= 0
+    ) {
+      return '-';
+    }
+
+    const efficiency = (outputPowerW / inputPowerW) * 100;
+    return `${efficiency.toFixed(1)}%`;
   }
 
   private formatMinutesAsDuration(minutes: number | null): string {
