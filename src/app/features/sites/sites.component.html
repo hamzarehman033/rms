@@ -6,6 +6,54 @@
     </div>
 
   </div>
+
+  <div class="right-col sites-kpi-row">
+    <div class="kpi-vert">
+      <div class="kpi-stripe" style="background:#0ea5e9"></div>
+      <div class="kpi-body">
+        <div class="kpi-label">Total Sites</div>
+        <div class="kpi-num" style="color:#0ea5e9">{{ getAllCount() }}</div>
+        <div class="kpi-sub">Total site count</div>
+      </div>
+    </div>
+
+    <div class="kpi-vert">
+      <div class="kpi-stripe" style="background:#3fb950"></div>
+      <div class="kpi-body">
+        <div class="kpi-label">Online</div>
+        <div class="kpi-num" style="color:#3fb950">{{ getOnlineCount() }}</div>
+        <div class="kpi-sub">Sites currently online</div>
+      </div>
+    </div>
+
+    <div class="kpi-vert">
+      <div class="kpi-stripe" style="background:#d29922"></div>
+      <div class="kpi-body">
+        <div class="kpi-label">Warning</div>
+        <div class="kpi-num" style="color:#d29922">{{ getWarningCount() }}</div>
+        <div class="kpi-sub">Sites in warning state</div>
+      </div>
+    </div>
+
+    <div class="kpi-vert">
+      <div class="kpi-stripe" style="background:#f85149"></div>
+      <div class="kpi-body">
+        <div class="kpi-label">Offline</div>
+        <div class="kpi-num" style="color:#f85149">{{ getOfflineCount() }}</div>
+        <div class="kpi-sub">Sites currently offline</div>
+      </div>
+    </div>
+
+    <div class="kpi-vert">
+      <div class="kpi-stripe" style="background:#f59e0b"></div>
+      <div class="kpi-body">
+        <div class="kpi-label">Active Alarms</div>
+        <div class="kpi-num" style="color:#f59e0b">{{ getActiveAlarmsCount() }}</div>
+        <div class="kpi-sub">Current active alarms</div>
+      </div>
+    </div>
+  </div>
+
   <div class="hstack justify-between flex-wrap gap-3">
     <div class="tabs">
       <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="onTabChange(0)">All <span class="muted">{{ getAllCount() }}</span></button>
@@ -28,6 +76,9 @@
           <th>Region</th>
           <th>Sub Region</th>
           <th>Zone</th>
+          <th>Power Source</th>
+          <th>Battery %</th>
+          <th>Load (kW)</th>
           <th>Location</th>
           <th>Actions</th>
         </tr>
@@ -45,6 +96,9 @@
           <td>{{ site.regionName || '-' }}</td>
           <td>{{ site.subRegionName || '-' }}</td>
           <td>{{ site.zoneName || '-' }}</td>
+          <td>{{ getPowerSource(site) }}</td>
+          <td class="mono">{{ getBatteryPercentage(site) }}</td>
+          <td class="mono">{{ getLoadKw(site) }}</td>
           <td>{{ site.location }}</td>
           <td>
             <div class="flex gap-2">

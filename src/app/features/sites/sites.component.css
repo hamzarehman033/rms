@@ -1,0 +1,51 @@
+.sites-kpi-row {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.sites-kpi-row .kpi-vert {
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	overflow: hidden;
+	transition: border-color 0.2s;
+	box-shadow: var(--shadow-card);
+}
+
+.sites-kpi-row .kpi-stripe {
+	height: 2px;
+}
+
+.sites-kpi-row .kpi-body {
+	padding: 13px 15px;
+}
+
+.sites-kpi-row .kpi-label {
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+	margin-bottom: 7px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.sites-kpi-row .kpi-label i {
+	font-size: 14px;
+}
+
+.sites-kpi-row .kpi-num {
+	font-size: 30px;
+	font-weight: 700;
+	line-height: 1;
+	margin-bottom: 4px;
+}
+
+.sites-kpi-row .kpi-sub {
+	font-size: 10px;
+	color: var(--muted-foreground);
+}
