@@ -1,22 +1,22 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DevicesService, SignalrService, ToastService } from '@app/core';
-import { LineChartOptions } from '../../shared/components/chart-components';
+import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
-import { DecodedPayload, DeviceDataEvent } from '../../core/constants/device-message.model';
+import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
 
 @Component({
-  selector: 'app-site-dashboard',
+  selector: 'app-event-log',
   standalone: false,
-  templateUrl: './site-dashboard.component.html',
-  styleUrl: './site-dashboard.component.css'
+  templateUrl: './event-log.component.html',
+  styleUrl: './event-log.component.css',
 })
-export class SiteDashboardComponent implements OnInit, OnDestroy {
+export class EventLogComponent {
   solarChartOptions: LineChartOptions;
-  deviceId: string | null = null;
-  isLoadingDevice = false;
   isOperational = false;
+  isLoadingDevice = false;
+  deviceId: string | null = null;
   selectedDeviceDetails: any = null;
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;
@@ -82,7 +82,8 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
 
   private loadDeviceDetails(id: string): void {
     this.isLoadingDevice = true;
-    this.devicesService.getDeviceById(id)
+    this.devicesService
+      .getDeviceById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
@@ -90,20 +91,23 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
           this.selectedDeviceDetails = payload ?? null;
           this.isOperational = false;
           this.lastPacketAt = null;
-          this.packetDeviceInfo = { 
+          this.packetDeviceInfo = {
             deviceType: '-',
-            manufacturer: '-', 
-            model: '-', 
-            batteryStatus: '-', 
-            batteryRemainingPercent: '-', 
-            gensetAvailable: '-', 
-            gensetRunning: '-', 
-            gensetStartFailure: '-', 
+            manufacturer: '-',
+            model: '-',
+            batteryStatus: '-',
+            batteryRemainingPercent: '-',
+            gensetAvailable: '-',
+            gensetRunning: '-',
+            gensetStartFailure: '-',
             gensetControlMode: '-',
             humidity: '-',
             temperature: '-',
           };
-          this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
+          this.liveData.grid.device =
+            this.selectedDeviceDetails?.code ||
+            this.selectedDeviceDetails?.name ||
+            '-';
           this.isLoadingDevice = false;
         },
         error: () => {
@@ -111,14 +115,14 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
           this.selectedDeviceDetails = null;
           this.isLoadingDevice = false;
           this.toastService.showError('Failed to load device details');
-        }
+        },
       });
   }
 
   private initializeRealtimeStream(): void {
     this.signalrService.onDeviceData$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((event : DeviceDataEvent | null) => {
+      .subscribe((event: DeviceDataEvent | null) => {
         if (!event || !this.selectedDeviceDetails?.rmsSubscribeTopic) {
           return;
         }
@@ -133,7 +137,9 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
   }
 
   private isPacketForSelectedTopic(event: DeviceDataEvent): boolean {
-    const selectedTopic = this.normalizeTopic(this.selectedDeviceDetails?.rmsSubscribeTopic);
+    const selectedTopic = this.normalizeTopic(
+      this.selectedDeviceDetails?.rmsSubscribeTopic,
+    );
     const packetTopic = this.normalizeTopic(event.topic);
     return !!selectedTopic && !!packetTopic && selectedTopic === packetTopic;
   }
@@ -165,36 +171,65 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
       deviceType: payload?.deviceType ? String(payload.deviceType) : '-',
       manufacturer: payload?.manufacturer ? String(payload.manufacturer) : '-',
       model: payload?.model ? String(payload.model) : '-',
-      batteryStatus: payload?.batteryStatus ? String(payload.batteryStatus) : '-',
-      batteryRemainingPercent: payload?.batteryRemainingPercent ? String(payload.batteryRemainingPercent) : '-',
-      gensetAvailable: payload?.gensetAvailable ? String(payload.gensetAvailable) : '-',
-      gensetRunning: payload?.gensetRunning ? String(payload.gensetRunning) : '-',
-      gensetStartFailure: payload?.gensetStartFailure ? String(payload.gensetStartFailure) : '-',
-      gensetControlMode: payload?.gensetControlMode ? String(payload.gensetControlMode) : '-',
+      batteryStatus: payload?.batteryStatus
+        ? String(payload.batteryStatus)
+        : '-',
+      batteryRemainingPercent: payload?.batteryRemainingPercent
+        ? String(payload.batteryRemainingPercent)
+        : '-',
+      gensetAvailable: payload?.gensetAvailable
+        ? String(payload.gensetAvailable)
+        : '-',
+      gensetRunning: payload?.gensetRunning
+        ? String(payload.gensetRunning)
+        : '-',
+      gensetStartFailure: payload?.gensetStartFailure
+        ? String(payload.gensetStartFailure)
+        : '-',
+      gensetControlMode: payload?.gensetControlMode
+        ? String(payload.gensetControlMode)
+        : '-',
       humidity: payload?.humidity ? String(payload.humidity) : '-',
-      temperature: ""
+      temperature: '',
     };
 
     this.liveData = {
       grid: {
-        device: String(payload.deviceId ?? this.selectedDeviceDetails?.code ?? this.selectedDeviceDetails?.name ?? '-'),
+        device: String(
+          payload.deviceId ??
+            this.selectedDeviceDetails?.code ??
+            this.selectedDeviceDetails?.name ??
+            '-',
+        ),
         voltage: lineAVoltage !== null ? `${lineAVoltage}V` : '-',
         status: String(payload.mainsAvailable ?? payload.systemStatus ?? '-'),
       },
       solar: {
         current: solarCurrent !== null ? `${solarCurrent}A` : '-',
         power: solarPowerKw !== null ? `${solarPowerKw.toFixed(2)} kW` : '-',
-        today: solarEnergyTodayWh !== null ? `${(solarEnergyTodayWh / 1000).toFixed(2)} kWh` : '-',
-        peak: this.peakSolarPowerKw > 0 ? `${this.peakSolarPowerKw.toFixed(2)} kW` : '-',
+        today:
+          solarEnergyTodayWh !== null
+            ? `${(solarEnergyTodayWh / 1000).toFixed(2)} kWh`
+            : '-',
+        peak:
+          this.peakSolarPowerKw > 0
+            ? `${this.peakSolarPowerKw.toFixed(2)} kW`
+            : '-',
       },
       battery: {
         current: batteryCurrent !== null ? `${batteryCurrent}A` : '-',
-        soc: batteryRemainingPercent !== null ? `${batteryRemainingPercent}%` : '-',
+        soc:
+          batteryRemainingPercent !== null
+            ? `${batteryRemainingPercent}%`
+            : '-',
         backupMins: batteryBackupTimeMin ?? 0,
       },
       backup: {
         available: this.formatMinutesAsDuration(batteryBackupTimeMin),
-        load: dcLoadPowerW !== null ? `${(dcLoadPowerW / 1000).toFixed(2)} kW` : '-',
+        load:
+          dcLoadPowerW !== null
+            ? `${(dcLoadPowerW / 1000).toFixed(2)} kW`
+            : '-',
         remaining: this.formatMinutesAsDuration(batteryBackupTimeMin),
       },
     };
@@ -229,13 +264,13 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
         {
           name: 'Solar Output (kW)',
           data: [],
-          color: '#f59e0b'
-        }
+          color: '#f59e0b',
+        },
       ],
       height: '300px',
       showLegend: true,
       smooth: true,
-      showSymbol: false
+      showSymbol: false,
     };
   }
 }

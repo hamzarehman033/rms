@@ -1,23 +1,23 @@
 <main class="content p-0">
   <div class="grid grid-cols-3 gap-6 relative"  style="height: calc(100vh - 105px);">
     <!-- Device View - 2 columns -->
-    <div class="col-span-2 flex flex-col gap-3">
+    <!-- <div class="col-span-2 flex flex-col gap-3">
       <app-device-view></app-device-view>
-    </div>
+    </div> -->
 
     <!-- Device Details - 1 column -->
-    <div class="col-span-1 bg-sidebar border border-sidebar-border rounded-lg p-4 h-100 sticky">
+    <!-- <div class="col-span-1 bg-sidebar border border-sidebar-border rounded-lg p-4 h-100 sticky">
       <p-dock styleClass="docker-outside" class="docker-outside" [model]="dockItems1" [position]="'left'" >
         <ng-template let-item>
           <button (click)="item.command()" [title]="item.label" style="background: none; border: none; cursor: pointer;">
             <i [class]="item.icon"></i>
           </button>
         </ng-template>
-    </p-dock>
+    </p-dock> -->
       <!-- Basic Info -->
       <div class="mb-6 pb-6 border-b border-sidebar-border">
         <!-- Live Data Section -->
-        <div *ngIf="selectedSection === 'live-data'">
+        <div >
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Live Data</h2>
           <div class="text-xs text-sidebar-foreground opacity-60 mb-3">{{ selectedDeviceDetails?.rmsSubscribeTopic || '-' }}</div>
           
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Alerts Section -->
-        <div *ngIf="selectedSection === 'alerts'">
+        <div>
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Site Alerts</h2>
           <ul class="space-y-3">
             <li *ngFor="let alert of alerts" class="bg-sidebar-accent rounded p-3 flex gap-3">
@@ -69,7 +69,7 @@
         </div>
 
         <!-- Devices Section -->
-        <div *ngIf="selectedSection === 'devices'">
+        <div >
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Device Details</h2>
           <div class="space-y-3">
             <div class="bg-sidebar-accent rounded p-3 flex items-center gap-3">
@@ -102,14 +102,14 @@
         </div>
 
         <!-- Charts Section -->
-        <div *ngIf="selectedSection === 'charts'">
+        <div >
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Solar Output</h2>
           <p class="text-xs text-sidebar-foreground opacity-60 mb-4">24-hour packet by portalReceiveTime hour</p>
           <app-line-chart [options]="chartOptions"></app-line-chart>
         </div>
 
         <!-- Specs Section -->
-        <div *ngIf="selectedSection === 'specs'">
+        <div >
           <h2 class="text-sm font-semibold text-sidebar-foreground uppercase mb-3 opacity-75">Device Specifications</h2>
           <div class="space-y-4">
             <div class="border-b border-sidebar-border pb-3">
@@ -156,5 +156,4 @@
         </div>
       </div>
     </div>
-  </div>
 </main>

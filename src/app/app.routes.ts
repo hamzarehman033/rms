@@ -70,13 +70,13 @@ export const routes: Routes = [
             (m) => m.MapDashboardModule,
           ),
       },
-      {
-        path: "device-detail",
-        loadChildren: () =>
-          import("./features/device-detail/device-detail.module").then(
-            (m) => m.DeviceDetailModule,
-          ),
-      },
+      // {
+      //   path: "device-detail",
+      //   loadChildren: () =>
+      //     import("./features/site-dashboard/device-detail/device-detail.module").then(
+      //       (m) => m.DeviceDetailModule,
+      //     ),
+      // },
       {
         path: "rules",
         loadChildren: () =>

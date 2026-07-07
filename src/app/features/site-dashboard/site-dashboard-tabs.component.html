@@ -1,0 +1,36 @@
+<main class="content site-dashboard-tabs-shell">
+  <p-tabs [(value)]="activeTab">
+    <p-tablist>
+      <p-tab value="site-pulse">Site Pulse</p-tab>
+      <p-tab value="equipment-view">Equipment View</p-tab>
+      <p-tab value="event-log">Event Log</p-tab>
+      <p-tab value="analysis">Analysis</p-tab>
+      <p-tab value="site-details">Site Details</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="site-pulse">
+        <app-site-dashboard></app-site-dashboard>
+      </p-tabpanel>
+      <p-tabpanel value="equipment-view">
+        <app-equipment-view></app-equipment-view>
+      </p-tabpanel>
+      <p-tabpanel value="event-log">
+        <app-event-log></app-event-log>
+      </p-tabpanel>
+      <p-tabpanel value="analysis">
+        <section class="card card-pad tab-section">
+          <div class="card-head-inline">
+            <div>
+              <h3 class="font-display">Analysis</h3>
+              <p class="muted-sm">Analytical insights and trend summaries will appear here.</p>
+            </div>
+          </div>
+          <p class="muted-sm">No analysis widgets configured yet.</p>
+        </section>
+      </p-tabpanel>
+      <p-tabpanel value="site-details">
+        <app-device-detail></app-device-detail>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</main>
