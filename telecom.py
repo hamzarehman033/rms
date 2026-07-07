@@ -83,7 +83,7 @@ CRC_TYPE = "modbus"             # "modbus" or "ccitt"
 # PACKET MAP
 # =============================================================================
 
-PACKET_LENGTH = 160
+PACKET_LENGTH = 188
 CRC_OFFSET = 0x9E
 RESERVED_OFFSET = 0x96
 RESERVED_LENGTH = 8
@@ -197,6 +197,15 @@ FIELD_MAP = [
     (0x92, 4, "alarm_bitmap_1", "U32", 1, "bitmask"),
     (0x96, 8, "reserved", "BYTES", 1, ""),
     (0x9E, 2, "crc16", "U16", 1, ""),
+    (0xA0, 4, "genset_power", "U32", 1, "W"),
+    (0xA4, 4, "tenant1_load", "U32", 1, "W"),
+    (0xA8, 2, "tenant1_current", "I16", 10, "A"),
+    (0xAA, 4, "tenant2_load", "U32", 1, "W"),
+    (0xAE, 2, "tenant2_current", "I16", 10, "A"),
+    (0xB0, 4, "tenant3_load", "U32", 1, "W"),
+    (0xB4, 2, "tenant3_current", "I16", 10, "A"),
+    (0xB6, 4, "tenant4_load", "U32", 1, "W"),
+    (0xBA, 2, "tenant4_current", "I16", 10, "A"),
 ]
 
 
@@ -375,11 +384,17 @@ class TelecomRmsState:
     genset_control_mode: int = 1
     genset_run_hours: int = 320
     genset_start_count: int = 45
+    genset_power: float = 0.0
 
     fuel_tank_capacity_liters: int = 500
     fuel_level_percent: float = 70.0
     fuel_theft_alarm: int = 0
     fuel_low_alarm: int = 0
+
+    tenant1_load: float = 2500.0
+    tenant2_load: float = 2000.0
+    tenant3_load: float = 1500.0
+    tenant4_load: float = 1117.0
 
     ambient_temperature_1: float = 29.0
     ambient_temperature_2: float = 31.0
@@ -432,6 +447,21 @@ class TelecomRmsState:
         self.dc_load_current = random_walk(self.dc_load_current, 60.0, 180.0, 4.5)
         self.dc_load_power = max(0.0, self.dc_bus_voltage * self.dc_load_current)
         self.dc_load_percent = clamp((self.dc_load_current / 160.0) * 100.0, 20.0, 110.0)
+
+        # Keep per-tenant loads coherent with total DC load while allowing small variation.
+        shares = [0.35, 0.28, 0.21, 0.16]
+        raw_tenant_loads = [
+            random_walk(self.dc_load_power * shares[0], 300.0, max(self.dc_load_power, 300.0), 90.0),
+            random_walk(self.dc_load_power * shares[1], 250.0, max(self.dc_load_power, 250.0), 80.0),
+            random_walk(self.dc_load_power * shares[2], 200.0, max(self.dc_load_power, 200.0), 70.0),
+            random_walk(self.dc_load_power * shares[3], 150.0, max(self.dc_load_power, 150.0), 60.0),
+        ]
+        load_sum = sum(raw_tenant_loads)
+        normalization = (self.dc_load_power / load_sum) if load_sum > 0 else 0.0
+        self.tenant1_load = raw_tenant_loads[0] * normalization
+        self.tenant2_load = raw_tenant_loads[1] * normalization
+        self.tenant3_load = raw_tenant_loads[2] * normalization
+        self.tenant4_load = raw_tenant_loads[3] * normalization
 
         if self.solar_available:
             self.solar_voltage = random_walk(self.solar_voltage, 48.0, 62.0, 0.8)
@@ -507,6 +537,9 @@ class TelecomRmsState:
             consumed_liters = random.uniform(1.0, 3.0) * interval_seconds / 3600.0
             consumed_percent = consumed_liters / max(self.fuel_tank_capacity_liters, 1) * 100.0
             self.fuel_level_percent = clamp(self.fuel_level_percent - consumed_percent, 0.0, 100.0)
+            self.genset_power = max(0.0, self.dc_load_power - self.solar_power)
+        else:
+            self.genset_power = 0.0
 
         if chance(0.001):
             self.fuel_theft_alarm = 1
@@ -687,6 +720,7 @@ class TelecomRmsState:
             "genset_control_mode": self.genset_control_mode,
             "genset_run_hours": self.genset_run_hours,
             "genset_start_count": self.genset_start_count,
+            "genset_power": self.genset_power,
 
             "fuel_level_percent": self.fuel_level_percent,
             "fuel_volume_liters": fuel_volume,
@@ -706,6 +740,15 @@ class TelecomRmsState:
 
             "alarm_bitmap_1": self.build_alarm_bitmap(),
             "active_alarms": self.active_alarms,
+
+            "tenant1_load": self.tenant1_load,
+            "tenant1_current": self.tenant1_load / max(self.dc_bus_voltage, 1.0),
+            "tenant2_load": self.tenant2_load,
+            "tenant2_current": self.tenant2_load / max(self.dc_bus_voltage, 1.0),
+            "tenant3_load": self.tenant3_load,
+            "tenant3_current": self.tenant3_load / max(self.dc_bus_voltage, 1.0),
+            "tenant4_load": self.tenant4_load,
+            "tenant4_current": self.tenant4_load / max(self.dc_bus_voltage, 1.0),
         }
 
 
@@ -853,6 +896,21 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
         crc = crc16_modbus(bytes(buf[:CRC_OFFSET]))
 
     write_u16(buf, CRC_OFFSET, crc)
+
+    # Extended fields appended after legacy CRC (0xA0+). Bytes 0x00-0x9F remain unchanged.
+    if state.genset_available:
+        write_u32(buf, 0xA0, int(round(values["genset_power"])))
+    else:
+        write_invalid_u32(buf, 0xA0)
+    write_u32(buf, 0xA4, int(round(values["tenant1_load"])))
+    write_i16(buf, 0xA8, scaled_i16(values["tenant1_current"], 10))
+    write_u32(buf, 0xAA, int(round(values["tenant2_load"])))
+    write_i16(buf, 0xAE, scaled_i16(values["tenant2_current"], 10))
+    write_u32(buf, 0xB0, int(round(values["tenant3_load"])))
+    write_i16(buf, 0xB4, scaled_i16(values["tenant3_current"], 10))
+    write_u32(buf, 0xB6, int(round(values["tenant4_load"])))
+    write_i16(buf, 0xBA, scaled_i16(values["tenant4_current"], 10))
+
     values["crc16"] = crc
     values["hex_payload"] = bytes(buf).hex(" ").upper()
 
