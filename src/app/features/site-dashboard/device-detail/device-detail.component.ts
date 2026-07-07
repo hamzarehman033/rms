@@ -1,9 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { DevicesService, SignalrService, ToastService } from '@app/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { SignalrService, ToastService } from '@app/core';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
 
 @Component({
@@ -12,8 +11,8 @@ import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-
   templateUrl: './device-detail.component.html',
   styleUrl: './device-detail.component.css'
 })
-export class DeviceDetailComponent implements OnInit, OnDestroy {
-  deviceId: string | null = null;
+export class DeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
+  @Input() deviceDetails: any = null;
   isLoadingDevice = false;
   isOperational = false;
   selectedDeviceDetails: any = null;
@@ -41,6 +40,15 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
     backup: { available: '-', load: '-', remaining: '-' },
   };
 
+  installedCapacity = {
+    rectifierCapacity: '-',
+    batteryCapacity: '-',
+    backupDuration: '-',
+    solarCapacity: '-',
+    generatorRating: '-',
+    dcBusVoltage: '-',
+  };
+
   packetDeviceInfo = {
     deviceType: '-',
     manufacturer: '-',
@@ -60,9 +68,18 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
   private readonly hourlySolarVoltage = new Map<number, number>();
   private readonly destroy$ = new Subject<void>();
 
+  get installedCapacityItems(): Array<{ label: string; value: string }> {
+    return [
+      { label: 'Rectifier Capacity', value: this.installedCapacity.rectifierCapacity },
+      { label: 'Battery Capacity', value: this.installedCapacity.batteryCapacity },
+      { label: 'Backup Duration', value: this.installedCapacity.backupDuration },
+      { label: 'Solar Capacity', value: this.installedCapacity.solarCapacity },
+      { label: 'Generator Rating', value: this.installedCapacity.generatorRating },
+      { label: 'DC Bus Voltage', value: this.installedCapacity.dcBusVoltage },
+    ];
+  }
+
   constructor(
-    private route: ActivatedRoute,
-    private devicesService: DevicesService,
     private signalrService: SignalrService,
     private toastService: ToastService,
   ) {
@@ -71,25 +88,13 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeRealtimeStream();
+    this.syncDeviceSelection(this.deviceDetails);
+  }
 
-    this.route.paramMap
-      .pipe(
-        map((params) => params.get('id')),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((id) => {
-        if (!id) {
-          this.deviceId = null;
-          this.isOperational = false;
-          this.selectedDeviceDetails = null;
-          this.resetChartSeries();
-          return;
-        }
-
-        this.deviceId = id;
-        this.loadDeviceDetails(id);
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('deviceDetails' in changes) {
+      this.syncDeviceSelection(this.deviceDetails);
+    }
   }
 
   ngOnDestroy(): void {
@@ -97,42 +102,37 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  selectSection(section: string) {
-    this.selectedSection = section;
+  private syncDeviceSelection(details: any): void {
+    if (!details) {
+      this.isOperational = false;
+      this.selectedDeviceDetails = null;
+      this.resetChartSeries();
+      this.resetInstalledCapacity();
+      return;
+    }
+
+    this.selectedDeviceDetails = details;
+    this.isOperational = false;
+    this.lastPacketAt = null;
+    this.resetInstalledCapacity();
+    this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
+    this.resetChartSeries();
+    this.subscribeToSelectedDevice();
   }
 
-  private loadDeviceDetails(id: string): void {
-    this.isLoadingDevice = true;
-    this.devicesService.getDeviceById(id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          const payload = response?.data ?? response;
-          this.selectedDeviceDetails = payload ?? null;
-          this.isOperational = false;
-          this.lastPacketAt = null;
-          this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
-          this.resetChartSeries();
-          this.isLoadingDevice = false;
-        },
-        error: () => {
-          this.isOperational = false;
-          this.selectedDeviceDetails = null;
-          this.isLoadingDevice = false;
-          this.toastService.showError('Failed to load device details');
-        }
-      });
+  selectSection(section: string) {
+    this.selectedSection = section;
   }
 
   private initializeRealtimeStream(): void {
     this.signalrService.onDeviceData$
       .pipe(takeUntil(this.destroy$))
       .subscribe((event: DeviceDataEvent | null) => {
-        if (!event || !this.selectedDeviceDetails?.rmsSubscribeTopic) {
+        if (!event || !this.selectedDeviceDetails) {
           return;
         }
 
-        if (!this.isPacketForSelectedTopic(event)) {
+        if (!this.isPacketForSelectedDevice(event) && !this.isPacketForSelectedTopic(event)) {
           return;
         }
 
@@ -150,6 +150,17 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
     return (topic ?? '').trim().toLowerCase();
   }
 
+  private isPacketForSelectedDevice(event: DeviceDataEvent): boolean {
+    const selectedDeviceId = this.toNumericId(this.selectedDeviceDetails?.id);
+    const packetDeviceId = this.toNumericId(event.deviceId);
+
+    if (selectedDeviceId === null || packetDeviceId === null) {
+      return false;
+    }
+
+    return selectedDeviceId === packetDeviceId;
+  }
+
   private applyPacketToLiveData(event: DeviceDataEvent): void {
     this.isOperational = true;
     const payload: DecodedPayload = (event.decodedPayload ?? {}) as DecodedPayload;
@@ -163,6 +174,10 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
     const batteryRemainingPercent = payload.batteryRemainingPercent;
     const batteryBackupTimeMin = payload.batteryBackupTimeMin;
     const dcLoadPowerW = payload.dcLoadPowerW;
+    const dcBusVoltage = payload.dcBusVoltage;
+    const rectifierTotalDcPowerW = payload.rectifierTotalDcPowerW;
+    const batteryTotalCapacityAh = payload.batteryTotalCapacityAh;
+    const generatorRatingKw = payload['gensetRatingKw'] ?? payload['generatorRatingKw'] ?? payload['gensetCapacityKw'];
 
     const solarPowerKw = solarPowerW !== null ? solarPowerW / 1000 : null;
     if (solarPowerKw !== null && solarPowerKw > this.peakSolarPowerKw) {
@@ -207,6 +222,15 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
         load: dcLoadPowerW !== null ? `${(dcLoadPowerW / 1000).toFixed(2)} kW` : '-',
         remaining: this.formatMinutesAsDuration(batteryBackupTimeMin),
       },
+    };
+
+    this.installedCapacity = {
+      rectifierCapacity: this.formatAsKw(rectifierTotalDcPowerW),
+      batteryCapacity: this.formatAsAh(batteryTotalCapacityAh),
+      backupDuration: this.formatMinutesAsDuration(batteryBackupTimeMin),
+      solarCapacity: this.formatAsKw(solarPowerW),
+      generatorRating: this.formatGeneratorRating(generatorRatingKw, payload.gensetAvailable),
+      dcBusVoltage: this.formatAsVolt(dcBusVoltage),
     };
 
     this.lastPacketAt = portalReceiveTime ? String(portalReceiveTime) : null;
@@ -298,6 +322,91 @@ export class DeviceDetailComponent implements OnInit, OnDestroy {
     }
 
     return `${hours}h ${mins}m`;
+  }
+
+  private subscribeToSelectedDevice(): void {
+    const numericId = this.toNumericId(this.selectedDeviceDetails?.id);
+    if (numericId === null) {
+      return;
+    }
+
+    this.signalrService.subscribeToDevice(numericId).catch(() => {
+      this.toastService.showError('Failed to subscribe live socket for selected device');
+    });
+  }
+
+  private toNumericId(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+
+  private resetInstalledCapacity(): void {
+    this.installedCapacity = {
+      rectifierCapacity: '-',
+      batteryCapacity: '-',
+      backupDuration: '-',
+      solarCapacity: '-',
+      generatorRating: '-',
+      dcBusVoltage: '-',
+    };
+  }
+
+  private formatAsKw(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return String(value);
+    }
+
+    return `${(numeric / 1000).toFixed(2)} kW`;
+  }
+
+  private formatAsAh(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return String(value);
+    }
+
+    return `${numeric.toFixed(0)} Ah`;
+  }
+
+  private formatAsVolt(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return String(value);
+    }
+
+    return `${numeric.toFixed(1)} V`;
+  }
+
+  private formatGeneratorRating(value: unknown, gensetAvailable: unknown): string {
+    if (value !== null && value !== undefined && value !== '') {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric)) {
+        return `${numeric.toFixed(2)} kW`;
+      }
+      return String(value);
+    }
+
+    if (gensetAvailable !== null && gensetAvailable !== undefined && String(gensetAvailable).trim() !== '') {
+      return String(gensetAvailable);
+    }
+
+    return '-';
   }
 
   initChart(): LineChartOptions {

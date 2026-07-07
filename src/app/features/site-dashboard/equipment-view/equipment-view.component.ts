@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-equipment-view',
@@ -6,4 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './equipment-view.component.html',
   styleUrl: './equipment-view.component.css'
 })
-export class EquipmentViewComponent {}
+export class EquipmentViewComponent {
+  @Input() deviceDetails: any = null;
+}

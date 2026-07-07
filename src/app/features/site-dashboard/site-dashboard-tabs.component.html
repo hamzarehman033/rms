@@ -9,13 +9,13 @@
     </p-tablist>
     <p-tabpanels>
       <p-tabpanel value="site-pulse">
-        <app-site-dashboard></app-site-dashboard>
+        <app-site-dashboard [deviceDetails]="deviceDetails"></app-site-dashboard>
       </p-tabpanel>
       <p-tabpanel value="equipment-view">
-        <app-equipment-view></app-equipment-view>
+        <app-equipment-view [deviceDetails]="deviceDetails"></app-equipment-view>
       </p-tabpanel>
       <p-tabpanel value="event-log">
-        <app-event-log></app-event-log>
+        <app-event-log [deviceDetails]="deviceDetails"></app-event-log>
       </p-tabpanel>
       <p-tabpanel value="analysis">
         <section class="card card-pad tab-section">
@@ -29,7 +29,7 @@
         </section>
       </p-tabpanel>
       <p-tabpanel value="site-details">
-        <app-device-detail></app-device-detail>
+        <app-device-detail [deviceDetails]="deviceDetails"></app-device-detail>
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>

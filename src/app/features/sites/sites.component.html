@@ -92,7 +92,7 @@
             </a>
           </td>
           <td class="mono">{{ site.siteCode || site.code || '-' }}</td>
-          <td><span [ngClass]="'badge ' + site.status">● {{ site.status | titlecase }}</span></td>
+          <td><span style="text-wrap-mode: nowrap;" [ngClass]="'badge ' + site.status">● {{ site.status | titlecase }}</span></td>
           <td>{{ site.regionName || '-' }}</td>
           <td>{{ site.subRegionName || '-' }}</td>
           <td>{{ site.zoneName || '-' }}</td>

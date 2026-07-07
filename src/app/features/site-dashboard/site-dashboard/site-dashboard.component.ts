@@ -1,9 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { DevicesService, SignalrService, ToastService } from '@app/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { SignalrService } from '@app/core';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
 
 @Component({
@@ -12,9 +11,9 @@ import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-
   templateUrl: './site-dashboard.component.html',
   styleUrl: './site-dashboard.component.css'
 })
-export class SiteDashboardComponent implements OnInit, OnDestroy {
+export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
   solarChartOptions: LineChartOptions;
-  deviceId: string | null = null;
+  @Input() deviceDetails: any = null;
   isLoadingDevice = false;
   isOperational = false;
   selectedDeviceDetails: any = null;
@@ -45,34 +44,20 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private route: ActivatedRoute,
-    private devicesService: DevicesService,
     private signalrService: SignalrService,
-    private toastService: ToastService,
   ) {
     this.solarChartOptions = this.initSolarChart();
   }
 
   ngOnInit(): void {
     this.initializeRealtimeStream();
+    this.syncDeviceSelection(this.deviceDetails);
+  }
 
-    this.route.paramMap
-      .pipe(
-        map((params) => params.get('id')),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((id) => {
-        if (!id) {
-          this.deviceId = null;
-          this.isOperational = false;
-          this.selectedDeviceDetails = null;
-          return;
-        }
-
-        this.deviceId = id;
-        this.loadDeviceDetails(id);
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('deviceDetails' in changes) {
+      this.syncDeviceSelection(this.deviceDetails);
+    }
   }
 
   ngOnDestroy(): void {
@@ -80,39 +65,30 @@ export class SiteDashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadDeviceDetails(id: string): void {
-    this.isLoadingDevice = true;
-    this.devicesService.getDeviceById(id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          const payload = response?.data ?? response;
-          this.selectedDeviceDetails = payload ?? null;
-          this.isOperational = false;
-          this.lastPacketAt = null;
-          this.packetDeviceInfo = { 
-            deviceType: '-',
-            manufacturer: '-', 
-            model: '-', 
-            batteryStatus: '-', 
-            batteryRemainingPercent: '-', 
-            gensetAvailable: '-', 
-            gensetRunning: '-', 
-            gensetStartFailure: '-', 
-            gensetControlMode: '-',
-            humidity: '-',
-            temperature: '-',
-          };
-          this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
-          this.isLoadingDevice = false;
-        },
-        error: () => {
-          this.isOperational = false;
-          this.selectedDeviceDetails = null;
-          this.isLoadingDevice = false;
-          this.toastService.showError('Failed to load device details');
-        }
-      });
+  private syncDeviceSelection(details: any): void {
+    if (!details) {
+      this.isOperational = false;
+      this.selectedDeviceDetails = null;
+      return;
+    }
+
+    this.selectedDeviceDetails = details;
+    this.isOperational = false;
+    this.lastPacketAt = null;
+    this.packetDeviceInfo = {
+      deviceType: '-',
+      manufacturer: '-',
+      model: '-',
+      batteryStatus: '-',
+      batteryRemainingPercent: '-',
+      gensetAvailable: '-',
+      gensetRunning: '-',
+      gensetStartFailure: '-',
+      gensetControlMode: '-',
+      humidity: '-',
+      temperature: '-',
+    };
+    this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
   }
 
   private initializeRealtimeStream(): void {
