@@ -64,4 +64,8 @@ export class StatisticsService {
   getEnergyConsumptionReport(data: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}${this.url}/energy-consumption-report`, data);
   }
+
+  getAlarmStatusReport(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.url}/alarm-status-report`, data);
+  }
 }

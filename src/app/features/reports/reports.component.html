@@ -444,24 +444,24 @@
 
         <div class="grid cols-4">
           <div class="stat">
-            <div class="label">Critical</div>
-            <div class="value">1</div>
-            <div class="hint">requires action</div>
+            <div class="label">Average Active Alarms</div>
+            <div class="value">{{ formatNumber(alarmAvgActiveCount, 0) }}</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Warning</div>
-            <div class="value">2</div>
-            <div class="hint">degraded service</div>
+            <div class="label">Critical Packets</div>
+            <div class="value">{{ formatNumber(alarmAvgCriticalPackets, 0) }}</div>
+            <div class="hint">average critical count</div>
           </div>
           <div class="stat">
-            <div class="label">Info</div>
-            <div class="value">1</div>
-            <div class="hint">informational</div>
+            <div class="label">Major Packets</div>
+            <div class="value">{{ formatNumber(alarmAvgMajorPackets, 0) }}</div>
+            <div class="hint">average major count</div>
           </div>
           <div class="stat">
-            <div class="label">Total Alarms</div>
-            <div class="value">4</div>
-            <div class="hint">in preview</div>
+            <div class="label">Warning Packets</div>
+            <div class="value">{{ formatNumber(alarmAvgWarningPackets, 0) }}</div>
+            <div class="hint">average warning count</div>
           </div>
         </div>
 
@@ -476,41 +476,30 @@
           <table class="table mt-4">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Severity</th>
-                <th>Title</th>
-                <th>Device</th>
-                <th>Time</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Average Active Alarms</th>
+                <th>Door Open Events</th>
+                <th>Smoke Events</th>
+                <th>Water Leak Events</th>
+                <th>Motion Events</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>ALR-101</td>
-                <td>critical</td>
-                <td>High temperature</td>
-                <td>Sensor T-12</td>
-                <td>10:24</td>
+              <tr *ngFor="let row of alarmRecords">
+                <td>{{ row.siteName }}</td>
+                <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ formatNumber(row.avgActiveAlarmCount, 0) }}</td>
+                <td>{{ formatNumber(row.doorOpenEvents, 0) }}</td>
+                <td>{{ formatNumber(row.smokeEvents, 0) }}</td>
+                <td>{{ formatNumber(row.waterLeakEvents, 0) }}</td>
+                <td>{{ formatNumber(row.motionEvents, 0) }}</td>
               </tr>
-              <tr>
-                <td>ALR-102</td>
-                <td>warning</td>
-                <td>Battery low</td>
-                <td>Pump Ctrl 03</td>
-                <td>09:58</td>
+              <tr *ngIf="alarmLoading">
+                <td colspan="7" class="muted">Loading alarms report...</td>
               </tr>
-              <tr>
-                <td>ALR-103</td>
-                <td>info</td>
-                <td>Firmware available</td>
-                <td>Gateway A1</td>
-                <td>09:30</td>
-              </tr>
-              <tr>
-                <td>ALR-104</td>
-                <td>warning</td>
-                <td>Signal degraded</td>
-                <td>Meter L2</td>
-                <td>08:11</td>
+              <tr *ngIf="!alarmLoading && !alarmRecords.length">
+                <td colspan="7" class="muted">No alarms report records found.</td>
               </tr>
             </tbody>
           </table>

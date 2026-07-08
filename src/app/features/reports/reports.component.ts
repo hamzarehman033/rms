@@ -54,6 +54,23 @@ interface EnergyConsumptionRecord {
   avgTenantLoadW: number | null;
 }
 
+interface AlarmStatusRecord {
+  deviceId: number;
+  siteName: string;
+  dateUtc: string;
+  packetsCount: number;
+  avgActiveAlarmCount: number;
+  packetsWithActiveAlarms: number;
+  criticalAlarmPackets: number;
+  majorAlarmPackets: number;
+  minorAlarmPackets: number;
+  warningAlarmPackets: number;
+  doorOpenEvents: number;
+  smokeEvents: number;
+  waterLeakEvents: number;
+  motionEvents: number;
+}
+
 @Component({
   selector: 'app-reports',
   templateUrl: './reports.component.html',
@@ -106,11 +123,13 @@ export class ReportsComponent implements OnInit {
   solarRecords: SolarStatusRecord[] = [];
   gridRecords: GridStatusRecord[] = [];
   energyRecords: EnergyConsumptionRecord[] = [];
+  alarmRecords: AlarmStatusRecord[] = [];
 
   batteryLoading = false;
   solarLoading = false;
   gridLoading = false;
   energyLoading = false;
+  alarmLoading = false;
 
   constructor(private statisticsService: StatisticsService) {}
 
@@ -119,6 +138,7 @@ export class ReportsComponent implements OnInit {
     this.loadBatteryReport();
     this.loadSolarReport();
     this.loadGridReport();
+    this.loadAlarmReport();
   }
 
   onExport(): void {
@@ -189,6 +209,22 @@ export class ReportsComponent implements OnInit {
     return this.getAverage(this.energyRecords.map((x) => x.avgAcInputPowerW));
   }
 
+  get alarmAvgActiveCount(): number {
+    return this.getAverage(this.alarmRecords.map((x) => x.avgActiveAlarmCount));
+  }
+
+  get alarmAvgCriticalPackets(): number {
+    return this.getAverage(this.alarmRecords.map((x) => x.criticalAlarmPackets));
+  }
+
+  get alarmAvgMajorPackets(): number {
+    return this.getAverage(this.alarmRecords.map((x) => x.majorAlarmPackets));
+  }
+
+  get alarmAvgWarningPackets(): number {
+    return this.getAverage(this.alarmRecords.map((x) => x.warningAlarmPackets));
+  }
+
   formatNumber(value: number | null | undefined, digits = 2): string {
     if (value === null || value === undefined || !Number.isFinite(value)) {
       return '0';
@@ -249,6 +285,20 @@ export class ReportsComponent implements OnInit {
       error: () => {
         this.gridRecords = [];
         this.gridLoading = false;
+      },
+    });
+  }
+
+  private loadAlarmReport(): void {
+    this.alarmLoading = true;
+    this.statisticsService.getAlarmStatusReport({}).subscribe({
+      next: (response) => {
+        this.alarmRecords = this.extractRecords<AlarmStatusRecord>(response);
+        this.alarmLoading = false;
+      },
+      error: () => {
+        this.alarmRecords = [];
+        this.alarmLoading = false;
       },
     });
   }
