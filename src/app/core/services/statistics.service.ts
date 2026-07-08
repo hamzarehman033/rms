@@ -48,4 +48,16 @@ export class StatisticsService {
   getRecentSites(filters: RecentSitesFilterRequest): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}${this.url}/recent-sites`, filters);
   }
+
+  getBatteryStatusReport(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.url}/battery-status-report`, data);
+  }
+
+  getSolarStatusReport(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.url}/solar-status-report`, data);
+  }
+
+  getGridStatusReport(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.url}/grid-status-report`, data);
+  }
 }

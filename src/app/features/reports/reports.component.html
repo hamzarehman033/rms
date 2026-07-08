@@ -77,11 +77,11 @@
           <table class="table mt-4">
             <thead>
               <tr>
-                <th>date</th>
-                <th>grid_kWh</th>
-                <th>solar_kWh</th>
-                <th>battery_kWh</th>
-                <th>total_kWh</th>
+                <th>Date</th>
+                <th>Grid (kWh)</th>
+                <th>Solar (kWh)</th>
+                <th>Battery (kWh)</th>
+                <th>Total (kWh)</th>
               </tr>
             </thead>
             <tbody>
@@ -157,24 +157,24 @@
 
         <div class="grid cols-4">
           <div class="stat">
-            <div class="label">Grid Hours</div>
-            <div class="value">63.5h</div>
-            <div class="hint">sample window</div>
+            <div class="label">Grid Availability</div>
+            <div class="value">{{ formatNumber(gridAvailability) }}%</div>
+            <div class="hint">average across records</div>
           </div>
           <div class="stat">
-            <div class="label">Grid kWh</div>
-            <div class="value">1,225</div>
-            <div class="hint">sample window</div>
+            <div class="label">Avg Input Power</div>
+            <div class="value">{{ formatNumber(gridAvgPower) }} W</div>
+            <div class="hint">ac input power</div>
           </div>
           <div class="stat">
-            <div class="label">Avg Load</div>
-            <div class="value">19.4 kW</div>
-            <div class="hint">across days</div>
+            <div class="label">Avg AC Frequency</div>
+            <div class="value">{{ formatNumber(gridAvgFrequency) }} Hz</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Peak Load</div>
-            <div class="value">34.2 kW</div>
-            <div class="hint">highest point</div>
+            <div class="label">Avg 3-Phase Voltage</div>
+            <div class="value">{{ formatNumber(gridAvgVoltage) }} V</div>
+            <div class="hint">line A/B/C average</div>
           </div>
         </div>
 
@@ -189,34 +189,26 @@
           <table class="table mt-4">
             <thead>
               <tr>
-                <th>date</th>
-                <th>grid_hrs</th>
-                <th>grid_kWh</th>
-                <th>avg_load_kW</th>
-                <th>peak_load_kW</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Average Input Power (W)</th>
+                <th>Average AC Frequency (Hz)</th>
+                <th>Availability (%)</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>2026-04-25</td>
-                <td>21.5</td>
-                <td>410</td>
-                <td>19.1</td>
-                <td>31.4</td>
+              <tr *ngFor="let row of gridRecords">
+                <td>{{ row.siteName }}</td>
+                <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ formatNumber(row.avgAcInputPowerW) }}</td>
+                <td>{{ formatNumber(row.avgAcFrequency) }}</td>
+                <td>{{ formatNumber(row.gridAvailablePercent) }}%</td>
               </tr>
-              <tr>
-                <td>2026-04-26</td>
-                <td>22.0</td>
-                <td>395</td>
-                <td>18.0</td>
-                <td>29.9</td>
+              <tr *ngIf="gridLoading">
+                <td colspan="5" class="muted">Loading grid report...</td>
               </tr>
-              <tr>
-                <td>2026-04-27</td>
-                <td>20.0</td>
-                <td>420</td>
-                <td>21.0</td>
-                <td>34.2</td>
+              <tr *ngIf="!gridLoading && !gridRecords.length">
+                <td colspan="5" class="muted">No grid report records found.</td>
               </tr>
             </tbody>
           </table>
@@ -261,24 +253,24 @@
 
         <div class="grid cols-4">
           <div class="stat">
-            <div class="label">Energy In</div>
-            <div class="value">159 kWh</div>
-            <div class="hint">sample window</div>
+            <div class="label">Avg Battery Voltage</div>
+            <div class="value">{{ formatNumber(batteryAvgVoltage) }} V</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Energy Out</div>
-            <div class="value">137 kWh</div>
-            <div class="hint">sample window</div>
+            <div class="label">Avg Battery Current</div>
+            <div class="value">{{ formatNumber(batteryAvgCurrent) }} A</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Avg SOC</div>
-            <div class="value">76%</div>
-            <div class="hint">across days</div>
+            <div class="label">Avg Battery Temperature</div>
+            <div class="value">{{ formatNumber(batteryAvgTemperature) }} C</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Cycles</div>
-            <div class="value">2.2</div>
-            <div class="hint">total cycles</div>
+            <div class="label">Avg Battery Remaining</div>
+            <div class="value">{{ formatNumber(batteryAvgSoc) }}%</div>
+            <div class="hint">state of charge</div>
           </div>
         </div>
 
@@ -293,34 +285,30 @@
           <table class="table mt-4">
             <thead>
               <tr>
-                <th>date</th>
-                <th>battery_in_kWh</th>
-                <th>battery_out_kWh</th>
-                <th>avg_soc</th>
-                <th>cycles</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Average Voltage (V)</th>
+                <th>Average Current (A)</th>
+                <th>Average Temperature (C)</th>
+                <th>Average Remaining (%)</th>
+                <th>Average SoH (%)</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>2026-04-25</td>
-                <td>52</td>
-                <td>45</td>
-                <td>76%</td>
-                <td>0.7</td>
+              <tr *ngFor="let row of batteryRecords">
+                <td>{{ row.siteName }}</td>
+                <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ formatNumber(row.avgBatteryVoltage) }}</td>
+                <td>{{ formatNumber(row.avgBatteryCurrent) }}</td>
+                <td>{{ formatNumber(row.avgBatteryTemperature) }}</td>
+                <td>{{ formatNumber(row.avgBatteryRemainingPercent) }}%</td>
+                <td>{{ formatNumber(row.avgBatterySoh) }}%</td>
               </tr>
-              <tr>
-                <td>2026-04-26</td>
-                <td>48</td>
-                <td>40</td>
-                <td>79%</td>
-                <td>0.6</td>
+              <tr *ngIf="batteryLoading">
+                <td colspan="7" class="muted">Loading battery report...</td>
               </tr>
-              <tr>
-                <td>2026-04-27</td>
-                <td>59</td>
-                <td>52</td>
-                <td>72%</td>
-                <td>0.9</td>
+              <tr *ngIf="!batteryLoading && !batteryRecords.length">
+                <td colspan="7" class="muted">No battery report records found.</td>
               </tr>
             </tbody>
           </table>
@@ -365,24 +353,24 @@
 
         <div class="grid cols-4">
           <div class="stat">
-            <div class="label">Solar kWh</div>
-            <div class="value">555</div>
-            <div class="hint">sample window</div>
+            <div class="label">Solar Availability</div>
+            <div class="value">{{ formatNumber(solarAvailability) }}%</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Avg Irradiance</div>
-            <div class="value">5.3</div>
-            <div class="hint">kWh/m2</div>
+            <div class="label">Avg Solar Power</div>
+            <div class="value">{{ formatNumber(solarAvgPower) }} W</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Perf. Ratio</div>
-            <div class="value">0.83</div>
-            <div class="hint">average</div>
+            <div class="label">Avg Solar Energy Today</div>
+            <div class="value">{{ formatNumber(solarAvgEnergyTodayWh) }} Wh</div>
+            <div class="hint">daily average</div>
           </div>
           <div class="stat">
-            <div class="label">Curtailment</div>
-            <div class="value">6 kWh</div>
-            <div class="hint">sample window</div>
+            <div class="label">Avg Solar Voltage</div>
+            <div class="value">{{ formatNumber(solarAvgVoltage) }} V</div>
+            <div class="hint">across records</div>
           </div>
         </div>
 
@@ -397,34 +385,30 @@
           <table class="table mt-4">
             <thead>
               <tr>
-                <th>date</th>
-                <th>solar_kWh</th>
-                <th>irradiance_kWh_m2</th>
-                <th>performance_ratio</th>
-                <th>curtailment_kWh</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Average Voltage (V)</th>
+                <th>Average Current (A)</th>
+                <th>Average Power (W)</th>
+                <th>Average Energy Today (Wh)</th>
+                <th>Availability (%)</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>2026-04-25</td>
-                <td>180</td>
-                <td>5.3</td>
-                <td>0.83</td>
-                <td>2</td>
+              <tr *ngFor="let row of solarRecords">
+                <td>{{ row.siteName }}</td>
+                <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ formatNumber(row.avgSolarVoltage) }}</td>
+                <td>{{ formatNumber(row.avgSolarCurrent) }}</td>
+                <td>{{ formatNumber(row.avgSolarPowerW) }}</td>
+                <td>{{ formatNumber(row.avgSolarEnergyTodayWh) }}</td>
+                <td>{{ formatNumber(row.solarAvailablePercent) }}%</td>
               </tr>
-              <tr>
-                <td>2026-04-26</td>
-                <td>210</td>
-                <td>5.9</td>
-                <td>0.86</td>
-                <td>1</td>
+              <tr *ngIf="solarLoading">
+                <td colspan="7" class="muted">Loading solar report...</td>
               </tr>
-              <tr>
-                <td>2026-04-27</td>
-                <td>165</td>
-                <td>4.8</td>
-                <td>0.81</td>
-                <td>3</td>
+              <tr *ngIf="!solarLoading && !solarRecords.length">
+                <td colspan="7" class="muted">No solar report records found.</td>
               </tr>
             </tbody>
           </table>
@@ -501,11 +485,11 @@
           <table class="table mt-4">
             <thead>
               <tr>
-                <th>id</th>
-                <th>severity</th>
-                <th>title</th>
-                <th>device</th>
-                <th>time</th>
+                <th>ID</th>
+                <th>Severity</th>
+                <th>Title</th>
+                <th>Device</th>
+                <th>Time</th>
               </tr>
             </thead>
             <tbody>

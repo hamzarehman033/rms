@@ -1,7 +1,45 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
+import { Component, OnInit } from '@angular/core';
+import { StatisticsService } from '../../core/services/statistics.service';
+
+interface BatteryStatusRecord {
+  deviceId: number;
+  siteName: string;
+  dateUtc: string;
+  packetsCount: number;
+  avgBatteryVoltage: number;
+  avgBatteryCurrent: number;
+  avgBatteryTemperature: number;
+  avgBatteryRemainingPercent: number;
+  avgBatterySoh: number;
+}
+
+interface SolarStatusRecord {
+  deviceId: number;
+  siteName: string;
+  dateUtc: string;
+  packetsCount: number;
+  avgSolarVoltage: number;
+  avgSolarCurrent: number;
+  avgSolarPowerW: number;
+  avgSolarEnergyTodayWh: number;
+  solarAvailablePercent: number;
+}
+
+interface GridStatusRecord {
+  deviceId: number;
+  siteName: string;
+  dateUtc: string;
+  packetsCount: number;
+  avgLineAVoltage: number;
+  avgLineBVoltage: number;
+  avgLineCVoltage: number;
+  avgLineACurrent: number;
+  avgLineBCurrent: number;
+  avgLineCCurrent: number;
+  avgAcFrequency: number;
+  avgAcInputPowerW: number;
+  gridAvailablePercent: number;
+}
 
 @Component({
   selector: 'app-reports',
@@ -9,7 +47,7 @@ import { InputTextModule } from 'primeng/inputtext';
   styleUrl: './reports.component.css',
   standalone: false,
 })
-export class ReportsComponent {
+export class ReportsComponent implements OnInit {
   activeTab = 'energy-consumption';
 
   regions = [
@@ -51,9 +89,144 @@ export class ReportsComponent {
   selectedDevice: string | null = null;
   selectedTenant: string | null = null;
 
-  constructor() {}
+  batteryRecords: BatteryStatusRecord[] = [];
+  solarRecords: SolarStatusRecord[] = [];
+  gridRecords: GridStatusRecord[] = [];
+
+  batteryLoading = false;
+  solarLoading = false;
+  gridLoading = false;
+
+  constructor(private statisticsService: StatisticsService) {}
+
+  ngOnInit(): void {
+    this.loadBatteryReport();
+    this.loadSolarReport();
+    this.loadGridReport();
+  }
 
   onExport(): void {
+  }
+
+  get batteryAvgVoltage(): number {
+    return this.getAverage(this.batteryRecords.map((x) => x.avgBatteryVoltage));
+  }
+
+  get batteryAvgCurrent(): number {
+    return this.getAverage(this.batteryRecords.map((x) => x.avgBatteryCurrent));
+  }
+
+  get batteryAvgTemperature(): number {
+    return this.getAverage(this.batteryRecords.map((x) => x.avgBatteryTemperature));
+  }
+
+  get batteryAvgSoc(): number {
+    return this.getAverage(this.batteryRecords.map((x) => x.avgBatteryRemainingPercent));
+  }
+
+  get solarAvgPower(): number {
+    return this.getAverage(this.solarRecords.map((x) => x.avgSolarPowerW));
+  }
+
+  get solarAvgEnergyTodayWh(): number {
+    return this.getAverage(this.solarRecords.map((x) => x.avgSolarEnergyTodayWh));
+  }
+
+  get solarAvailability(): number {
+    return this.getAverage(this.solarRecords.map((x) => x.solarAvailablePercent));
+  }
+
+  get solarAvgVoltage(): number {
+    return this.getAverage(this.solarRecords.map((x) => x.avgSolarVoltage));
+  }
+
+  get gridAvgPower(): number {
+    return this.getAverage(this.gridRecords.map((x) => x.avgAcInputPowerW));
+  }
+
+  get gridAvailability(): number {
+    return this.getAverage(this.gridRecords.map((x) => x.gridAvailablePercent));
+  }
+
+  get gridAvgFrequency(): number {
+    return this.getAverage(this.gridRecords.map((x) => x.avgAcFrequency));
+  }
+
+  get gridAvgVoltage(): number {
+    const voltages = this.gridRecords.map((x) => (x.avgLineAVoltage + x.avgLineBVoltage + x.avgLineCVoltage) / 3);
+    return this.getAverage(voltages);
+  }
+
+  formatNumber(value: number, digits = 2): string {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+
+    return value.toFixed(digits);
+  }
+
+  private loadBatteryReport(): void {
+    this.batteryLoading = true;
+    this.statisticsService.getBatteryStatusReport({}).subscribe({
+      next: (response) => {
+        this.batteryRecords = this.extractRecords<BatteryStatusRecord>(response);
+        this.batteryLoading = false;
+      },
+      error: () => {
+        this.batteryRecords = [];
+        this.batteryLoading = false;
+      },
+    });
+  }
+
+  private loadSolarReport(): void {
+    this.solarLoading = true;
+    this.statisticsService.getSolarStatusReport({}).subscribe({
+      next: (response) => {
+        this.solarRecords = this.extractRecords<SolarStatusRecord>(response);
+        this.solarLoading = false;
+      },
+      error: () => {
+        this.solarRecords = [];
+        this.solarLoading = false;
+      },
+    });
+  }
+
+  private loadGridReport(): void {
+    this.gridLoading = true;
+    this.statisticsService.getGridStatusReport({}).subscribe({
+      next: (response) => {
+        this.gridRecords = this.extractRecords<GridStatusRecord>(response);
+        this.gridLoading = false;
+      },
+      error: () => {
+        this.gridRecords = [];
+        this.gridLoading = false;
+      },
+    });
+  }
+
+  private extractRecords<T>(response: any): T[] {
+    if (Array.isArray(response?.records)) {
+      return response.records as T[];
+    }
+
+    if (Array.isArray(response)) {
+      return response as T[];
+    }
+
+    return [];
+  }
+
+  private getAverage(values: number[]): number {
+    const valid = values.filter((x) => Number.isFinite(x));
+    if (!valid.length) {
+      return 0;
+    }
+
+    const sum = valid.reduce((acc, value) => acc + value, 0);
+    return sum / valid.length;
   }
 
   private tableToCSV(table: HTMLTableElement): void {
