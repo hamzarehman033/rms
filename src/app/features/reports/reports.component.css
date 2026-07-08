@@ -1,0 +1,33 @@
+.report-filters {
+	margin-bottom: 1rem;
+}
+
+.report-filters-grid {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.filter-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.filter-label {
+	color: var(--text-muted, #6b7280);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+@media (max-width: 1200px) {
+	.report-filters-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 768px) {
+	.report-filters-grid {
+		grid-template-columns: repeat(1, minmax(0, 1fr));
+	}
+}

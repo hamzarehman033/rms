@@ -1,165 +1,546 @@
-<main class="content">
+<p-tabs [(value)]="activeTab">
+  <p-tablist>
+    <p-tab value="energy-consumption">Energy Consumption</p-tab>
+    <p-tab value="grid-report">Grid Report</p-tab>
+    <p-tab value="battery-report">Battery Report</p-tab>
+    <p-tab value="solar-report">Solar Report</p-tab>
+    <p-tab value="alarms">Alarms</p-tab>
+  </p-tablist>
 
-  <!-- Page header -->
-  <div class="page-header">
-    <div>
-      <h1>Reports</h1>
-      <p>Generate and export operational, energy, and incident reports.</p>
-    </div>
-  </div>
+  <p-tabpanels>
+    <p-tabpanel value="energy-consumption">
+      <main class="content">
 
-  <!-- Report cards grid -->
-  <div class="grid cols-3">
-    <!-- Device Inventory Card -->
-    <div class="tile">
-      <div class="flex gap-4">
-        <div class="tile-icon">
-            <i class="pi pi-file"></i>
+        <div class="page-header">
+          <div>
+            <h1>Energy Consumption Report</h1>
+            <p>Generate and export daily source-wise energy consumption details.</p>
+          </div>
         </div>
-        <div>
-          <h4>Device Inventory</h4>
-          <div class="meta">Full fleet roster with status, battery, and firmware.</div>
+
+        <section class="card report-filters">
+          <div class="report-filters-grid">
+            <div class="filter-field">
+              <label class="filter-label" for="region-filter-energy">Region</label>
+              <p-select inputId="region-filter-energy" [options]="regions" optionLabel="label" optionValue="value" [(ngModel)]="selectedRegion" placeholder="All regions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="subregion-filter-energy">Subregion</label>
+              <p-select inputId="subregion-filter-energy" [options]="subRegions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSubRegion" placeholder="All subregions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="zone-filter-energy">Zone</label>
+              <p-select inputId="zone-filter-energy" [options]="zones" optionLabel="label" optionValue="value" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="device-filter-energy">Device</label>
+              <p-select inputId="device-filter-energy" [options]="devices" optionLabel="label" optionValue="value" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="tenant-filter-energy">Tenant</label>
+              <p-select inputId="tenant-filter-energy" [options]="tenants" optionLabel="label" optionValue="value" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid cols-4">
+          <div class="stat">
+            <div class="label">Total kWh</div>
+            <div class="value">2,568</div>
+            <div class="hint">last 30 days</div>
+          </div>
+          <div class="stat">
+            <div class="label">Grid Share</div>
+            <div class="value">63%</div>
+            <div class="hint">of total usage</div>
+          </div>
+          <div class="stat">
+            <div class="label">Solar Share</div>
+            <div class="value">30%</div>
+            <div class="hint">of total usage</div>
+          </div>
+          <div class="stat">
+            <div class="label">Battery Share</div>
+            <div class="value">7%</div>
+            <div class="hint">of total usage</div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Alarms & Incidents Card -->
-    <div class="tile">
-      <div class="flex gap-4">
-        <div class="tile-icon">
-            <i class="pi pi-file"></i>
+        <section class="card">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3>Energy Consumption</h3>
+              <p class="muted text-xs">First 8 rows of energy consumption report.</p>
+            </div>
+            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+          </div>
+          <table class="table mt-4">
+            <thead>
+              <tr>
+                <th>date</th>
+                <th>grid_kWh</th>
+                <th>solar_kWh</th>
+                <th>battery_kWh</th>
+                <th>total_kWh</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-04-25</td>
+                <td>410</td>
+                <td>180</td>
+                <td>45</td>
+                <td>635</td>
+              </tr>
+              <tr>
+                <td>2026-04-26</td>
+                <td>395</td>
+                <td>210</td>
+                <td>40</td>
+                <td>645</td>
+              </tr>
+              <tr>
+                <td>2026-04-27</td>
+                <td>420</td>
+                <td>165</td>
+                <td>52</td>
+                <td>637</td>
+              </tr>
+              <tr>
+                <td>2026-04-28</td>
+                <td>388</td>
+                <td>225</td>
+                <td>38</td>
+                <td>651</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </p-tabpanel>
+
+
+    <p-tabpanel value="grid-report">
+      <main class="content">
+
+        <div class="page-header">
+          <div>
+            <h1>Grid Report</h1>
+            <p>Review grid runtime, draw, and load profile across selected sites.</p>
+          </div>
         </div>
-        <div>
-          <h4>Alarms &amp; Incidents</h4>
-          <div class="meta">All alarms raised across tenants.</div>
+
+        <section class="card report-filters">
+          <div class="report-filters-grid">
+            <div class="filter-field">
+              <label class="filter-label" for="region-filter-grid">Region</label>
+              <p-select inputId="region-filter-grid" [options]="regions" optionLabel="label" optionValue="value" [(ngModel)]="selectedRegion" placeholder="All regions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="subregion-filter-grid">Subregion</label>
+              <p-select inputId="subregion-filter-grid" [options]="subRegions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSubRegion" placeholder="All subregions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="zone-filter-grid">Zone</label>
+              <p-select inputId="zone-filter-grid" [options]="zones" optionLabel="label" optionValue="value" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="device-filter-grid">Device</label>
+              <p-select inputId="device-filter-grid" [options]="devices" optionLabel="label" optionValue="value" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="tenant-filter-grid">Tenant</label>
+              <p-select inputId="tenant-filter-grid" [options]="tenants" optionLabel="label" optionValue="value" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid cols-4">
+          <div class="stat">
+            <div class="label">Grid Hours</div>
+            <div class="value">63.5h</div>
+            <div class="hint">sample window</div>
+          </div>
+          <div class="stat">
+            <div class="label">Grid kWh</div>
+            <div class="value">1,225</div>
+            <div class="hint">sample window</div>
+          </div>
+          <div class="stat">
+            <div class="label">Avg Load</div>
+            <div class="value">19.4 kW</div>
+            <div class="hint">across days</div>
+          </div>
+          <div class="stat">
+            <div class="label">Peak Load</div>
+            <div class="value">34.2 kW</div>
+            <div class="hint">highest point</div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Site Catalog Card -->
-    <div class="tile">
-      <div class="flex gap-4">
-        <div class="tile-icon"><i class="pi pi-file"></i></div>
-        <div>
-          <h4>Site Catalog</h4>
-          <div class="meta">Locations, addresses, and operational status.</div>
+        <section class="card">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3>Grid Report</h3>
+              <p class="muted text-xs">First 8 rows of grid report.</p>
+            </div>
+            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+          </div>
+          <table class="table mt-4">
+            <thead>
+              <tr>
+                <th>date</th>
+                <th>grid_hrs</th>
+                <th>grid_kWh</th>
+                <th>avg_load_kW</th>
+                <th>peak_load_kW</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-04-25</td>
+                <td>21.5</td>
+                <td>410</td>
+                <td>19.1</td>
+                <td>31.4</td>
+              </tr>
+              <tr>
+                <td>2026-04-26</td>
+                <td>22.0</td>
+                <td>395</td>
+                <td>18.0</td>
+                <td>29.9</td>
+              </tr>
+              <tr>
+                <td>2026-04-27</td>
+                <td>20.0</td>
+                <td>420</td>
+                <td>21.0</td>
+                <td>34.2</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </p-tabpanel>
+
+    <p-tabpanel value="battery-report">
+      <main class="content">
+
+        <div class="page-header">
+          <div>
+            <h1>Battery Report</h1>
+            <p>Track battery throughput, charge state, and cycle performance.</p>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Energy Consumption Card -->
-    <div class="tile">
-      <div class="flex gap-4">
-        <div class="tile-icon"><i class="pi pi-file"></i></div>
-        <div>
-          <h4>Energy Consumption</h4>
-          <div class="meta">kWh per source per day (last 30 days).</div>
+        <section class="card report-filters">
+          <div class="report-filters-grid">
+            <div class="filter-field">
+              <label class="filter-label" for="region-filter-battery">Region</label>
+              <p-select inputId="region-filter-battery" [options]="regions" optionLabel="label" optionValue="value" [(ngModel)]="selectedRegion" placeholder="All regions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="subregion-filter-battery">Subregion</label>
+              <p-select inputId="subregion-filter-battery" [options]="subRegions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSubRegion" placeholder="All subregions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="zone-filter-battery">Zone</label>
+              <p-select inputId="zone-filter-battery" [options]="zones" optionLabel="label" optionValue="value" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="device-filter-battery">Device</label>
+              <p-select inputId="device-filter-battery" [options]="devices" optionLabel="label" optionValue="value" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="tenant-filter-battery">Tenant</label>
+              <p-select inputId="tenant-filter-battery" [options]="tenants" optionLabel="label" optionValue="value" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid cols-4">
+          <div class="stat">
+            <div class="label">Energy In</div>
+            <div class="value">159 kWh</div>
+            <div class="hint">sample window</div>
+          </div>
+          <div class="stat">
+            <div class="label">Energy Out</div>
+            <div class="value">137 kWh</div>
+            <div class="hint">sample window</div>
+          </div>
+          <div class="stat">
+            <div class="label">Avg SOC</div>
+            <div class="value">76%</div>
+            <div class="hint">across days</div>
+          </div>
+          <div class="stat">
+            <div class="label">Cycles</div>
+            <div class="value">2.2</div>
+            <div class="hint">total cycles</div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Runtime by Source Card -->
-    <div class="tile">
-      <div class="flex gap-4">
-        <div class="tile-icon"><i class="pi pi-file"></i></div>
-        <div>
-          <h4>Runtime by Source</h4>
-          <div class="meta">Hours per source per day (last 30 days).</div>
+        <section class="card">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3>Battery Report</h3>
+              <p class="muted text-xs">First 8 rows of battery report.</p>
+            </div>
+            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+          </div>
+          <table class="table mt-4">
+            <thead>
+              <tr>
+                <th>date</th>
+                <th>battery_in_kWh</th>
+                <th>battery_out_kWh</th>
+                <th>avg_soc</th>
+                <th>cycles</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-04-25</td>
+                <td>52</td>
+                <td>45</td>
+                <td>76%</td>
+                <td>0.7</td>
+              </tr>
+              <tr>
+                <td>2026-04-26</td>
+                <td>48</td>
+                <td>40</td>
+                <td>79%</td>
+                <td>0.6</td>
+              </tr>
+              <tr>
+                <td>2026-04-27</td>
+                <td>59</td>
+                <td>52</td>
+                <td>72%</td>
+                <td>0.9</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </p-tabpanel>
+
+
+    <p-tabpanel value="solar-report">
+      <main class="content">
+        <div class="page-header">
+          <div>
+            <h1>Solar Report</h1>
+            <p>Analyze solar generation, irradiance, and system performance ratio.</p>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Data Export Card -->
-    <div class="tile">
-      <div class="flex gap-4">
-        <div class="tile-icon"><i class="pi pi-download"></i></div>
-        <div>
-          <h4>Devices Runtime</h4>
-          <div class="meta">Download Devices Runtime reports.</div>
+        <section class="card report-filters">
+          <div class="report-filters-grid">
+            <div class="filter-field">
+              <label class="filter-label" for="region-filter-solar">Region</label>
+              <p-select inputId="region-filter-solar" [options]="regions" optionLabel="label" optionValue="value" [(ngModel)]="selectedRegion" placeholder="All regions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="subregion-filter-solar">Subregion</label>
+              <p-select inputId="subregion-filter-solar" [options]="subRegions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSubRegion" placeholder="All subregions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="zone-filter-solar">Zone</label>
+              <p-select inputId="zone-filter-solar" [options]="zones" optionLabel="label" optionValue="value" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="device-filter-solar">Device</label>
+              <p-select inputId="device-filter-solar" [options]="devices" optionLabel="label" optionValue="value" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="tenant-filter-solar">Tenant</label>
+              <p-select inputId="tenant-filter-solar" [options]="tenants" optionLabel="label" optionValue="value" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid cols-4">
+          <div class="stat">
+            <div class="label">Solar kWh</div>
+            <div class="value">555</div>
+            <div class="hint">sample window</div>
+          </div>
+          <div class="stat">
+            <div class="label">Avg Irradiance</div>
+            <div class="value">5.3</div>
+            <div class="hint">kWh/m2</div>
+          </div>
+          <div class="stat">
+            <div class="label">Perf. Ratio</div>
+            <div class="value">0.83</div>
+            <div class="hint">average</div>
+          </div>
+          <div class="stat">
+            <div class="label">Curtailment</div>
+            <div class="value">6 kWh</div>
+            <div class="hint">sample window</div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Preview -->
-  <div class="card">
-    <div class="flex justify-between items-start">
-      <div>
-        <h3>Preview</h3>
-        <p class="muted mb-4 text-xs">First 8 rows of each report.</p>
-      </div>
-      <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
-    </div>
+        <section class="card">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3>Solar Report</h3>
+              <p class="muted text-xs">First 8 rows of solar report.</p>
+            </div>
+            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+          </div>
+          <table class="table mt-4">
+            <thead>
+              <tr>
+                <th>date</th>
+                <th>solar_kWh</th>
+                <th>irradiance_kWh_m2</th>
+                <th>performance_ratio</th>
+                <th>curtailment_kWh</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-04-25</td>
+                <td>180</td>
+                <td>5.3</td>
+                <td>0.83</td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td>2026-04-26</td>
+                <td>210</td>
+                <td>5.9</td>
+                <td>0.86</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>2026-04-27</td>
+                <td>165</td>
+                <td>4.8</td>
+                <td>0.81</td>
+                <td>3</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </p-tabpanel>
 
-    <div class="tabs">
-      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">Device Inventory</button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Alarms &amp; Incidents</button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Site Catalog</button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Energy Consumption</button>
-      <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">Runtime by Source</button>
-    </div>
+    <p-tabpanel value="alarms">
+      <main class="content">
 
-    <div [ngClass]="{ 'block': selectedTab === 0, 'hidden': selectedTab !== 0 }">
-      <table class="table mt-4">
-          <thead><tr><th>id</th><th>name</th><th>type</th><th>status</th><th>site</th><th>battery</th><th>signal</th><th>firmware</th><th>lastSeen</th></tr></thead>
-          <tbody>
-            <tr><td>DEV-001</td><td>Gateway A1</td><td>gateway</td><td>online</td><td>Plant A</td><td>92</td><td>-58</td><td>2.4.1</td><td>2m ago</td></tr>
-            <tr><td>DEV-002</td><td>Sensor T-12</td><td>sensor</td><td>online</td><td>Plant A</td><td>87</td><td>-64</td><td>1.9.0</td><td>5m ago</td></tr>
-            <tr><td>DEV-003</td><td>Pump Ctrl 03</td><td>controller</td><td>warning</td><td>Plant B</td><td>54</td><td>-72</td><td>2.1.3</td><td>1h ago</td></tr>
-            <tr><td>DEV-004</td><td>Inverter 07</td><td>inverter</td><td>online</td><td>Solar Farm 1</td><td>—</td><td>-49</td><td>3.0.0</td><td>1m ago</td></tr>
-            <tr><td>DEV-005</td><td>Battery Bank</td><td>battery</td><td>online</td><td>Plant A</td><td>78</td><td>-55</td><td>2.2.0</td><td>3m ago</td></tr>
-            <tr><td>DEV-006</td><td>Meter L2</td><td>meter</td><td>offline</td><td>Plant C</td><td>—</td><td>—</td><td>1.5.2</td><td>12h ago</td></tr>
-            <tr><td>DEV-007</td><td>Camera N-1</td><td>camera</td><td>online</td><td>Plant B</td><td>—</td><td>-61</td><td>4.0.1</td><td>30s ago</td></tr>
-            <tr><td>DEV-008</td><td>Gateway B2</td><td>gateway</td><td>online</td><td>Plant B</td><td>95</td><td>-52</td><td>2.4.1</td><td>1m ago</td></tr>
-          </tbody>
-      </table>
-    </div>
+        <div class="page-header">
+          <div>
+            <h1>Alarms Report</h1>
+            <p>Export active and historical alarm events across the fleet.</p>
+          </div>
+        </div>
 
-    <div [ngClass]="{ 'block': selectedTab === 1, 'hidden': selectedTab !== 1 }">
-      <table class="table mt-4">
-          <thead><tr><th>id</th><th>severity</th><th>title</th><th>device</th><th>time</th></tr></thead>
-          <tbody>
-            <tr><td>ALR-101</td><td>critical</td><td>High temperature</td><td>Sensor T-12</td><td>10:24</td></tr>
-            <tr><td>ALR-102</td><td>warning</td><td>Battery low</td><td>Pump Ctrl 03</td><td>09:58</td></tr>
-            <tr><td>ALR-103</td><td>info</td><td>Firmware available</td><td>Gateway A1</td><td>09:30</td></tr>
-            <tr><td>ALR-104</td><td>warning</td><td>Signal degraded</td><td>Meter L2</td><td>08:11</td></tr>
-          </tbody>
-      </table>
-    </div>
+        <section class="card report-filters">
+          <div class="report-filters-grid">
+            <div class="filter-field">
+              <label class="filter-label" for="region-filter-alarms">Region</label>
+              <p-select inputId="region-filter-alarms" [options]="regions" optionLabel="label" optionValue="value" [(ngModel)]="selectedRegion" placeholder="All regions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="subregion-filter-alarms">Subregion</label>
+              <p-select inputId="subregion-filter-alarms" [options]="subRegions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSubRegion" placeholder="All subregions" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="zone-filter-alarms">Zone</label>
+              <p-select inputId="zone-filter-alarms" [options]="zones" optionLabel="label" optionValue="value" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="device-filter-alarms">Device</label>
+              <p-select inputId="device-filter-alarms" [options]="devices" optionLabel="label" optionValue="value" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field">
+              <label class="filter-label" for="tenant-filter-alarms">Tenant</label>
+              <p-select inputId="tenant-filter-alarms" [options]="tenants" optionLabel="label" optionValue="value" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+          </div>
+        </section>
 
-    <div [ngClass]="{ 'block': selectedTab === 2, 'hidden': selectedTab !== 2 }">
-      <table class="table mt-4">
-          <thead><tr><th>id</th><th>name</th><th>type</th><th>status</th><th>address</th></tr></thead>
-          <tbody>
-            <tr><td>LOC-001</td><td>Plant A</td><td>industrial</td><td>operational</td><td>1200 Industrial Pkwy, Detroit, MI</td></tr>
-            <tr><td>LOC-002</td><td>Plant B</td><td>industrial</td><td>operational</td><td>880 Foundry Ln, Cleveland, OH</td></tr>
-            <tr><td>LOC-003</td><td>Solar Farm 1</td><td>solar</td><td>operational</td><td>500 Sun Rd, Phoenix, AZ</td></tr>
-          </tbody>
-      </table>
-    </div>
+        <div class="grid cols-4">
+          <div class="stat">
+            <div class="label">Critical</div>
+            <div class="value">1</div>
+            <div class="hint">requires action</div>
+          </div>
+          <div class="stat">
+            <div class="label">Warning</div>
+            <div class="value">2</div>
+            <div class="hint">degraded service</div>
+          </div>
+          <div class="stat">
+            <div class="label">Info</div>
+            <div class="value">1</div>
+            <div class="hint">informational</div>
+          </div>
+          <div class="stat">
+            <div class="label">Total Alarms</div>
+            <div class="value">4</div>
+            <div class="hint">in preview</div>
+          </div>
+        </div>
 
-    <div [ngClass]="{ 'block': selectedTab === 3, 'hidden': selectedTab !== 3 }">
-      <table class="table mt-4">
-          <thead><tr><th>date</th><th>grid_kWh</th><th>solar_kWh</th><th>battery_kWh</th><th>total_kWh</th></tr></thead>
-          <tbody>
-            <tr><td>2026-04-25</td><td>410</td><td>180</td><td>45</td><td>635</td></tr>
-            <tr><td>2026-04-26</td><td>395</td><td>210</td><td>40</td><td>645</td></tr>
-            <tr><td>2026-04-27</td><td>420</td><td>165</td><td>52</td><td>637</td></tr>
-            <tr><td>2026-04-28</td><td>388</td><td>225</td><td>38</td><td>651</td></tr>
-          </tbody>
-      </table>
-    </div>
-
-    <div [ngClass]="{ 'block': selectedTab === 4, 'hidden': selectedTab !== 4 }">
-      <table class="table mt-4">
-          <thead><tr><th>date</th><th>grid_hrs</th><th>battery_hrs</th><th>outage_hrs</th><th>unknown_hrs</th></tr></thead>
-          <tbody>
-            <tr><td>2026-04-25</td><td>21.5</td><td>2.0</td><td>0.5</td><td>0</td></tr>
-            <tr><td>2026-04-26</td><td>22.0</td><td>1.5</td><td>0.5</td><td>0</td></tr>
-            <tr><td>2026-04-27</td><td>20.0</td><td>3.0</td><td>1.0</td><td>0</td></tr>
-          </tbody>
-      </table>
-    </div>
-  </div>
-
-</main>
+        <section class="card">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3>Alarms</h3>
+              <p class="muted text-xs">First 8 rows of alarms report.</p>
+            </div>
+            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+          </div>
+          <table class="table mt-4">
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>severity</th>
+                <th>title</th>
+                <th>device</th>
+                <th>time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ALR-101</td>
+                <td>critical</td>
+                <td>High temperature</td>
+                <td>Sensor T-12</td>
+                <td>10:24</td>
+              </tr>
+              <tr>
+                <td>ALR-102</td>
+                <td>warning</td>
+                <td>Battery low</td>
+                <td>Pump Ctrl 03</td>
+                <td>09:58</td>
+              </tr>
+              <tr>
+                <td>ALR-103</td>
+                <td>info</td>
+                <td>Firmware available</td>
+                <td>Gateway A1</td>
+                <td>09:30</td>
+              </tr>
+              <tr>
+                <td>ALR-104</td>
+                <td>warning</td>
+                <td>Signal degraded</td>
+                <td>Meter L2</td>
+                <td>08:11</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
