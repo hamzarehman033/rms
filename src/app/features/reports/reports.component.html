@@ -45,24 +45,24 @@
 
         <div class="grid cols-4">
           <div class="stat">
-            <div class="label">Total kWh</div>
-            <div class="value">2,568</div>
-            <div class="hint">last 30 days</div>
+            <div class="label">Average Total AC Energy</div>
+            <div class="value">{{ formatNumber(energyAvgAcWh) }} Wh</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Grid Share</div>
-            <div class="value">63%</div>
-            <div class="hint">of total usage</div>
+            <div class="label">Average Total DC Energy</div>
+            <div class="value">{{ formatNumber(energyAvgDcWh) }} Wh</div>
+            <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Solar Share</div>
-            <div class="value">30%</div>
-            <div class="hint">of total usage</div>
+            <div class="label">Average Solar Energy Today</div>
+            <div class="value">{{ formatNumber(energyAvgSolarWh) }} Wh</div>
+            <div class="hint">daily average</div>
           </div>
           <div class="stat">
-            <div class="label">Battery Share</div>
-            <div class="value">7%</div>
-            <div class="hint">of total usage</div>
+            <div class="label">Average AC Input Power</div>
+            <div class="value">{{ formatNumber(energyAvgAcPowerW) }} W</div>
+            <div class="hint">across records</div>
           </div>
         </div>
 
@@ -77,41 +77,32 @@
           <table class="table mt-4">
             <thead>
               <tr>
+                <th>Site</th>
                 <th>Date</th>
-                <th>Grid (kWh)</th>
-                <th>Solar (kWh)</th>
-                <th>Battery (kWh)</th>
-                <th>Total (kWh)</th>
+                <th>Average Total AC Energy (Wh)</th>
+                <th>Average Total DC Energy (Wh)</th>
+                <th>Average Solar Energy Today (Wh)</th>
+                <th>Average AC Input Power (W)</th>
+                <th>Average DC Load Power (W)</th>
+                <th>Average Tenant Load (W)</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>2026-04-25</td>
-                <td>410</td>
-                <td>180</td>
-                <td>45</td>
-                <td>635</td>
+              <tr *ngFor="let row of energyRecords">
+                <td>{{ row.siteName }}</td>
+                <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ formatNumber(row.avgTotalAcEnergyWh) }}</td>
+                <td>{{ formatNumber(row.avgTotalDcEnergyWh) }}</td>
+                <td>{{ formatNumber(row.avgSolarEnergyTodayWh) }}</td>
+                <td>{{ formatNumber(row.avgAcInputPowerW) }}</td>
+                <td>{{ formatNumber(row.avgDcLoadPowerW) }}</td>
+                <td>{{ formatNumber(row.avgTenantLoadW) }}</td>
               </tr>
-              <tr>
-                <td>2026-04-26</td>
-                <td>395</td>
-                <td>210</td>
-                <td>40</td>
-                <td>645</td>
+              <tr *ngIf="energyLoading">
+                <td colspan="8" class="muted">Loading energy consumption report...</td>
               </tr>
-              <tr>
-                <td>2026-04-27</td>
-                <td>420</td>
-                <td>165</td>
-                <td>52</td>
-                <td>637</td>
-              </tr>
-              <tr>
-                <td>2026-04-28</td>
-                <td>388</td>
-                <td>225</td>
-                <td>38</td>
-                <td>651</td>
+              <tr *ngIf="!energyLoading && !energyRecords.length">
+                <td colspan="8" class="muted">No energy consumption records found.</td>
               </tr>
             </tbody>
           </table>

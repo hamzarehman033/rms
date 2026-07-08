@@ -41,6 +41,19 @@ interface GridStatusRecord {
   gridAvailablePercent: number;
 }
 
+interface EnergyConsumptionRecord {
+  deviceId: number;
+  siteName: string;
+  dateUtc: string;
+  packetsCount: number;
+  avgTotalAcEnergyWh: number;
+  avgTotalDcEnergyWh: number;
+  avgSolarEnergyTodayWh: number;
+  avgAcInputPowerW: number;
+  avgDcLoadPowerW: number;
+  avgTenantLoadW: number | null;
+}
+
 @Component({
   selector: 'app-reports',
   templateUrl: './reports.component.html',
@@ -92,14 +105,17 @@ export class ReportsComponent implements OnInit {
   batteryRecords: BatteryStatusRecord[] = [];
   solarRecords: SolarStatusRecord[] = [];
   gridRecords: GridStatusRecord[] = [];
+  energyRecords: EnergyConsumptionRecord[] = [];
 
   batteryLoading = false;
   solarLoading = false;
   gridLoading = false;
+  energyLoading = false;
 
   constructor(private statisticsService: StatisticsService) {}
 
   ngOnInit(): void {
+    this.loadEnergyReport();
     this.loadBatteryReport();
     this.loadSolarReport();
     this.loadGridReport();
@@ -157,12 +173,42 @@ export class ReportsComponent implements OnInit {
     return this.getAverage(voltages);
   }
 
-  formatNumber(value: number, digits = 2): string {
-    if (!Number.isFinite(value)) {
+  get energyAvgAcWh(): number {
+    return this.getAverage(this.energyRecords.map((x) => x.avgTotalAcEnergyWh));
+  }
+
+  get energyAvgDcWh(): number {
+    return this.getAverage(this.energyRecords.map((x) => x.avgTotalDcEnergyWh));
+  }
+
+  get energyAvgSolarWh(): number {
+    return this.getAverage(this.energyRecords.map((x) => x.avgSolarEnergyTodayWh));
+  }
+
+  get energyAvgAcPowerW(): number {
+    return this.getAverage(this.energyRecords.map((x) => x.avgAcInputPowerW));
+  }
+
+  formatNumber(value: number | null | undefined, digits = 2): string {
+    if (value === null || value === undefined || !Number.isFinite(value)) {
       return '0';
     }
 
     return value.toFixed(digits);
+  }
+
+  private loadEnergyReport(): void {
+    this.energyLoading = true;
+    this.statisticsService.getEnergyConsumptionReport({}).subscribe({
+      next: (response) => {
+        this.energyRecords = this.extractRecords<EnergyConsumptionRecord>(response);
+        this.energyLoading = false;
+      },
+      error: () => {
+        this.energyRecords = [];
+        this.energyLoading = false;
+      },
+    });
   }
 
   private loadBatteryReport(): void {
