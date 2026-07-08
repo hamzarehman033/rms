@@ -4,10 +4,10 @@
         
       </div>
       <div class="grid cols-4">
-        <div class="stat"><div class="row"><span class="label">Critical</span><span class="icon destructive"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">2</span></div><div class="hint">requires action</div></div>
-        <div class="stat"><div class="row"><span class="label">Major</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">3</span></div><div class="hint">degraded service</div></div>
-        <div class="stat"><div class="row"><span class="label">Minor</span><span class="icon info"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">5</span></div><div class="hint">informational</div></div>
-        <div class="stat"><div class="row"><span class="label">Resolved 24h</span><span class="icon success"><i class="pi pi-check-circle"></i></span></div><div><span class="value">18</span></div><div class="hint">auto + manual</div></div>
+        <div class="stat"><div class="row"><span class="label">Critical</span><span class="icon destructive"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">{{ criticalCount }}</span></div><div class="hint">requires action</div></div>
+        <div class="stat"><div class="row"><span class="label">Major</span><span class="icon warning"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">{{ majorCount }}</span></div><div class="hint">degraded service</div></div>
+        <div class="stat"><div class="row"><span class="label">Minor</span><span class="icon info"><i class="pi pi-exclamation-triangle"></i></span></div><div><span class="value">{{ minorCount }}</span></div><div class="hint">informational</div></div>
+        <div class="stat"><div class="row"><span class="label">Resolved 24h</span><span class="icon success"><i class="pi pi-check-circle"></i></span></div><div><span class="value">{{ resolved24hCount }}</span></div><div class="hint">auto + manual</div></div>
       </div>
       <div class="hstack justify-between">
         <div class="tabs">
@@ -15,12 +15,23 @@
           <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Acknowledged</button>
           <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Resolved</button>
         </div>
-        <button class="btn"><i class="pi pi-check-circle"></i><span>Acknowledge all</span></button>
+        <button class="btn" (click)="acknowledgeAll()" [disabled]="!canAcknowledgeAll"><i class="pi pi-check-circle"></i><span>Acknowledge all</span></button>
       </div>
       <div class="card p-0">
         <table class="table">
-          <thead><tr><th>ID</th><th>Message</th><th>Severity</th><th>Device</th><th>When</th><th>State</th></tr></thead>
-          <tbody><tr><td class="mono">ALR-104</td><td>Temperature exceeds threshold</td><td><span class="badge critical">Critical</span></td><td class="mono">DV-003</td><td class="muted">2m ago</td><td><span class="badge info">open</span></td></tr><tr><td class="mono">ALR-103</td><td>Device offline > 1h</td><td><span class="badge major">Major</span></td><td class="mono">DV-006</td><td class="muted">1h ago</td><td><span class="badge info">open</span></td></tr><tr><td class="mono">ALR-102</td><td>Battery below 30%</td><td><span class="badge minor">Minor</span></td><td class="mono">DV-009</td><td class="muted">12m ago</td><td><span class="badge info">open</span></td></tr><tr><td class="mono">ALR-101</td><td>Pressure variance 4σ</td><td><span class="badge major">Major</span></td><td class="mono">DV-008</td><td class="muted">47m ago</td><td><span class="badge info">ack</span></td></tr><tr><td class="mono">ALR-100</td><td>Humidity drop -18%</td><td><span class="badge minor">Minor</span></td><td class="mono">DV-009</td><td class="muted">2h ago</td><td><span class="badge info">ack</span></td></tr><tr><td class="mono">ALR-099</td><td>Connection retry</td><td><span class="badge info">Info</span></td><td class="mono">DV-005</td><td class="muted">3h ago</td><td><span class="badge info">resolved</span></td></tr></tbody>
+          <thead><tr><th>Message</th><th>Severity</th><th>Device</th><th>When</th><th>State</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of filteredRows">
+              <td>{{ row.message }}</td>
+              <td><span class="badge" [ngClass]="severityClass(row.severity)">{{ row.severity | titlecase }}</span></td>
+              <td class="mono">{{ row.deviceLabel }}</td>
+              <td class="muted">{{ formatWhen(row.occurredAtMs) }}</td>
+              <td><span class="badge" [ngClass]="stateClass(row.state)">{{ row.state }}</span></td>
+            </tr>
+            <tr *ngIf="!filteredRows.length">
+              <td class="muted" colspan="5">No alarms in this state yet.</td>
+            </tr>
+          </tbody>
         </table>
       </div>
 </main>

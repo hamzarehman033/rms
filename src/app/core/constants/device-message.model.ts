@@ -182,11 +182,11 @@ export interface DecodedPayload {
   motionAlarm: string;
   digitalInputBitmap: number;
   relayOutputBitmap: number;
-  alarm1Code: number;
+  alarm1Code: string;
   alarm1Level: string;
-  alarm2Code: number;
+  alarm2Code: string;
   alarm2Level: string;
-  alarm3Code: number;
+  alarm3Code: string;
   alarm3Level: string;
   alarmBitmap1: number;
   crc16: number;
@@ -271,6 +271,73 @@ export const ALARM_LEVEL_LABELS: Record<number, string> = {
   4: 'Warning'
 };
 
+export const ALARM_CODE_LABELS: Record<number, string> = {
+  0: 'Mains failure / utility power not available',
+  1: 'AC phase failure / one input phase missing',
+  2: 'AC input under-voltage',
+  3: 'AC input over-voltage',
+  4: 'AC frequency abnormal',
+  5: 'AC energy meter or AC sensor communication failure',
+  10: 'Rectifier AC fail',
+  11: 'Rectifier missing / removed / not detected',
+  12: 'Rectifier module fault',
+  13: 'Rectifier communication failure',
+  14: 'Rectifier high temperature',
+  15: 'Rectifier overload / capacity exceeded',
+  20: 'DC bus under-voltage',
+  21: 'DC bus over-voltage',
+  22: 'DC load overload',
+  23: 'DC fuse/MCB trip or load branch fault',
+  24: 'LVD1 disconnected',
+  25: 'LVD2 disconnected',
+  26: 'DC output power abnormal',
+  30: 'Battery low',
+  31: 'Battery critical low',
+  32: 'Battery discharging',
+  33: 'Battery high temperature',
+  34: 'Battery low temperature',
+  35: 'BMU / lithium battery communication failure',
+  36: 'Battery SOH low',
+  37: 'Battery current abnormal',
+  38: 'Battery backup time low',
+  40: 'Generator running event',
+  41: 'Generator start failure',
+  42: 'Generator stop failure',
+  43: 'Generator fault / controller alarm',
+  44: 'Generator battery low',
+  45: 'Generator controller communication failure',
+  46: 'Generator output power abnormal',
+  50: 'Fuel low',
+  51: 'Fuel critical low',
+  52: 'Fuel theft / sudden fuel drop',
+  53: 'Fuel sensor communication failure',
+  54: 'Fuel sensor invalid / out of range',
+  60: 'Solar charging event',
+  61: 'Solar controller communication failure',
+  62: 'Solar low output / abnormal generation',
+  63: 'Solar input over-voltage',
+  64: 'Solar controller fault',
+  70: 'Environment high temperature',
+  71: 'Environment low temperature',
+  72: 'High humidity',
+  73: 'Door open',
+  74: 'Smoke alarm',
+  75: 'Water leak alarm',
+  76: 'Motion/intrusion alarm',
+  80: 'Gateway/device communication failure',
+  81: 'SNMP device unavailable',
+  82: 'Modbus device unavailable',
+  83: 'Sensor data invalid',
+  84: 'Data stale / telemetry timeout',
+  90: 'Tenant 1 load overload',
+  91: 'Tenant 2 load overload',
+  92: 'Tenant 3 load overload',
+  93: 'Tenant 4 load overload',
+  94: 'Tenant current sensor failure',
+  95: 'Site outage / load down',
+  65535: 'No alarm in this slot',
+};
+
 
 export const SYSTEM_STATUS_ENUM: Record<number, string> = {
   1: 'Normal',
@@ -291,6 +358,9 @@ export function mapDecodedPayload(raw:RawDecodedPayload): DecodedPayload {
     systemStatus: raw.systemStatus,
     batteryStatus: BATTERY_STATUS_LABELS[raw.batteryStatus] ?? `Unknown (${raw.batteryStatus})`,
     gensetControlMode: GENSET_CONTROL_MODE_LABELS[raw.gensetControlMode] ?? `Unknown (${raw.gensetControlMode})`,
+    alarm1Code: ALARM_CODE_LABELS[raw.alarm1Code] ?? `Unknown (${raw.alarm1Code})`,
+    alarm2Code: ALARM_CODE_LABELS[raw.alarm2Code] ?? `Unknown (${raw.alarm2Code})`,
+    alarm3Code: ALARM_CODE_LABELS[raw.alarm3Code] ?? `Unknown (${raw.alarm3Code})`,
     alarm1Level: raw.alarm1Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm1Level] ?? `Unknown (${raw.alarm1Level})`,
     alarm2Level: raw.alarm2Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm2Level] ?? `Unknown (${raw.alarm2Level})`,
     alarm3Level: raw.alarm3Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm3Level] ?? `Unknown (${raw.alarm3Level})`,

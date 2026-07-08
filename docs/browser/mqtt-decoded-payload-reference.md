@@ -174,6 +174,71 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
   - `3`: minor
   - `4`: warning
   - `null`: no alarm level
+- `alarm1Code`, `alarm2Code`, `alarm3Code` (alarm type/title map)
+  - `0`: mains failure / utility power not available
+  - `1`: AC phase failure / one input phase missing
+  - `2`: AC input under-voltage
+  - `3`: AC input over-voltage
+  - `4`: AC frequency abnormal
+  - `5`: AC energy meter or AC sensor communication failure
+  - `10`: rectifier AC fail
+  - `11`: rectifier missing / removed / not detected
+  - `12`: rectifier module fault
+  - `13`: rectifier communication failure
+  - `14`: rectifier high temperature
+  - `15`: rectifier overload / capacity exceeded
+  - `20`: DC bus under-voltage
+  - `21`: DC bus over-voltage
+  - `22`: DC load overload
+  - `23`: DC fuse/MCB trip or load branch fault
+  - `24`: LVD1 disconnected
+  - `25`: LVD2 disconnected
+  - `26`: DC output power abnormal
+  - `30`: battery low
+  - `31`: battery critical low
+  - `32`: battery discharging
+  - `33`: battery high temperature
+  - `34`: battery low temperature
+  - `35`: BMU / lithium battery communication failure
+  - `36`: battery SOH low
+  - `37`: battery current abnormal
+  - `38`: battery backup time low
+  - `40`: generator running event
+  - `41`: generator start failure
+  - `42`: generator stop failure
+  - `43`: generator fault / controller alarm
+  - `44`: generator battery low
+  - `45`: generator controller communication failure
+  - `46`: generator output power abnormal
+  - `50`: fuel low
+  - `51`: fuel critical low
+  - `52`: fuel theft / sudden fuel drop
+  - `53`: fuel sensor communication failure
+  - `54`: fuel sensor invalid / out of range
+  - `60`: solar charging event
+  - `61`: solar controller communication failure
+  - `62`: solar low output / abnormal generation
+  - `63`: solar input over-voltage
+  - `64`: solar controller fault
+  - `70`: environment high temperature
+  - `71`: environment low temperature
+  - `72`: high humidity
+  - `73`: door open
+  - `74`: smoke alarm
+  - `75`: water leak alarm
+  - `76`: motion/intrusion alarm
+  - `80`: gateway/device communication failure
+  - `81`: SNMP device unavailable
+  - `82`: Modbus device unavailable
+  - `83`: sensor data invalid
+  - `84`: data stale / telemetry timeout
+  - `90`: tenant 1 load overload
+  - `91`: tenant 2 load overload
+  - `92`: tenant 3 load overload
+  - `93`: tenant 4 load overload
+  - `94`: tenant current sensor failure
+  - `95`: site outage / load down
+  - `65535 (0xFFFF)`: no alarm in this slot / unused alarm code field
 
 ## Field Dictionary
 

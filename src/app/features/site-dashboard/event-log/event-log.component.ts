@@ -3,7 +3,17 @@ import { SignalrService } from '@app/core';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
+import { ALARM_CODE_LABELS, DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
+
+type AlarmSeverity = 'Critical' | 'Major' | 'Minor' | 'Warning' | 'None';
+
+interface AlarmRow {
+  descriptionWithCode: string;
+  severity: AlarmSeverity;
+  source: string;
+  timestamp: string;
+  status: 'Active' | 'Cleared';
+}
 
 @Component({
   selector: 'app-event-log',
@@ -19,6 +29,11 @@ export class EventLogComponent implements OnInit, OnChanges, OnDestroy {
   selectedDeviceDetails: any = null;
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;
+  criticalAlarmCount = 0;
+  majorAlarmCount = 0;
+  minorAlarmCount = 0;
+  clearedAlarmCount = 0;
+  alarmRows: AlarmRow[] = [];
 
   liveData = {
     grid: { voltage: '-', status: '-', device: '-' },
@@ -88,6 +103,11 @@ export class EventLogComponent implements OnInit, OnChanges, OnDestroy {
       humidity: '-',
       temperature: '-',
     };
+    this.criticalAlarmCount = 0;
+    this.majorAlarmCount = 0;
+    this.minorAlarmCount = 0;
+    this.clearedAlarmCount = 0;
+    this.alarmRows = [];
     this.liveData.grid.device =
       this.selectedDeviceDetails?.code ||
       this.selectedDeviceDetails?.name ||
@@ -209,7 +229,91 @@ export class EventLogComponent implements OnInit, OnChanges, OnDestroy {
       },
     };
 
+    this.captureAlarmRows(payload, event);
+
     this.lastPacketAt = portalReceiveTime ? String(portalReceiveTime) : null;
+  }
+
+  private captureAlarmRows(payload: DecodedPayload, event: DeviceDataEvent): void {
+    const source = String(
+      this.selectedDeviceDetails?.name ??
+      this.selectedDeviceDetails?.code ??
+      payload.deviceId ??
+      '-',
+    );
+    const timestamp = String(payload.portalReceiveTime ?? event.receivedAt ?? new Date().toISOString());
+    const alarmSlots = [
+      {
+        code: this.resolveAlarm1Code(payload.alarm1Code),
+        description: String(payload.alarm1Code ?? 'Unknown alarm'),
+        severity: this.normalizeSeverity(payload.alarm1Level),
+      },
+      {
+        code: Number(payload.alarm2Code),
+        description: ALARM_CODE_LABELS[Number(payload.alarm2Code)] ?? `Unknown (${payload.alarm2Code})`,
+        severity: this.normalizeSeverity(payload.alarm2Level),
+      },
+      {
+        code: Number(payload.alarm3Code),
+        description: ALARM_CODE_LABELS[Number(payload.alarm3Code)] ?? `Unknown (${payload.alarm3Code})`,
+        severity: this.normalizeSeverity(payload.alarm3Level),
+      },
+    ];
+
+    let critical = 0;
+    let major = 0;
+    let minor = 0;
+    let cleared = 0;
+
+    const rows: AlarmRow[] = alarmSlots.map((slot) => {
+      const isCleared = slot.severity === 'None' || slot.code === 65535 || slot.description === 'No alarm in this slot';
+      const status: 'Active' | 'Cleared' = isCleared ? 'Cleared' : 'Active';
+
+      if (!isCleared) {
+        if (slot.severity === 'Critical') {
+          critical += 1;
+        } else if (slot.severity === 'Major') {
+          major += 1;
+        } else if (slot.severity === 'Minor') {
+          minor += 1;
+        }
+      } else {
+        cleared += 1;
+      }
+
+      const codeText = slot.code === null ? '-' : String(slot.code);
+
+      return {
+        descriptionWithCode: `${slot.description} (${codeText})`,
+        severity: slot.severity,
+        source,
+        timestamp,
+        status,
+      };
+    });
+
+    this.criticalAlarmCount = critical;
+    this.majorAlarmCount = major;
+    this.minorAlarmCount = minor;
+    this.clearedAlarmCount = cleared;
+    this.alarmRows = [...rows, ...this.alarmRows].slice(0, 100);
+  }
+
+  private resolveAlarm1Code(description: string): number | null {
+    const entries = Object.entries(ALARM_CODE_LABELS);
+    for (const [codeText, label] of entries) {
+      if (label === description) {
+        return Number(codeText);
+      }
+    }
+    return null;
+  }
+
+  private normalizeSeverity(level: string | null | undefined): AlarmSeverity {
+    if (level === 'Critical' || level === 'Major' || level === 'Minor' || level === 'Warning') {
+      return level;
+    }
+    return 'None';
   }
 
   private formatMinutesAsDuration(minutes: number | null): string {

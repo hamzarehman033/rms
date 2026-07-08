@@ -1,14 +1,58 @@
 <main class="content">
-  <!-- Page Header -->
   <div class="page-header hstack justify-between items-start">
     <div>
       <h1>{{ selectedDeviceDetails?.name || 'Device Dashboard' }} · {{ selectedDeviceDetails?.code || '-' }}</h1>
-       <p>Real-time monitoring of power systems, devices, and operational metrics.</p>
+      <p>Real-time monitoring of power systems, devices, and operational metrics.</p>
     </div>
-    <div class="hstack gap-2">
-      <!-- <button [routerLink]="deviceId ? ['/device-detail', deviceId] : null" [disabled]="!deviceId" type="submit" class="btn primary" pButton label="Site View" icon="pi pi-server">
-          Site View
-      </button> -->
+    <div class="last-updated">
+      Last Packet: {{ lastPacketAt || '-' }}
     </div>
   </div>
+
+  <section class="alarm-cards">
+    <article class="alarm-card critical">
+      <h3>Critical</h3>
+      <p>{{ criticalAlarmCount }}</p>
+    </article>
+    <article class="alarm-card major">
+      <h3>Major</h3>
+      <p>{{ majorAlarmCount }}</p>
+    </article>
+    <article class="alarm-card minor">
+      <h3>Minor</h3>
+      <p>{{ minorAlarmCount }}</p>
+    </article>
+    <article class="alarm-card cleared">
+      <h3>Cleared Alarms</h3>
+      <p>{{ clearedAlarmCount }}</p>
+    </article>
+  </section>
+
+  <section class="alarm-table-wrap">
+    <table class="alarm-table">
+      <thead>
+        <tr>
+          <th>Description (alarmCode)</th>
+          <th>Severity</th>
+          <th>Source (device name)</th>
+          <th>Timestamp</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of alarmRows">
+          <td>{{ row.descriptionWithCode }}</td>
+          <td>{{ row.severity }}</td>
+          <td>{{ row.source }}</td>
+          <td>{{ row.timestamp }}</td>
+          <td>
+            <span class="status-pill" [class.cleared]="row.status === 'Cleared'">{{ row.status }}</span>
+          </td>
+        </tr>
+        <tr *ngIf="alarmRows.length === 0">
+          <td colspan="5" class="empty">No alarm records yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 </main>
