@@ -68,6 +68,9 @@ SEND_COUNT = 0                  # 0 = forever, 10 = send 10 packets then stop
 PRINT_HEX_PAYLOAD = False       # True prints full packet hex every send
 PRINT_DECODED_SAMPLE = False    # True prints selected decoded values
 
+FORCE_THREE_ALARMS_FOR_TEST = True
+TEST_ALARM_FALLBACKS = [(1, 2), (2, 2), (3, 3)]
+
 MANUFACTURER = "huawei"         # huawei, vertiv, zte, delta, generic
 MODEL = "smu02c"                # smu02c, smu03a, generic_snmp_rectifier, generic_modbus_gateway
 PHASE_COUNT = 3                 # 1 or 3
@@ -760,6 +763,18 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
     values = state.to_engineering_dict()
     buf = bytearray(PACKET_LENGTH)
 
+    alarms_for_packet = list(values["active_alarms"])
+    if FORCE_THREE_ALARMS_FOR_TEST:
+        used_alarm_codes = {code for code, _ in alarms_for_packet}
+        for code, level in TEST_ALARM_FALLBACKS:
+            if len(alarms_for_packet) >= 3:
+                break
+            if code in used_alarm_codes:
+                continue
+            alarms_for_packet.append((code, level))
+            used_alarm_codes.add(code)
+    alarms_for_packet = alarms_for_packet[:3]
+
     now = int(time.time())
 
     write_u32(buf, 0x00, now)
@@ -772,7 +787,7 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
     write_u32(buf, 0x10, crc32_hash(state.device_id))
     write_u16(buf, 0x14, values["packet_sequence"])
     write_u16(buf, 0x16, values["system_status"])
-    write_u8(buf, 0x18, values["active_alarm_count"])
+    write_u8(buf, 0x18, len(alarms_for_packet))
 
     write_u16(buf, 0x19, scaled_u16(values["line_a_voltage"], 10))
     if state.phase_count == 3:
@@ -875,13 +890,13 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
     write_u16(buf, 0x85, values["digital_input_bitmap"])
     write_u16(buf, 0x87, values["relay_output_bitmap"])
 
-    alarms = values["active_alarms"][:3]
     alarm_offsets = [(0x89, 0x8B), (0x8C, 0x8E), (0x8F, 0x91)]
     for i, (code_offset, level_offset) in enumerate(alarm_offsets):
-        if i < len(alarms):
-            code, level = alarms[i]
+        if i < len(alarms_for_packet):
+            code, level = alarms_for_packet[i]
         else:
             code, level = 0, 0
+        code = normalize_alarm_code(code)
         write_u16(buf, code_offset, code)
         write_u8(buf, level_offset, level)
 
@@ -910,6 +925,14 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
     write_i16(buf, 0xB4, scaled_i16(values["tenant3_current"], 10))
     write_u32(buf, 0xB6, int(round(values["tenant4_load"])))
     write_i16(buf, 0xBA, scaled_i16(values["tenant4_current"], 10))
+
+    values["active_alarm_count"] = len(alarms_for_packet)
+    values["alarm_1_code"], values["alarm_1_level"] = alarms_for_packet[0] if len(alarms_for_packet) > 0 else (0, 0)
+    values["alarm_2_code"], values["alarm_2_level"] = alarms_for_packet[1] if len(alarms_for_packet) > 1 else (0, 0)
+    values["alarm_3_code"], values["alarm_3_level"] = alarms_for_packet[2] if len(alarms_for_packet) > 2 else (0, 0)
+    values["alarm_1_code"] = normalize_alarm_code(values["alarm_1_code"])
+    values["alarm_2_code"] = normalize_alarm_code(values["alarm_2_code"])
+    values["alarm_3_code"] = normalize_alarm_code(values["alarm_3_code"])
 
     values["crc16"] = crc
     values["hex_payload"] = bytes(buf).hex(" ").upper()
@@ -964,6 +987,10 @@ def decode_packet(buf: bytes) -> Dict[str, Any]:
             decoded[name] = raw
 
     return decoded
+
+
+def normalize_alarm_code(code: int) -> int:
+    return abs(int(code)) % 100
 
 
 # =============================================================================
@@ -1073,6 +1100,9 @@ def main() -> int:
                 f"GenRun={values['genset_running']} "
                 f"Fuel={values['fuel_level_percent']:.0f}% "
                 f"Alarms={values['active_alarm_count']} "
+                f"Alarm1={values['alarm_1_code']}/{values['alarm_1_level']} "
+                f"Alarm2={values['alarm_2_code']}/{values['alarm_2_level']} "
+                f"Alarm3={values['alarm_3_code']}/{values['alarm_3_level']} "
                 f"CRC=0x{values['crc16']:04X}"
             )
 
@@ -1094,6 +1124,12 @@ def main() -> int:
                     "solar_power": decoded.get("solar_power"),
                     "genset_running": decoded.get("genset_running"),
                     "fuel_level_percent": decoded.get("fuel_level_percent"),
+                    "alarm_1_code": decoded.get("alarm_1_code"),
+                    "alarm_1_level": decoded.get("alarm_1_level"),
+                    "alarm_2_code": decoded.get("alarm_2_code"),
+                    "alarm_2_level": decoded.get("alarm_2_level"),
+                    "alarm_3_code": decoded.get("alarm_3_code"),
+                    "alarm_3_level": decoded.get("alarm_3_level"),
                     "alarm_bitmap_1": decoded.get("alarm_bitmap_1"),
                 })
 
