@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { DevicesService } from '../../core/services/devices.service';
+import { LocationsService } from '../../core/services/locations.service';
 import { StatisticsService } from '../../core/services/statistics.service';
+import { TenantService } from '../../core/services/tenant.service';
 
 interface BatteryStatusRecord {
   deviceId: number;
@@ -80,42 +83,16 @@ interface AlarmStatusRecord {
 export class ReportsComponent implements OnInit {
   activeTab = 'energy-consumption';
 
-  regions = [
-    { label: 'North', value: 'north' },
-    { label: 'South', value: 'south' },
-    { label: 'East', value: 'east' },
-    { label: 'West', value: 'west' },
-  ];
+  regions: Array<{ name: string; id: string, children: any[] }> = [];
+  subRegions: Array<{ name: string; id: string, children: any[] }> = [];
+  zones: Array<{ name: string; id: string }> = [];
 
-  subRegions = [
-    { label: 'North-1', value: 'north-1' },
-    { label: 'North-2', value: 'north-2' },
-    { label: 'South-1', value: 'south-1' },
-    { label: 'West-1', value: 'west-1' },
-  ];
+  devices: Array<{ name: string; id: string }> = [];
+  tenants: Array<{ name: string; id: string }> = [];
 
-  zones = [
-    { label: 'Zone A', value: 'zone-a' },
-    { label: 'Zone B', value: 'zone-b' },
-    { label: 'Zone C', value: 'zone-c' },
-  ];
-
-  devices = [
-    { label: 'Gateway A1', value: 'gateway-a1' },
-    { label: 'Pump Ctrl 03', value: 'pump-ctrl-03' },
-    { label: 'Sensor T-12', value: 'sensor-t-12' },
-    { label: 'Meter L2', value: 'meter-l2' },
-  ];
-
-  tenants = [
-    { label: 'Tenant Alpha', value: 'tenant-alpha' },
-    { label: 'Tenant Beta', value: 'tenant-beta' },
-    { label: 'Tenant Gamma', value: 'tenant-gamma' },
-  ];
-
-  selectedRegion: string | null = null;
-  selectedSubRegion: string | null = null;
-  selectedZone: string | null = null;
+  selectedRegion: string | null = '';
+  selectedSubRegion: string | null = '';
+  selectedZone: string | null = '';
   selectedDevice: string | null = null;
   selectedTenant: string | null = null;
 
@@ -131,9 +108,17 @@ export class ReportsComponent implements OnInit {
   energyLoading = false;
   alarmLoading = false;
 
-  constructor(private statisticsService: StatisticsService) {}
+  constructor(
+    private statisticsService: StatisticsService,
+    private locationsService: LocationsService,
+    private devicesService: DevicesService,
+    private tenantService: TenantService
+  ) {}
 
   ngOnInit(): void {
+    this.loadLocationTree();
+    this.loadDevices();
+    this.loadTenants();
     this.loadEnergyReport();
     this.loadBatteryReport();
     this.loadSolarReport();
@@ -142,6 +127,18 @@ export class ReportsComponent implements OnInit {
   }
 
   onExport(): void {
+  }
+
+  onRegionChange(): void {
+    this.selectedSubRegion = '';
+    this.selectedZone = '';
+    this.updateSubRegionOptions();
+    this.zones = [];
+  }
+
+  onSubRegionChange(): void {
+    this.selectedZone = '';
+    this.updateZoneOptions();
   }
 
   get batteryAvgVoltage(): number {
@@ -301,6 +298,61 @@ export class ReportsComponent implements OnInit {
         this.alarmLoading = false;
       },
     });
+  }
+
+  private loadLocationTree(): void {
+    this.locationsService.getLocationTree().subscribe({
+      next: (response) => {
+        this.regions = response?.data;
+        this.selectedRegion = '';
+        this.selectedSubRegion = '';
+        this.selectedZone = '';
+        this.subRegions = [];
+        this.zones = [];
+      },
+      error: () => {
+        this.regions = [];
+        this.subRegions = [];
+        this.zones = [];
+      },
+    });
+  }
+
+  private loadDevices(): void {
+    this.devicesService.getDevices().subscribe({
+      next: (response) => {
+        this.devices = response?.data?.pageData;
+      },
+      error: () => {
+        this.devices = [];
+      },
+    });
+  }
+
+  private loadTenants(): void {
+    this.tenantService.getTenants().subscribe({
+      next: (response) => {
+        this.tenants = response?.data?.pageData;
+      },
+      error: () => {
+        this.tenants = [];
+      },
+    });
+  }
+
+  private updateSubRegionOptions(): void {
+    const selectedRegion = this.regions.find(
+      (region) => String(region?.id ?? '') === String(this.selectedRegion ?? '')
+    );
+    this.subRegions = selectedRegion?.children ?? [];
+   
+  }
+
+  private updateZoneOptions(): void {
+    const selectedSubRegion = this.subRegions.find(
+      (subRegion) => String(subRegion?.id ?? '') === String(this.selectedSubRegion ?? '')
+    );
+    this.zones = selectedSubRegion?.children ?? [];
   }
 
   private extractRecords<T>(response: any): T[] {
