@@ -72,7 +72,21 @@
               <h3>Energy Consumption</h3>
               <p class="muted text-xs">First 8 rows of energy consumption report.</p>
             </div>
-            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+            <div class="export-actions">
+              <p-select
+                [options]="formatOptions"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="selectedFormat"
+                [disabled]="isExporting"
+                appendTo="body"
+                styleClass="export-format-select"
+              ></p-select>
+              <button class="btn" [disabled]="isExporting" (click)="onExport(reportType.EnergyConsumption)">
+                <i class="pi" [ngClass]="isExporting ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+                Export
+              </button>
+            </div>
           </div>
           <table class="table mt-4">
             <thead>
@@ -175,7 +189,21 @@
               <h3>Grid Report</h3>
               <p class="muted text-xs">First 8 rows of grid report.</p>
             </div>
-            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+            <div class="export-actions">
+              <p-select
+                [options]="formatOptions"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="selectedFormat"
+                [disabled]="isExporting"
+                appendTo="body"
+                styleClass="export-format-select"
+              ></p-select>
+              <button class="btn" [disabled]="isExporting" (click)="onExport(reportType.GridStatus)">
+                <i class="pi" [ngClass]="isExporting ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+                Export
+              </button>
+            </div>
           </div>
           <table class="table mt-4">
             <thead>
@@ -271,7 +299,21 @@
               <h3>Battery Report</h3>
               <p class="muted text-xs">First 8 rows of battery report.</p>
             </div>
-            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+            <div class="export-actions">
+              <p-select
+                [options]="formatOptions"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="selectedFormat"
+                [disabled]="isExporting"
+                appendTo="body"
+                styleClass="export-format-select"
+              ></p-select>
+              <button class="btn" [disabled]="isExporting" (click)="onExport(reportType.BatteryStatus)">
+                <i class="pi" [ngClass]="isExporting ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+                Export
+              </button>
+            </div>
           </div>
           <table class="table mt-4">
             <thead>
@@ -371,7 +413,21 @@
               <h3>Solar Report</h3>
               <p class="muted text-xs">First 8 rows of solar report.</p>
             </div>
-            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+            <div class="export-actions">
+              <p-select
+                [options]="formatOptions"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="selectedFormat"
+                [disabled]="isExporting"
+                appendTo="body"
+                styleClass="export-format-select"
+              ></p-select>
+              <button class="btn" [disabled]="isExporting" (click)="onExport(reportType.SolarStatus)">
+                <i class="pi" [ngClass]="isExporting ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+                Export
+              </button>
+            </div>
           </div>
           <table class="table mt-4">
             <thead>
@@ -471,7 +527,21 @@
               <h3>Alarms</h3>
               <p class="muted text-xs">First 8 rows of alarms report.</p>
             </div>
-            <button class="btn" (click)="onExport()"><i class="pi pi-download"></i>Export</button>
+            <div class="export-actions">
+              <p-select
+                [options]="formatOptions"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="selectedFormat"
+                [disabled]="isExporting"
+                appendTo="body"
+                styleClass="export-format-select"
+              ></p-select>
+              <button class="btn" [disabled]="isExporting" (click)="onExport(reportType.AlarmStatus)">
+                <i class="pi" [ngClass]="isExporting ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+                Export
+              </button>
+            </div>
           </div>
           <table class="table mt-4">
             <thead>

@@ -20,6 +20,16 @@
 	font-weight: 600;
 }
 
+.export-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.export-format-select {
+	min-width: 8rem;
+}
+
 @media (max-width: 1200px) {
 	.report-filters-grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -29,5 +39,10 @@
 @media (max-width: 768px) {
 	.report-filters-grid {
 		grid-template-columns: repeat(1, minmax(0, 1fr));
+	}
+
+	.export-actions {
+		width: 100%;
+		justify-content: flex-end;
 	}
 }

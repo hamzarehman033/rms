@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { ReportFileFormat, REPORT_FORMAT_OPTIONS, ReportType, ReportFiltersPayload } from '../../core/constants/report.enums';
 import { DevicesService } from '../../core/services/devices.service';
 import { LocationsService } from '../../core/services/locations.service';
 import { StatisticsService } from '../../core/services/statistics.service';
 import { TenantService } from '../../core/services/tenant.service';
+import { ToastService } from '../../core/services/toast.service';
 
 interface BatteryStatusRecord {
   deviceId: number;
@@ -82,6 +84,10 @@ interface AlarmStatusRecord {
 })
 export class ReportsComponent implements OnInit {
   activeTab = 'energy-consumption';
+  readonly reportType = ReportType;
+  formatOptions = REPORT_FORMAT_OPTIONS;
+  selectedFormat: ReportFileFormat = ReportFileFormat.Excel;
+  isExporting = false;
 
   regions: Array<{ name: string; id: string, children: any[] }> = [];
   subRegions: Array<{ name: string; id: string, children: any[] }> = [];
@@ -108,11 +114,15 @@ export class ReportsComponent implements OnInit {
   energyLoading = false;
   alarmLoading = false;
 
+
+  filters:ReportFiltersPayload = {}
+
   constructor(
     private statisticsService: StatisticsService,
     private locationsService: LocationsService,
     private devicesService: DevicesService,
-    private tenantService: TenantService
+    private tenantService: TenantService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -126,7 +136,28 @@ export class ReportsComponent implements OnInit {
     this.loadAlarmReport();
   }
 
-  onExport(): void {
+  onExport(reportType: ReportType): void {
+    if (this.isExporting) {
+      return;
+    }
+
+    const payload = {
+      ...this.filters,
+      reportType,
+      format: this.selectedFormat,
+    }
+    this.isExporting = true;
+    this.statisticsService.downloadReport(payload).subscribe({
+      next: (response) => {
+        this.downloadBlob(response.body, response.headers.get('content-disposition'), payload);
+        this.isExporting = false;
+        this.toastService.showSuccess('Report exported', 'Your report download has started.');
+      },
+      error: () => {
+        this.isExporting = false;
+        this.toastService.showError('Export failed', 'Unable to export report. Please try again.');
+      }
+    });
   }
 
   onRegionChange(): void {
@@ -232,7 +263,7 @@ export class ReportsComponent implements OnInit {
 
   private loadEnergyReport(): void {
     this.energyLoading = true;
-    this.statisticsService.getEnergyConsumptionReport({}).subscribe({
+    this.statisticsService.getEnergyConsumptionReport(this.filters).subscribe({
       next: (response) => {
         this.energyRecords = this.extractRecords<EnergyConsumptionRecord>(response);
         this.energyLoading = false;
@@ -246,7 +277,7 @@ export class ReportsComponent implements OnInit {
 
   private loadBatteryReport(): void {
     this.batteryLoading = true;
-    this.statisticsService.getBatteryStatusReport({}).subscribe({
+    this.statisticsService.getBatteryStatusReport(this.filters).subscribe({
       next: (response) => {
         this.batteryRecords = this.extractRecords<BatteryStatusRecord>(response);
         this.batteryLoading = false;
@@ -260,7 +291,7 @@ export class ReportsComponent implements OnInit {
 
   private loadSolarReport(): void {
     this.solarLoading = true;
-    this.statisticsService.getSolarStatusReport({}).subscribe({
+    this.statisticsService.getSolarStatusReport(this.filters).subscribe({
       next: (response) => {
         this.solarRecords = this.extractRecords<SolarStatusRecord>(response);
         this.solarLoading = false;
@@ -274,7 +305,7 @@ export class ReportsComponent implements OnInit {
 
   private loadGridReport(): void {
     this.gridLoading = true;
-    this.statisticsService.getGridStatusReport({}).subscribe({
+    this.statisticsService.getGridStatusReport(this.filters).subscribe({
       next: (response) => {
         this.gridRecords = this.extractRecords<GridStatusRecord>(response);
         this.gridLoading = false;
@@ -288,7 +319,7 @@ export class ReportsComponent implements OnInit {
 
   private loadAlarmReport(): void {
     this.alarmLoading = true;
-    this.statisticsService.getAlarmStatusReport({}).subscribe({
+    this.statisticsService.getAlarmStatusReport(this.filters).subscribe({
       next: (response) => {
         this.alarmRecords = this.extractRecords<AlarmStatusRecord>(response);
         this.alarmLoading = false;
@@ -375,6 +406,59 @@ export class ReportsComponent implements OnInit {
 
     const sum = valid.reduce((acc, value) => acc + value, 0);
     return sum / valid.length;
+  }
+
+  private downloadBlob(blob: Blob | null, contentDisposition: string | null, payload: ReportFiltersPayload): void {
+    if (!blob || !blob.size) {
+      this.toastService.showWarning('Empty export', 'No file content was returned by the server.');
+      return;
+    }
+
+    const fileName = this.createReportFilename(payload);
+    const objectUrl = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.click();
+    window.URL.revokeObjectURL(objectUrl);
+  }
+
+  private createReportFilename(payload: ReportFiltersPayload): string {
+    const reportName = this.getReportName(payload.reportType);
+    const extension = this.getFileExtension(payload.format);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return `${reportName}-${timestamp}.${extension}`;
+  }
+
+  private getReportName(reportType?: ReportType): string {
+    switch (reportType) {
+      case ReportType.BatteryStatus:
+        return 'battery-status-report';
+      case ReportType.SolarStatus:
+        return 'solar-status-report';
+      case ReportType.GridStatus:
+        return 'grid-status-report';
+      case ReportType.AlarmStatus:
+        return 'alarm-status-report';
+      case ReportType.EnergyConsumption:
+      default:
+        return 'energy-consumption-report';
+    }
+  }
+
+  private getFileExtension(format?: ReportFileFormat): string {
+    switch (format) {
+      case ReportFileFormat.Excel:
+        return 'xlsx';
+      case ReportFileFormat.Json:
+        return 'json';
+      case ReportFileFormat.Csv:
+        return 'csv';
+      case ReportFileFormat.Pdf:
+        return 'pdf';
+      default:
+        return 'bin';
+    }
   }
 
   private tableToCSV(table: HTMLTableElement): void {

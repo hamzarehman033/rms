@@ -68,4 +68,11 @@ export class StatisticsService {
   getAlarmStatusReport(data: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}${this.url}/alarm-status-report`, data);
   }
+
+  downloadReport(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}${this.url}/reports/download`, data, {
+      observe: 'response',
+      responseType: 'blob'
+    });
+  }
 }

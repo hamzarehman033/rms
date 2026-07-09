@@ -19,3 +19,4 @@ export * from './interceptors/error.interceptor';
 export * from './constants/roles';
 export * from './constants/site';
 export * from './constants/device-message.model';
+export * from './constants/report.enums';
