@@ -7,6 +7,40 @@
     <p-tab value="alarms">Alarms</p-tab>
   </p-tablist>
 
+  <ng-template #reportFiltersTemplate let-suffix="suffix">
+    <section class="card report-filters">
+      <div class="report-filters-grid">
+        <div class="filter-field">
+          <label class="filter-label" for="region-filter-{{ suffix }}">Region</label>
+          <p-select inputId="region-filter-{{ suffix }}" [options]="regions" optionLabel="name" optionValue="id" [(ngModel)]="selectedRegion" placeholder="All regions" (onChange)="onRegionChange()" styleClass="w-full"></p-select>
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="subregion-filter-{{ suffix }}">Subregion</label>
+          <p-select inputId="subregion-filter-{{ suffix }}" [options]="subRegions" optionLabel="name" optionValue="id" [(ngModel)]="selectedSubRegion" placeholder="All subregions" (onChange)="onSubRegionChange()" styleClass="w-full"></p-select>
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="zone-filter-{{ suffix }}">Zone</label>
+          <p-select inputId="zone-filter-{{ suffix }}" [options]="zones" optionLabel="name" optionValue="id" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="site-type-filter-{{ suffix }}">Site Type</label>
+          <p-select inputId="site-type-filter-{{ suffix }}" [options]="siteTypeOptions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSiteType" placeholder="All site types" styleClass="w-full"></p-select>
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="device-filter-{{ suffix }}">Device</label>
+          <p-select inputId="device-filter-{{ suffix }}" [options]="filteredDevices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="tenant-filter-{{ suffix }}">Tenant</label>
+          <p-select inputId="tenant-filter-{{ suffix }}" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+        </div>
+        <div class="filter-field filter-action">
+          <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
+        </div>
+      </div>
+    </section>
+  </ng-template>
+
   <p-tabpanels>
     <p-tabpanel value="energy-consumption">
       <main class="content">
@@ -18,33 +52,7 @@
           </div>
         </div>
 
-        <section class="card report-filters">
-          <div class="report-filters-grid">
-            <div class="filter-field">
-              <label class="filter-label" for="region-filter-energy">Region</label>
-              <p-select inputId="region-filter-energy" [options]="regions" optionLabel="name" optionValue="id" [(ngModel)]="selectedRegion" placeholder="All regions" (onChange)="onRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="subregion-filter-energy">Subregion</label>
-              <p-select inputId="subregion-filter-energy" [options]="subRegions" optionLabel="name" optionValue="id" [(ngModel)]="selectedSubRegion" placeholder="All subregions" (onChange)="onSubRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="zone-filter-energy">Zone</label>
-              <p-select inputId="zone-filter-energy" [options]="zones" optionLabel="name" optionValue="id" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="device-filter-energy">Device</label>
-              <p-select inputId="device-filter-energy" [options]="devices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="tenant-filter-energy">Tenant</label>
-              <p-select inputId="tenant-filter-energy" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field filter-action">
-              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
-            </div>
-          </div>
-        </section>
+        <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'energy' }"></ng-container>
 
         <div class="grid cols-4">
           <div class="stat">
@@ -138,33 +146,7 @@
           </div>
         </div>
 
-        <section class="card report-filters">
-          <div class="report-filters-grid">
-            <div class="filter-field">
-              <label class="filter-label" for="region-filter-grid">Region</label>
-              <p-select inputId="region-filter-grid" [options]="regions" optionLabel="name" optionValue="id" [(ngModel)]="selectedRegion" placeholder="All regions" (onChange)="onRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="subregion-filter-grid">Subregion</label>
-              <p-select inputId="subregion-filter-grid" [options]="subRegions" optionLabel="name" optionValue="id" [(ngModel)]="selectedSubRegion" placeholder="All subregions" (onChange)="onSubRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="zone-filter-grid">Zone</label>
-              <p-select inputId="zone-filter-grid" [options]="zones" optionLabel="name" optionValue="id" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="device-filter-grid">Device</label>
-              <p-select inputId="device-filter-grid" [options]="devices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="tenant-filter-grid">Tenant</label>
-              <p-select inputId="tenant-filter-grid" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field filter-action">
-              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
-            </div>
-          </div>
-        </section>
+        <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'grid' }"></ng-container>
 
         <div class="grid cols-4">
           <div class="stat">
@@ -251,33 +233,7 @@
           </div>
         </div>
 
-        <section class="card report-filters">
-          <div class="report-filters-grid">
-            <div class="filter-field">
-              <label class="filter-label" for="region-filter-battery">Region</label>
-              <p-select inputId="region-filter-battery" [options]="regions" optionLabel="name" optionValue="id" [(ngModel)]="selectedRegion" placeholder="All regions" (onChange)="onRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="subregion-filter-battery">Subregion</label>
-              <p-select inputId="subregion-filter-battery" [options]="subRegions" optionLabel="name" optionValue="id" [(ngModel)]="selectedSubRegion" placeholder="All subregions" (onChange)="onSubRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="zone-filter-battery">Zone</label>
-              <p-select inputId="zone-filter-battery" [options]="zones" optionLabel="name" optionValue="id" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="device-filter-battery">Device</label>
-              <p-select inputId="device-filter-battery" [options]="devices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="tenant-filter-battery">Tenant</label>
-              <p-select inputId="tenant-filter-battery" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field filter-action">
-              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
-            </div>
-          </div>
-        </section>
+        <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'battery' }"></ng-container>
 
         <div class="grid cols-4">
           <div class="stat">
@@ -368,33 +324,7 @@
           </div>
         </div>
 
-        <section class="card report-filters">
-          <div class="report-filters-grid">
-            <div class="filter-field">
-              <label class="filter-label" for="region-filter-solar">Region</label>
-              <p-select inputId="region-filter-solar" [options]="regions" optionLabel="name" optionValue="id" [(ngModel)]="selectedRegion" placeholder="All regions" (onChange)="onRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="subregion-filter-solar">Subregion</label>
-              <p-select inputId="subregion-filter-solar" [options]="subRegions" optionLabel="name" optionValue="id" [(ngModel)]="selectedSubRegion" placeholder="All subregions" (onChange)="onSubRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="zone-filter-solar">Zone</label>
-              <p-select inputId="zone-filter-solar" [options]="zones" optionLabel="name" optionValue="id" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="device-filter-solar">Device</label>
-              <p-select inputId="device-filter-solar" [options]="devices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="tenant-filter-solar">Tenant</label>
-              <p-select inputId="tenant-filter-solar" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field filter-action">
-              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
-            </div>
-          </div>
-        </section>
+        <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'solar' }"></ng-container>
 
         <div class="grid cols-4">
           <div class="stat">
@@ -485,33 +415,7 @@
           </div>
         </div>
 
-        <section class="card report-filters">
-          <div class="report-filters-grid">
-            <div class="filter-field">
-              <label class="filter-label" for="region-filter-alarms">Region</label>
-              <p-select inputId="region-filter-alarms" [options]="regions" optionLabel="name" optionValue="id" [(ngModel)]="selectedRegion" placeholder="All regions" (onChange)="onRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="subregion-filter-alarms">Subregion</label>
-              <p-select inputId="subregion-filter-alarms" [options]="subRegions" optionLabel="name" optionValue="id" [(ngModel)]="selectedSubRegion" placeholder="All subregions" (onChange)="onSubRegionChange()" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="zone-filter-alarms">Zone</label>
-              <p-select inputId="zone-filter-alarms" [options]="zones" optionLabel="name" optionValue="id" [(ngModel)]="selectedZone" placeholder="All zones" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="device-filter-alarms">Device</label>
-              <p-select inputId="device-filter-alarms" [options]="devices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field">
-              <label class="filter-label" for="tenant-filter-alarms">Tenant</label>
-              <p-select inputId="tenant-filter-alarms" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
-            </div>
-            <div class="filter-field filter-action">
-              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
-            </div>
-          </div>
-        </section>
+        <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'alarms' }"></ng-container>
 
         <div class="grid cols-4">
           <div class="stat">

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DEVICE_TYPE_OPTIONS } from '../../core/constants/device-type';
 import { ReportFileFormat, REPORT_FORMAT_OPTIONS, ReportType, ReportFiltersPayload } from '../../core/constants/report.enums';
 import { DevicesService } from '../../core/services/devices.service';
 import { LocationsService } from '../../core/services/locations.service';
@@ -93,14 +94,20 @@ export class ReportsComponent implements OnInit {
   subRegions: Array<{ name: string; id: string, children: any[] }> = [];
   zones: Array<{ name: string; id: string }> = [];
 
-  devices: Array<{ name: string; id: string }> = [];
+  devices: Array<{ name: string; id: string, regionId: string, subRegionId: string, zoneId: string, type: string }> = [];
   tenants: Array<{ name: string; id: string }> = [];
 
   selectedRegion: string | null = '';
   selectedSubRegion: string | null = '';
   selectedZone: string | null = '';
   selectedDevice: string | null = null;
+  selectedSiteType: string | null = '';
   selectedTenant: string | null = null;
+
+  siteTypeOptions = DEVICE_TYPE_OPTIONS.map((item) => ({
+    label: item.label,
+    value: item.value,
+  }));
 
   batteryRecords: BatteryStatusRecord[] = [];
   solarRecords: SolarStatusRecord[] = [];
@@ -439,12 +446,17 @@ export class ReportsComponent implements OnInit {
     const defaultFrom = new Date(now - (24 * 60 * 60 * 1000)).toISOString();
     const defaultTo = new Date(now).toISOString();
     const parsedDeviceId = Number(this.selectedDevice);
+    const parsedTenantId = Number(this.selectedTenant);
 
     return {
       ...this.filters,
       reportType,
       format: this.selectedFormat,
       deviceId: Number.isFinite(parsedDeviceId) && parsedDeviceId > 0 ? parsedDeviceId : undefined,
+      tenantId: Number.isFinite(parsedTenantId) && parsedTenantId > 0
+        ? parsedTenantId
+        : this.selectedTenant || undefined,
+      siteType: this.selectedSiteType || undefined,
       fromUtc: this.filters.fromUtc ?? defaultFrom,
       toUtc: this.filters.toUtc ?? defaultTo,
       timeRange: this.filters.timeRange ?? 0,
@@ -502,6 +514,31 @@ export class ReportsComponent implements OnInit {
       default:
         return 'bin';
     }
+  }
+
+
+  get filteredDevices(): Array<any> {
+    let devices = this.devices ?? [];
+    if(!this.devices || !this.devices.length) {
+      return [];
+    }
+
+    if (this.selectedRegion) {
+      devices = devices.filter((device) => device.regionId === this.selectedRegion);
+    }
+
+    if (this.selectedSubRegion) {
+      devices = devices.filter((device) => device.subRegionId === this.selectedSubRegion);
+    }
+
+    if (this.selectedZone) {
+      devices = devices.filter((device) => device.zoneId === this.selectedZone);
+    }
+    if(this.selectedSiteType) {
+      devices = devices.filter((device) => device.type === this.selectedSiteType);
+    }
+
+    return devices;
   }
 
   private tableToCSV(table: HTMLTableElement): void {
