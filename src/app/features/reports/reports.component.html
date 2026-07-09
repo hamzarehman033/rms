@@ -40,6 +40,9 @@
               <label class="filter-label" for="tenant-filter-energy">Tenant</label>
               <p-select inputId="tenant-filter-energy" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
             </div>
+            <div class="filter-field filter-action">
+              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
+            </div>
           </div>
         </section>
 
@@ -157,6 +160,9 @@
               <label class="filter-label" for="tenant-filter-grid">Tenant</label>
               <p-select inputId="tenant-filter-grid" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
             </div>
+            <div class="filter-field filter-action">
+              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
+            </div>
           </div>
         </section>
 
@@ -266,6 +272,9 @@
             <div class="filter-field">
               <label class="filter-label" for="tenant-filter-battery">Tenant</label>
               <p-select inputId="tenant-filter-battery" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field filter-action">
+              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
             </div>
           </div>
         </section>
@@ -381,6 +390,9 @@
               <label class="filter-label" for="tenant-filter-solar">Tenant</label>
               <p-select inputId="tenant-filter-solar" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
             </div>
+            <div class="filter-field filter-action">
+              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
+            </div>
           </div>
         </section>
 
@@ -494,6 +506,9 @@
             <div class="filter-field">
               <label class="filter-label" for="tenant-filter-alarms">Tenant</label>
               <p-select inputId="tenant-filter-alarms" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" styleClass="w-full"></p-select>
+            </div>
+            <div class="filter-field filter-action">
+              <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>
             </div>
           </div>
         </section>

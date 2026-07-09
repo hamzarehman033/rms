@@ -29,7 +29,7 @@ export interface ReportFiltersPayload {
   deviceId?: number;
   fromUtc?: string;
   toUtc?: string;
-  timeRange?: string;
+  timeRange?: number;
   reportType?: ReportType;
   format?: ReportFileFormat;
 }

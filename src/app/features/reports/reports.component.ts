@@ -115,7 +115,7 @@ export class ReportsComponent implements OnInit {
   alarmLoading = false;
 
 
-  filters:ReportFiltersPayload = {}
+  filters: ReportFiltersPayload = {};
 
   constructor(
     private statisticsService: StatisticsService,
@@ -136,16 +136,16 @@ export class ReportsComponent implements OnInit {
     this.loadAlarmReport();
   }
 
+  onApplyFilters(): void {
+    this.loadActiveTabReport();
+  }
+
   onExport(reportType: ReportType): void {
     if (this.isExporting) {
       return;
     }
 
-    const payload = {
-      ...this.filters,
-      reportType,
-      format: this.selectedFormat,
-    }
+    const payload = this.buildFilters(reportType);
     this.isExporting = true;
     this.statisticsService.downloadReport(payload).subscribe({
       next: (response) => {
@@ -158,6 +158,27 @@ export class ReportsComponent implements OnInit {
         this.toastService.showError('Export failed', 'Unable to export report. Please try again.');
       }
     });
+  }
+
+  private loadActiveTabReport(): void {
+    switch (this.activeTab) {
+      case 'grid-report':
+        this.loadGridReport();
+        return;
+      case 'battery-report':
+        this.loadBatteryReport();
+        return;
+      case 'solar-report':
+        this.loadSolarReport();
+        return;
+      case 'alarms':
+        this.loadAlarmReport();
+        return;
+      case 'energy-consumption':
+      default:
+        this.loadEnergyReport();
+        return;
+    }
   }
 
   onRegionChange(): void {
@@ -262,6 +283,7 @@ export class ReportsComponent implements OnInit {
   }
 
   private loadEnergyReport(): void {
+    this.filters = this.buildFilters(ReportType.EnergyConsumption);
     this.energyLoading = true;
     this.statisticsService.getEnergyConsumptionReport(this.filters).subscribe({
       next: (response) => {
@@ -276,6 +298,7 @@ export class ReportsComponent implements OnInit {
   }
 
   private loadBatteryReport(): void {
+    this.filters = this.buildFilters(ReportType.BatteryStatus);
     this.batteryLoading = true;
     this.statisticsService.getBatteryStatusReport(this.filters).subscribe({
       next: (response) => {
@@ -290,6 +313,7 @@ export class ReportsComponent implements OnInit {
   }
 
   private loadSolarReport(): void {
+    this.filters = this.buildFilters(ReportType.SolarStatus);
     this.solarLoading = true;
     this.statisticsService.getSolarStatusReport(this.filters).subscribe({
       next: (response) => {
@@ -304,6 +328,7 @@ export class ReportsComponent implements OnInit {
   }
 
   private loadGridReport(): void {
+    this.filters = this.buildFilters(ReportType.GridStatus);
     this.gridLoading = true;
     this.statisticsService.getGridStatusReport(this.filters).subscribe({
       next: (response) => {
@@ -318,6 +343,7 @@ export class ReportsComponent implements OnInit {
   }
 
   private loadAlarmReport(): void {
+    this.filters = this.buildFilters(ReportType.AlarmStatus);
     this.alarmLoading = true;
     this.statisticsService.getAlarmStatusReport(this.filters).subscribe({
       next: (response) => {
@@ -406,6 +432,23 @@ export class ReportsComponent implements OnInit {
 
     const sum = valid.reduce((acc, value) => acc + value, 0);
     return sum / valid.length;
+  }
+
+  private buildFilters(reportType: ReportType): ReportFiltersPayload {
+    const now = Date.now();
+    const defaultFrom = new Date(now - (24 * 60 * 60 * 1000)).toISOString();
+    const defaultTo = new Date(now).toISOString();
+    const parsedDeviceId = Number(this.selectedDevice);
+
+    return {
+      ...this.filters,
+      reportType,
+      format: this.selectedFormat,
+      deviceId: Number.isFinite(parsedDeviceId) && parsedDeviceId > 0 ? parsedDeviceId : undefined,
+      fromUtc: this.filters.fromUtc ?? defaultFrom,
+      toUtc: this.filters.toUtc ?? defaultTo,
+      timeRange: this.filters.timeRange ?? 0,
+    };
   }
 
   private downloadBlob(blob: Blob | null, contentDisposition: string | null, payload: ReportFiltersPayload): void {
