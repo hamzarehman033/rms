@@ -2,10 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { DeviceType } from '../constants/device-type';
 
 export interface DevicePayload {
   siteId?: string | number;
   name: string;
+  type: DeviceType;
+  tenantIds?: number[];
   code: string;
   status: string;
   installationDate: string;

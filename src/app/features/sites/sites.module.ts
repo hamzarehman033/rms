@@ -12,6 +12,7 @@ import { SiteConfigurationComponent } from './site-configurations/site-configura
 import { SitesComponent } from './sites.component';
 import { StepperModule } from 'primeng/stepper';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 const routes: Routes = [
   {
@@ -37,7 +38,8 @@ const routes: Routes = [
     InputNumberModule,
     ModalDialogComponent,
     StepperModule,
-    SelectModule
+    SelectModule,
+    MultiSelectModule
     
   ],
 })

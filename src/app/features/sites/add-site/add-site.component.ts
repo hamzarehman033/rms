@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DevicePayload, DevicesService, LocationsService, Site, ToastService } from '@app/core';
+import { DevicePayload, DEVICE_TYPE_OPTIONS, DeviceType, DevicesService, LocationsService, Site, TenantService, ToastService } from '@app/core';
 
 interface OptionItem {
   label: string;
@@ -21,11 +21,7 @@ export class AddSiteComponent implements OnInit {
   activeStep = 1;
 
   siteForm: FormGroup;
-  subscriptionTypes = [
-    { label: 'Basic', value: 'basic' },
-    { label: 'Standard', value: 'standard' },
-    { label: 'Enterprise', value: 'enterprise' }
-  ];
+  deviceTypes = DEVICE_TYPE_OPTIONS;
 
   locations = [
     { label: 'Plant A', value: 'plant-a' },
@@ -41,6 +37,7 @@ export class AddSiteComponent implements OnInit {
   regions: OptionItem[] = [];
   subRegions: OptionItem[] = [];
   zones: OptionItem[] = [];
+  tenants: OptionItem[] = [];
   private locationTree: any[] = [];
 
   // timeZones = [
@@ -65,13 +62,15 @@ export class AddSiteComponent implements OnInit {
     private fb: FormBuilder,
     private locationsService: LocationsService,
     private devicesService: DevicesService,
+    private tenantService: TenantService,
     private toastService: ToastService
   ) {
     this.siteForm = this.fb.group({
       siteName: ['', [Validators.required, Validators.minLength(3)]],
       code: ['', Validators.required],
       status: ['Active', Validators.required],
-      subscriptionType: ['', Validators.required],
+      type: [DeviceType.Normal, Validators.required],
+      tenantIds: [[]],
       installationDate: ['', Validators.required]
     });
     
@@ -98,6 +97,7 @@ export class AddSiteComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadLocationTree();
+    this.loadTenants();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -140,6 +140,7 @@ export class AddSiteComponent implements OnInit {
       const siteValue = this.siteForm.value;
       const locationValue = this.locationForm.value;
       const mqttValue = this.mqttForm.value;
+      const selectedTenantIds = siteValue.tenantIds;
 
       const sitePayload = {
         regionId: Number(locationValue.regionId) || 0,
@@ -156,6 +157,8 @@ export class AddSiteComponent implements OnInit {
         siteId: siteValue.siteId || this.site?.siteId || this.site?.deviceId,
         id: siteValue.siteId || this.site?.siteId || this.site?.deviceId,
         name: siteValue.siteName,
+        type: siteValue.type,
+        tenantIds: selectedTenantIds ?? [],
         code: siteValue.code,
         status: siteValue.status,
         installationDate: new Date(siteValue.installationDate).toISOString(),
@@ -224,6 +227,29 @@ export class AddSiteComponent implements OnInit {
     });
   }
 
+  private loadTenants(): void {
+    this.tenantService.getTenants().subscribe({
+      next: (response: any) => {
+        const tenantList = response?.data?.pageData ?? response?.data ?? response ?? [];
+        const items = Array.isArray(tenantList) ? tenantList : [];
+        this.tenants = items
+          .map((item: any) => {
+            const id = Number(item?.id ?? item?.tenantId);
+            if (!Number.isFinite(id) || id <= 0) {
+              return null;
+            }
+
+            const label = String(item?.name ?? item?.tenantName ?? `Tenant ${id}`).trim();
+            return { label, value: id };
+          })
+          .filter((item: OptionItem | null): item is OptionItem => item !== null);
+      },
+      error: () => {
+        this.tenants = [];
+      }
+    });
+  }
+
   get submitLabel(): string {
     return this.mode === 'edit' ? 'Update Site' : 'Submit';
   }
@@ -273,7 +299,8 @@ export class AddSiteComponent implements OnInit {
       siteName: siteData?.siteName || siteData?.name || this.site?.name || '',
       code: siteData?.siteCode || siteData?.code || this.site?.code || this.site?.siteCode || '',
       status: (siteData?.siteStatus || siteData?.status || this.site?.status || 'active').toString().toLowerCase(),
-      subscriptionType: 'basic',
+      type: deviceData.type,
+      tenantIds: deviceData?.tenantIds ?? [],
       installationDate: this.toDateInput(
         deviceData?.deviceInstallationDate || deviceData?.installationDate || new Date().toISOString()
       )

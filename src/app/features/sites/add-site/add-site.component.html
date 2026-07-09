@@ -28,14 +28,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="subscriptionType">Subscription Type</label>
-                        <p-dropdown id="subscriptionType" formControlName="subscriptionType"
-                            [options]="subscriptionTypes" optionLabel="label" optionValue="value"
-                            placeholder="Select subscription type" class="w-full"></p-dropdown>
+                        <label for="deviceType">Device Type</label>
+                        <p-dropdown id="deviceType" formControlName="type"
+                            [options]="deviceTypes" optionLabel="label" optionValue="value"
+                            placeholder="Select device type" class="w-full"></p-dropdown>
                         <small class="error"
-                            *ngIf="siteForm.get('subscriptionType')?.invalid && siteForm.get('subscriptionType')?.touched">
-                            Subscription type is required
+                            *ngIf="siteForm.get('type')?.invalid && siteForm.get('type')?.touched">
+                            Device type is required
                         </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tenantIds">Tenants</label>
+                        <p-multiSelect id="tenantIds" formControlName="tenantIds"
+                            [options]="tenants" optionLabel="label" optionValue="value"
+                            placeholder="Select tenants" class="w-full"></p-multiSelect>
                     </div>
 
                     <!-- <div class="form-group">
