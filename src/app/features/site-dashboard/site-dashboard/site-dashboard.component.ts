@@ -1,9 +1,22 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { SignalrService } from '@app/core';
+import { SignalrService, TenantService } from '@app/core';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
+
+interface TenantCard {
+  id: number;
+  name: string;
+  meta: string;
+  status: string;
+  statusClass: string;
+  load: string;
+  current: string;
+  voltage: string;
+  today: string;
+  allocation: number;
+}
 
 @Component({
   selector: 'app-site-dashboard',
@@ -21,12 +34,8 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;
 
-  tenantCards = [
-    { name: 'Jazz', meta: 'VEON · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-    { name: 'Zong', meta: 'CMPak · 4G/5G', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-    { name: 'Telenor', meta: 'Telenor Group · LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-    { name: 'Ufone', meta: 'PTCL Group · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-  ];
+  tenantCards: TenantCard[] = [];
+  private tenantNameById = new Map<number, string>();
 
   liveData = {
     grid: { voltage: '-', status: '-', device: '-' },
@@ -96,11 +105,13 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private signalrService: SignalrService,
+    private tenantService: TenantService,
   ) {
     this.solarChartOptions = this.initSolarChart();
   }
 
   ngOnInit(): void {
+    this.loadTenantDirectory();
     this.initializeRealtimeStream();
     this.syncDeviceSelection(this.deviceDetails);
   }
@@ -182,13 +193,13 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         status: '-',
       },
     };
-    this.tenantCards = [
-      { name: 'Jazz', meta: 'VEON · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-      { name: 'Zong', meta: 'CMPak · 4G/5G', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-      { name: 'Telenor', meta: 'Telenor Group · LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-      { name: 'Ufone', meta: 'PTCL Group · GSM/LTE', status: 'STANDBY', statusClass: 'status-warn', load: '-', current: '-', voltage: '-', today: '-', allocation: 0 },
-    ];
+    this.tenantCards = this.buildTenantCards(details);
     this.liveData.grid.device = this.selectedDeviceDetails?.code || this.selectedDeviceDetails?.name || '-';
+  }
+
+  getTenantAccentClass(index: number): string {
+    const accentClasses = ['accent-jazz', 'accent-zong', 'accent-telenor', 'accent-ufone'];
+    return accentClasses[index % accentClasses.length];
   }
 
   private initializeRealtimeStream(): void {
@@ -366,6 +377,61 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     this.lastPacketAt = portalReceiveTime ? String(portalReceiveTime) : null;
+  }
+
+  private loadTenantDirectory(): void {
+    this.tenantService.getTenants()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const tenants = response?.data?.pageData ?? [];
+          this.tenantNameById.clear();
+
+          for (const item of tenants) {
+            const id = Number(item?.id ?? item?.tenantId);
+            if (!Number.isFinite(id) || id <= 0) {
+              continue;
+            }
+
+            const name = String(item?.name ?? item?.tenantName ?? `Tenant ${id}`).trim();
+            this.tenantNameById.set(id, name || `Tenant ${id}`);
+          }
+
+          if (this.selectedDeviceDetails) {
+            this.tenantCards = this.buildTenantCards(this.selectedDeviceDetails);
+          }
+        },
+        error: () => {
+          this.tenantNameById.clear();
+        }
+      });
+  }
+
+  private buildTenantCards(details: any): TenantCard[] {
+    const tenantIds = this.extractDeviceTenantIds(details);
+    return tenantIds.map((id) => ({
+      id,
+      name: this.tenantNameById.get(id) ?? `Tenant ${id}`,
+      meta: `Tenant ID ${id}`,
+      status: 'STANDBY',
+      statusClass: 'status-warn',
+      load: '-',
+      current: '-',
+      voltage: '-',
+      today: '-',
+      allocation: 0,
+    }));
+  }
+
+  private extractDeviceTenantIds(details: any): number[] {
+    const raw = details?.DeviceTenants ?? details?.deviceTenants ?? details?.tenantIds;
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+
+    return raw
+      .map((value: any) => Number(value?.id ?? value?.tenantId ?? value))
+      .filter((value: number) => Number.isFinite(value) && value > 0);
   }
 
   private toSafeNumber(value: number | null | undefined, invalidValues: number[] = []): number | null {

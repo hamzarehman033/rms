@@ -41,6 +41,7 @@
     <table class="table">
       <thead>
         <tr>
+          <th>Tenant ID</th>
           <th>Tenant</th>
           <th>Code</th>
           <th>Status</th>
@@ -48,6 +49,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let tenant of filteredTenants">
+          <td><span class="mono">{{ tenant.id ?? tenant.tenantId ?? '-' }}</span></td>
           <td>
             <div class="font-medium">{{ tenant.name }}</div>
           </td>

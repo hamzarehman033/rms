@@ -350,6 +350,10 @@
         <option value="">All Site Types</option>
         <option *ngFor="let option of siteTypeOptions" [value]="option.value">{{ option.label }}</option>
       </select>
+      <select [ngModel]="selectedDeviceType" (ngModelChange)="setDeviceTypeFilter($event)">
+        <option value="">All Device Types</option>
+        <option *ngFor="let option of deviceTypeOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
       <select>
         <option>All Power Sources</option>
         <option>CP Only</option>

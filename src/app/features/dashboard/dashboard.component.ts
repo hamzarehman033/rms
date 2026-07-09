@@ -1,6 +1,7 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
+import { DEVICE_TYPE_OPTIONS } from '../../core/constants/device-type';
 import { CustomerService } from '../../core/services/customer.service';
 import { DevicesService } from '../../core/services/devices.service';
 import { LocationsService } from '../../core/services/locations.service';
@@ -194,6 +195,7 @@ export class DashboardComponent implements OnInit {
   selectedSubRegions: string = '';
   selectedStatuses: string = '';
   selectedSiteTypes: string = '';
+  selectedDeviceType: string = '';
   selectedPowerSource = '';
   selectedTenant = '';
 
@@ -215,6 +217,11 @@ export class DashboardComponent implements OnInit {
     { label: 'Data Center', value: 'datacenter' },
     { label: 'Office', value: 'office' }
   ];
+
+  deviceTypeOptions = DEVICE_TYPE_OPTIONS.map(option => ({
+    label: option.label,
+    value: option.value
+  }));
 
   powerSourceOptions = [
     { label: 'CP Only', value: 'cp-only' },
@@ -424,6 +431,7 @@ export class DashboardComponent implements OnInit {
     const regionId = this.toPositiveInt(this.selectedRegions);
     const subRegionId = this.toPositiveInt(this.selectedSubRegions);
     const status = this.mapStatusToCode(this.selectedStatuses);
+    const deviceType = String(this.selectedDeviceType ?? '').trim();
 
     return {
       regionId,
@@ -431,6 +439,7 @@ export class DashboardComponent implements OnInit {
       zoneId: 0,
       status,
       deviceId: 0,
+      deviceType: deviceType || undefined,
       timeRange: 0
     };
   }
@@ -1095,6 +1104,10 @@ export class DashboardComponent implements OnInit {
 
   setSiteTypeFilter(value: string): void {
     this.selectedSiteTypes = value ? value : '';
+  }
+
+  setDeviceTypeFilter(value: string): void {
+    this.selectedDeviceType = value ? value : '';
   }
 
   setTenantFilter(value: string): void {

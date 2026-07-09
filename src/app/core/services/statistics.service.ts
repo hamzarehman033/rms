@@ -9,6 +9,7 @@ export interface RecentSitesFilterRequest {
   zoneId: number;
   status: number;
   deviceId: number;
+  deviceType?: string;
   timeRange: number;
 }
 
