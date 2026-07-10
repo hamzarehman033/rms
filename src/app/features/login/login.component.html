@@ -63,6 +63,7 @@
           type="submit" 
           class="auth-btn-primary"
           [disabled]="isLoading || loginForm.invalid">
+          <span *ngIf="isLoading" class="btn-spinner"></span>
           <span class="btn-label">{{ isLoading ? 'Signing in...' : 'Sign in' }}</span>
         </button>
       </form>
