@@ -18,15 +18,7 @@
         <app-event-log [deviceDetails]="deviceDetails"></app-event-log>
       </p-tabpanel>
       <p-tabpanel value="analysis">
-        <section class="card card-pad tab-section">
-          <div class="card-head-inline">
-            <div>
-              <h3 class="font-display">Analysis</h3>
-              <p class="muted-sm">Analytical insights and trend summaries will appear here.</p>
-            </div>
-          </div>
-          <p class="muted-sm">No analysis widgets configured yet.</p>
-        </section>
+        <app-analysis-view [deviceDetails]="deviceDetails"></app-analysis-view>
       </p-tabpanel>
       <p-tabpanel value="site-details">
         <app-device-detail [deviceDetails]="deviceDetails"></app-device-detail>

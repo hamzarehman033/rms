@@ -6,7 +6,7 @@ import * as echarts from 'echarts';
 export interface LineChartOptions {
   title?: string;
   xAxisData: string[];
-  seriesData: Array<{ name: string; data: number[]; color?: string }>;
+  seriesData: Array<{ name: string; data: Array<number | null>; color?: string }>;
   height?: string;
   showLegend?: boolean;
   smooth?: boolean;

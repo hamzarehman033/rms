@@ -1,0 +1,121 @@
+<main class="content analysis-view-shell">
+  <div class="page-header hstack justify-between items-start">
+    <div>
+      <h1>{{ selectedDeviceDetails?.name || 'Device Dashboard' }} · {{ selectedDeviceDetails?.code || '-' }}</h1>
+      <p>Backend-driven analytics for site power, voltage, tenant usage, battery, and solar.</p>
+    </div>
+    <div class="timeframe-select-wrap">
+      <p-select
+        inputId="analysis-timeframe"
+        [options]="timeframeOptions"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="selectedTimeframe"
+        (onChange)="onFiltersChanged()"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+  </div>
+
+  <section class="charts-grid">
+    <article class="card card-pad chart-card">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Site Total Load</h3>
+          <p class="muted-sm">Line graph for total site load over selected timeframe.</p>
+        </div>
+      </div>
+
+      <div class="chart-state">
+        <p class="chart-message" *ngIf="siteTotalLoadState.loading">Loading chart...</p>
+        <div *ngIf="siteTotalLoadState.error" class="chart-error">
+          <p>{{ siteTotalLoadState.error }}</p>
+          <button class="btn secondary" (click)="retrySiteTotalLoad()">Retry</button>
+        </div>
+        <p class="chart-message" *ngIf="!siteTotalLoadState.loading && !siteTotalLoadState.error && !siteTotalLoadState.hasData">No data available for current filters.</p>
+      </div>
+
+      <app-line-chart [options]="siteTotalLoadChartOptions"></app-line-chart>
+    </article>
+
+    <article class="card card-pad chart-card">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Grid Voltage (L1, L2, L3)</h3>
+          <p class="muted-sm">Three separate voltage lines for phases L1, L2 and L3.</p>
+        </div>
+      </div>
+
+      <div class="chart-state">
+        <p class="chart-message" *ngIf="gridVoltageState.loading">Loading chart...</p>
+        <div *ngIf="gridVoltageState.error" class="chart-error">
+          <p>{{ gridVoltageState.error }}</p>
+          <button class="btn secondary" (click)="retryGridVoltage()">Retry</button>
+        </div>
+        <p class="chart-message" *ngIf="!gridVoltageState.loading && !gridVoltageState.error && !gridVoltageState.hasData">No data available for current filters.</p>
+      </div>
+
+      <app-line-chart [options]="gridVoltageChartOptions"></app-line-chart>
+    </article>
+
+    <article class="card card-pad chart-card chart-card-wide">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Tenant Load Trends</h3>
+          <p class="muted-sm">Tenant1..Tenant4 trend lines or a single tenant filter view.</p>
+        </div>
+      </div>
+
+      <div class="chart-state">
+        <p class="chart-message" *ngIf="tenantLoadTrendsState.loading">Loading chart...</p>
+        <div *ngIf="tenantLoadTrendsState.error" class="chart-error">
+          <p>{{ tenantLoadTrendsState.error }}</p>
+          <button class="btn secondary" (click)="retryTenantLoadTrends()">Retry</button>
+        </div>
+        <p class="chart-message" *ngIf="!tenantLoadTrendsState.loading && !tenantLoadTrendsState.error && !tenantLoadTrendsState.hasData">No data available for current filters.</p>
+      </div>
+
+      <app-line-chart [options]="tenantLoadTrendsChartOptions"></app-line-chart>
+    </article>
+
+    <article class="card card-pad chart-card">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Battery SoC</h3>
+          <p class="muted-sm">State-of-charge line series over selected timeframe.</p>
+        </div>
+      </div>
+
+      <div class="chart-state">
+        <p class="chart-message" *ngIf="batterySocState.loading">Loading chart...</p>
+        <div *ngIf="batterySocState.error" class="chart-error">
+          <p>{{ batterySocState.error }}</p>
+          <button class="btn secondary" (click)="retryBatterySoc()">Retry</button>
+        </div>
+        <p class="chart-message" *ngIf="!batterySocState.loading && !batterySocState.error && !batterySocState.hasData">No data available for current filters.</p>
+      </div>
+
+      <app-line-chart [options]="batterySocChartOptions"></app-line-chart>
+    </article>
+
+    <article class="card card-pad chart-card">
+      <div class="card-head-inline">
+        <div>
+          <h3 class="font-display">Solar Yield</h3>
+          <p class="muted-sm">Solar production trend from graph API response.</p>
+        </div>
+      </div>
+
+      <div class="chart-state">
+        <p class="chart-message" *ngIf="solarYieldState.loading">Loading chart...</p>
+        <div *ngIf="solarYieldState.error" class="chart-error">
+          <p>{{ solarYieldState.error }}</p>
+          <button class="btn secondary" (click)="retrySolarYield()">Retry</button>
+        </div>
+        <p class="chart-message" *ngIf="!solarYieldState.loading && !solarYieldState.error && !solarYieldState.hasData">No data available for current filters.</p>
+      </div>
+
+      <app-line-chart [options]="solarYieldChartOptions"></app-line-chart>
+    </article>
+  </section>
+</main>
