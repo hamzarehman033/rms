@@ -10,6 +10,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CustomerService } from '../../../core/services/customer.service';
 import { DevicesService } from '../../../core/services/devices.service';
 import { SignalrService } from '../../../core/services/signalr.service';
+import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
 import { AppRole } from '../../../core/constants/roles';
 
 @Component({
@@ -25,6 +26,7 @@ export class TopbarComponent implements OnInit {
   @Output() notificationClick = new EventEmitter<void>();
   @Output() avatarClick = new EventEmitter<void>();
   private readonly destroyRef = inject(DestroyRef);
+  private readonly deviceLabelById = new Map<number, string>();
 
   constructor(
     private router: Router,
@@ -33,8 +35,8 @@ export class TopbarComponent implements OnInit {
     private devicesService: DevicesService,
     private signalrService: SignalrService
   ) {}
-  showNotifications = false;
 
+  showNotifications = false;
   status = 'All systems operational';
   isSocketConnected = false;
   devices: any[] = [];
@@ -43,12 +45,7 @@ export class TopbarComponent implements OnInit {
   showCustomerSelector = false;
   selectedCustomerId: string | null = null;
   customers: Array<{ label: string; value: string }> = [];
-
-  notifications = [
-    { id: 'ALR-104', message: 'Temperature exceeds threshold', severity: 'critical', device: 'DV-003', time: '2m ago' },
-    { id: 'ALR-103', message: 'Device offline > 1h', severity: 'major', device: 'DV-006', time: '1h ago' },
-    { id: 'ALR-102', message: 'Battery below 30%', severity: 'minor', device: 'DV-009', time: '12m ago' }
-  ];
+  notifications: any[] = [];
 
   avatarMenuItems = [
     { label: 'Profile', icon: 'pi pi-user', command: () => this.onProfileClick() },
@@ -73,6 +70,8 @@ export class TopbarComponent implements OnInit {
         this.selectedCustomerId = activeCustomer?.id ?? null;
         this.devices = [];
         this.filteredDevices = [];
+        this.notifications = [];
+        this.deviceLabelById.clear();
         if (activeCustomer?.id) {
           this.loadDevices();
         }
@@ -84,6 +83,10 @@ export class TopbarComponent implements OnInit {
         this.isSocketConnected = isConnected;
         this.status = isConnected ? 'All systems operational' : 'Connection disconnected';
       });
+
+    this.signalrService.onDeviceData$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => this.onDeviceData(event));
   }
 
   filterDevices(event: { query: string }): any[] {
@@ -111,11 +114,43 @@ export class TopbarComponent implements OnInit {
       });
   }
 
+  private onDeviceData(event: DeviceDataEvent | null): void {
+    if (!event?.decodedPayload) {
+      return;
+      
+    }
+    if(event.decodedPayload.alarm1Code) {
+      this.notifications.push({
+        id: event.decodedPayload.alarm1Code,
+        message: event.decodedPayload.alarm1Code,
+        severity: event.decodedPayload.alarm1Level,
+        device: event.decodedPayload.deviceId,
+      });
+    }
+    if(event.decodedPayload.alarm2Code) {
+      this.notifications.push({
+        id: event.decodedPayload.alarm2Code,
+        message: event.decodedPayload.alarm2Code,
+        severity: event.decodedPayload.alarm2Level,
+        device: event.decodedPayload.deviceId,
+      });
+    }
+    if(event.decodedPayload.alarm3Code) {
+      this.notifications.push({
+        id: event.decodedPayload.alarm3Code,
+        message: event.decodedPayload.alarm3Code,
+        severity: event.decodedPayload.alarm3Level,
+        device: event.decodedPayload.deviceId,
+      });
+    }
+
+  }
+
+
   onCustomerChange(customerId: string | null): void {
     if (!customerId) {
       return;
     }
-
     this.customerService.setActiveCustomerById(customerId);
   }
 
@@ -131,13 +166,11 @@ export class TopbarComponent implements OnInit {
     this.showNotifications = !this.showNotifications;
   }
 
-  onAcknowledgeAlert(notification: any): void {
-    console.log('Alert acknowledged:', notification.id);
+  onAcknowledgeAlert(notification: { id: string }): void {
     this.notifications = this.notifications.filter(n => n.id !== notification.id);
   }
 
-  onDismissAlert(notification: any): void {
-    console.log('Alert dismissed:', notification.id);
+  onDismissAlert(notification: { id: string }): void {
     this.notifications = this.notifications.filter(n => n.id !== notification.id);
   }
   onViewAllAlerts(): void {
