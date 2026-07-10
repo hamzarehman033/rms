@@ -24,8 +24,8 @@ interface AlarmRow {
 export class EventLogComponent implements OnInit, OnChanges, OnDestroy {
   solarChartOptions: LineChartOptions;
   isOperational = false;
-  isLoadingDevice = false;
   @Input() deviceDetails: any = null;
+  @Input() isLoadingDevice = false;
   selectedDeviceDetails: any = null;
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;

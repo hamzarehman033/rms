@@ -6,6 +6,7 @@ import { BarChartComponent, LineChartComponent, PieChartComponent } from '../../
 import { SiteDashboardComponent } from './site-dashboard/site-dashboard.component';
 import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
+import { TableModule } from 'primeng/table';
 import { SiteDashboardTabsComponent } from './site-dashboard-tabs.component';
 import { EquipmentViewComponent } from './equipment-view/equipment-view.component';
 import { EventLogComponent } from './event-log/event-log.component';
@@ -43,6 +44,7 @@ const routes: Routes = [
     PieChartComponent,
     SelectModule,
     TabsModule,
+    TableModule,
     DeviceViewComponent,
   ],
 })

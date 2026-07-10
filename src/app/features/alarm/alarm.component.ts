@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 import { DecodedPayload, DeviceDataEvent, DevicesService, SignalrService, ToastService } from '@app/core';
 
 type AlarmState = 'open' | 'acknowledged' | 'resolved';
@@ -36,6 +37,7 @@ export class AlarmComponent implements OnInit {
   private nextAlarmId = 100;
 
   selectedTab = 0;
+  isLoading = false;
   tabOptions = [
     { label: 'Open', value: 0 },
     { label: 'Acknowledged', value: 1 },
@@ -153,8 +155,14 @@ export class AlarmComponent implements OnInit {
   }
 
   private loadDeviceContext(): void {
+    this.isLoading = true;
     this.devicesService.getDevices()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
       .subscribe({
         next: (response: unknown) => {
           const list = this.extractDeviceList(response);

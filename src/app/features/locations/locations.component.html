@@ -38,7 +38,7 @@
   </div>
 
   <!-- Tree Table -->
-  <p-treetable [value]="locationTree" [scrollable]="true">
+  <p-treetable [value]="locationTree" [loading]="loading" [scrollable]="true">
     <ng-template #header>
       <tr>
         <th>Name</th>

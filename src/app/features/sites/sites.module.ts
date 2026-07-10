@@ -13,6 +13,7 @@ import { SitesComponent } from './sites.component';
 import { StepperModule } from 'primeng/stepper';
 import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { TableModule } from 'primeng/table';
 
 const routes: Routes = [
   {
@@ -39,8 +40,8 @@ const routes: Routes = [
     ModalDialogComponent,
     StepperModule,
     SelectModule,
-    MultiSelectModule
-    
+    MultiSelectModule,
+    TableModule
   ],
 })
 export class SitesModule {}

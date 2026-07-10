@@ -20,19 +20,23 @@
     </div>
   </div>
   <div class="card" style="padding:0">
-    <table class="table">
-      <thead>
+    <p-table
+      [value]="filteredUsers"
+      [loading]="isLoading"
+      styleClass="p-datatable-sm"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
         <tr>
           <th>User</th>
           <th>Role</th>
           <th>Permissions</th>
           <th>Phone</th>
-          <!-- <th>Status</th> -->
           <th>Actions</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of filteredUsers">
+      </ng-template>
+      <ng-template pTemplate="body" let-user>
+        <tr>
           <td>
             <div class="hstack"><span class="avatar w-7 h-7 text-xs">{{ user.userName.charAt(0) }}</span>
               <div>
@@ -49,7 +53,6 @@
             </div>
           </td>
           <td>{{ user.phoneNumber }}</td>
-          <!-- <td>{{ user.status }}</td> -->
           <td>
             <div class="flex items-center gap-2">
               <button class="btn sm" (click)="openEditUserDialog(user)" title="Edit user" aria-label="Edit user">
@@ -61,11 +64,13 @@
             </div>
           </td>
         </tr>
-        <tr *ngIf="filteredUsers.length === 0">
-          <td colspan="7" class="text-center py-8 text-muted">No users found</td>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-8 text-muted">No users found</td>
         </tr>
-      </tbody>
-    </table>
+      </ng-template>
+    </p-table>
   </div>
 </main>
 

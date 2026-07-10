@@ -28,7 +28,7 @@ export class TenantComponent {
     this.isLoading = true;
     this.tenantService.getTenants().subscribe({
       next: (response: any) => {
-        this.tenants = response?.data?.pageData;
+        this.tenants = response?.data?.pageData ?? [];
         this.isLoading = false;
       },
       error: (error: any) => {

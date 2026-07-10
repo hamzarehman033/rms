@@ -99,8 +99,13 @@
               </button>
             </div>
           </div>
-          <table class="table mt-4">
-            <thead>
+          <p-table
+            [value]="energyRecords"
+            [loading]="energyLoading"
+            styleClass="p-datatable-sm mt-4"
+            responsiveLayout="scroll"
+          >
+            <ng-template pTemplate="header">
               <tr>
                 <th>Site</th>
                 <th>Date</th>
@@ -111,9 +116,9 @@
                 <th>Average DC Load Power (W)</th>
                 <th>Average Tenant Load (W)</th>
               </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of energyRecords">
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
                 <td>{{ row.siteName }}</td>
                 <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
                 <td>{{ formatNumber(row.avgTotalAcEnergyWh) }}</td>
@@ -123,14 +128,13 @@
                 <td>{{ formatNumber(row.avgDcLoadPowerW) }}</td>
                 <td>{{ formatNumber(row.avgTenantLoadW) }}</td>
               </tr>
-              <tr *ngIf="energyLoading">
-                <td colspan="8" class="muted">Loading energy consumption report...</td>
-              </tr>
-              <tr *ngIf="!energyLoading && !energyRecords.length">
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
                 <td colspan="8" class="muted">No energy consumption records found.</td>
               </tr>
-            </tbody>
-          </table>
+            </ng-template>
+          </p-table>
         </section>
       </main>
     </p-tabpanel>
@@ -193,8 +197,13 @@
               </button>
             </div>
           </div>
-          <table class="table mt-4">
-            <thead>
+          <p-table
+            [value]="gridRecords"
+            [loading]="gridLoading"
+            styleClass="p-datatable-sm mt-4"
+            responsiveLayout="scroll"
+          >
+            <ng-template pTemplate="header">
               <tr>
                 <th>Site</th>
                 <th>Date</th>
@@ -202,23 +211,22 @@
                 <th>Average AC Frequency (Hz)</th>
                 <th>Availability (%)</th>
               </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of gridRecords">
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
                 <td>{{ row.siteName }}</td>
                 <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
                 <td>{{ formatNumber(row.avgAcInputPowerW) }}</td>
                 <td>{{ formatNumber(row.avgAcFrequency) }}</td>
                 <td>{{ formatNumber(row.gridAvailablePercent) }}%</td>
               </tr>
-              <tr *ngIf="gridLoading">
-                <td colspan="5" class="muted">Loading grid report...</td>
-              </tr>
-              <tr *ngIf="!gridLoading && !gridRecords.length">
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
                 <td colspan="5" class="muted">No grid report records found.</td>
               </tr>
-            </tbody>
-          </table>
+            </ng-template>
+          </p-table>
         </section>
       </main>
     </p-tabpanel>
@@ -280,8 +288,13 @@
               </button>
             </div>
           </div>
-          <table class="table mt-4">
-            <thead>
+          <p-table
+            [value]="batteryRecords"
+            [loading]="batteryLoading"
+            styleClass="p-datatable-sm mt-4"
+            responsiveLayout="scroll"
+          >
+            <ng-template pTemplate="header">
               <tr>
                 <th>Site</th>
                 <th>Date</th>
@@ -291,9 +304,9 @@
                 <th>Average Remaining (%)</th>
                 <th>Average SoH (%)</th>
               </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of batteryRecords">
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
                 <td>{{ row.siteName }}</td>
                 <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
                 <td>{{ formatNumber(row.avgBatteryVoltage) }}</td>
@@ -302,14 +315,13 @@
                 <td>{{ formatNumber(row.avgBatteryRemainingPercent) }}%</td>
                 <td>{{ formatNumber(row.avgBatterySoh) }}%</td>
               </tr>
-              <tr *ngIf="batteryLoading">
-                <td colspan="7" class="muted">Loading battery report...</td>
-              </tr>
-              <tr *ngIf="!batteryLoading && !batteryRecords.length">
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
                 <td colspan="7" class="muted">No battery report records found.</td>
               </tr>
-            </tbody>
-          </table>
+            </ng-template>
+          </p-table>
         </section>
       </main>
     </p-tabpanel>
@@ -371,8 +383,13 @@
               </button>
             </div>
           </div>
-          <table class="table mt-4">
-            <thead>
+          <p-table
+            [value]="solarRecords"
+            [loading]="solarLoading"
+            styleClass="p-datatable-sm mt-4"
+            responsiveLayout="scroll"
+          >
+            <ng-template pTemplate="header">
               <tr>
                 <th>Site</th>
                 <th>Date</th>
@@ -382,9 +399,9 @@
                 <th>Average Energy Today (Wh)</th>
                 <th>Availability (%)</th>
               </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of solarRecords">
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
                 <td>{{ row.siteName }}</td>
                 <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
                 <td>{{ formatNumber(row.avgSolarVoltage) }}</td>
@@ -393,14 +410,13 @@
                 <td>{{ formatNumber(row.avgSolarEnergyTodayWh) }}</td>
                 <td>{{ formatNumber(row.solarAvailablePercent) }}%</td>
               </tr>
-              <tr *ngIf="solarLoading">
-                <td colspan="7" class="muted">Loading solar report...</td>
-              </tr>
-              <tr *ngIf="!solarLoading && !solarRecords.length">
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
                 <td colspan="7" class="muted">No solar report records found.</td>
               </tr>
-            </tbody>
-          </table>
+            </ng-template>
+          </p-table>
         </section>
       </main>
     </p-tabpanel>
@@ -462,8 +478,13 @@
               </button>
             </div>
           </div>
-          <table class="table mt-4">
-            <thead>
+          <p-table
+            [value]="alarmRecords"
+            [loading]="alarmLoading"
+            styleClass="p-datatable-sm mt-4"
+            responsiveLayout="scroll"
+          >
+            <ng-template pTemplate="header">
               <tr>
                 <th>Site</th>
                 <th>Date</th>
@@ -473,9 +494,9 @@
                 <th>Water Leak Events</th>
                 <th>Motion Events</th>
               </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of alarmRecords">
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+              <tr>
                 <td>{{ row.siteName }}</td>
                 <td>{{ row.dateUtc | date : 'yyyy-MM-dd HH:mm' }}</td>
                 <td>{{ formatNumber(row.avgActiveAlarmCount, 0) }}</td>
@@ -484,14 +505,13 @@
                 <td>{{ formatNumber(row.waterLeakEvents, 0) }}</td>
                 <td>{{ formatNumber(row.motionEvents, 0) }}</td>
               </tr>
-              <tr *ngIf="alarmLoading">
-                <td colspan="7" class="muted">Loading alarms report...</td>
-              </tr>
-              <tr *ngIf="!alarmLoading && !alarmRecords.length">
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
                 <td colspan="7" class="muted">No alarms report records found.</td>
               </tr>
-            </tbody>
-          </table>
+            </ng-template>
+          </p-table>
         </section>
       </main>
     </p-tabpanel>

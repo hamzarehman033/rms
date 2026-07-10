@@ -31,19 +31,32 @@
 
       <div class="grid cols-2">
         <div class="card"><h3>Top sensors by activity</h3><div class="sub">Last hour</div>
-          <table class="table" style="margin-top:10px">
-            <thead><tr><th>Device</th><th>Reads</th><th>Avg</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let device of topDeviceActivities">
+          <p-table
+            [value]="topDeviceActivities"
+            [loading]="isLoadingTable"
+            styleClass="p-datatable-sm mt-4"
+            responsiveLayout="scroll"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Device</th>
+                <th>Reads</th>
+                <th>Avg</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-device>
+              <tr>
                 <td>{{ device.deviceLabel }}</td>
                 <td class="mono">{{ device.reads | number: '1.0-0' }}</td>
                 <td class="mono">{{ device.avg }}</td>
               </tr>
-              <tr *ngIf="topDeviceActivities.length === 0">
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
                 <td colspan="3" class="muted">No activity data found.</td>
               </tr>
-            </tbody>
-          </table>
+            </ng-template>
+          </p-table>
         </div>
         <div class="card"><h3>Anomaly events</h3><div class="sub">Detected in last 24h</div>
           <div style="margin-top:12px">

@@ -37,8 +37,13 @@
   </div>
   <!-- Table -->
   <div class="card p-0">
-    <table class="table">
-      <thead>
+    <p-table
+      [value]="filteredCustomers"
+      [loading]="isLoading"
+      styleClass="p-datatable-sm"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
         <tr>
           <th>Customer</th>
           <th>Email</th>
@@ -46,9 +51,9 @@
           <th>Plan</th>
           <th>Actions</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let customer of filteredCustomers">
+      </ng-template>
+      <ng-template pTemplate="body" let-customer>
+        <tr>
           <td>
             <div class="font-medium">{{ customer.name }}</div>
           </td>
@@ -72,11 +77,13 @@
             </div>
           </td>
         </tr>
-        <tr *ngIf="filteredCustomers.length === 0">
-          <td colspan="7" class="text-center py-8 text-muted">No customers found</td>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-8 text-muted">No customers found</td>
         </tr>
-      </tbody>
-    </table>
+      </ng-template>
+    </p-table>
   </div>
 
 </main>

@@ -11,6 +11,7 @@ import { ConfirmationService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { TableModule } from 'primeng/table';
 import { ModalDialogComponent } from '@app/shared';
 
 const routes: Routes = [
@@ -22,7 +23,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [CustomerComponent, AddCustomerComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, InputSwitchModule, ModalDialogComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, InputSwitchModule, TableModule, ModalDialogComponent],
   providers: [ConfirmationService],
 })
 export class CustomerModule {}

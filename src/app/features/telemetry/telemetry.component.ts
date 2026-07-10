@@ -38,6 +38,7 @@ export class TelemetryComponent implements OnInit {
   selectedTab = 0;
   private readonly destroyRef = inject(DestroyRef);
   isLoading = false;
+  isLoadingTable = false;
 
   avgTemperature = 0;
   avgHumidity = 0;
@@ -79,6 +80,7 @@ export class TelemetryComponent implements OnInit {
 
   private loadTelemetryData(): void {
     this.isLoading = true;
+    this.isLoadingTable = true;
 
     this.statisticsService
       .getTelemetryHourlyTempHumidityStats({})
@@ -98,7 +100,12 @@ export class TelemetryComponent implements OnInit {
 
     this.statisticsService
       .getTop5DevicesByActivityInLastHour()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.isLoadingTable = false;
+        })
+      )
       .subscribe({
         next: result => {
           this.allTopDeviceActivities = this.extractTopDeviceActivities(result);

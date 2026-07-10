@@ -140,6 +140,13 @@ export class DashboardComponent implements OnInit {
     }
   };
   distributionDonutData: DistributionDonutPoint[] = [];
+  readonly powerSourceTableRows = [
+    { label: 'CP Only', configKey: 'cpOnly' as const, countColor: '#0ea5e9', barColor: '#1f4f91' },
+    { label: 'CP + Battery', configKey: 'cpBattery' as const, countColor: '#3fb950', barColor: '#196127' },
+    { label: 'CP + Bat + Solar', configKey: 'cpBatterySolar' as const, countColor: '#d29922', barColor: '#5a3c07' },
+    { label: 'CP + Bat + Gen', configKey: 'cpBatteryGen' as const, countColor: '#f78166', barColor: '#7d1e1e' },
+    { label: 'All Sources', configKey: 'allSources' as const, countColor: '#bc8cff', barColor: '#3d1f74' },
+  ];
   private generatorInstalledDeviceIds = new Set<number>();
   private locationTree: LocationTreeNode[] = [];
   locationsOverviewRows: LocationOverviewRow[] = [];

@@ -470,42 +470,26 @@
             <!-- Power source breakdown table -->
             <div class="pie-card">
               <div class="pie-card-title"><i class="ti ti-plug" style="font-size:12px"></i> Sites by Power Source</div>
-              <table class="pwr-table">
-                <thead>
+              <p-table
+                [value]="powerSourceTableRows"
+                styleClass="p-datatable-sm pwr-table"
+                responsiveLayout="scroll"
+              >
+                <ng-template pTemplate="header">
                   <tr>
                     <th>Configuration</th>
                     <th>Sites</th>
                     <th>Share</th>
                   </tr>
-                </thead>
-                <tbody>
+                </ng-template>
+                <ng-template pTemplate="body" let-row>
                   <tr>
-                    <td style="color:var(--foreground);font-weight:500">CP Only</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#0ea5e9;font-weight:700">{{ getFleetDistributionConfigCount('cpOnly') }}</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpOnly')" style="background:#1f4f91"></div></div></td>
+                    <td style="color:var(--foreground);font-weight:500">{{ row.label }}</td>
+                    <td><span [style.font-family]="'Space Mono,monospace'" [style.font-size.px]="12" [style.color]="row.countColor" style="font-weight:700">{{ getFleetDistributionConfigCount(row.configKey) }}</span></td>
+                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare(row.configKey)" [style.background]="row.barColor"></div></div></td>
                   </tr>
-                  <tr>
-                    <td style="color:var(--foreground);font-weight:500">CP + Battery</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#3fb950;font-weight:700">{{ getFleetDistributionConfigCount('cpBattery') }}</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpBattery')" style="background:#196127"></div></div></td>
-                  </tr>
-                  <tr>
-                    <td style="color:var(--foreground);font-weight:500">CP + Bat + Solar</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#d29922;font-weight:700">{{ getFleetDistributionConfigCount('cpBatterySolar') }}</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpBatterySolar')" style="background:#5a3c07"></div></div></td>
-                  </tr>
-                  <tr>
-                    <td style="color:var(--foreground);font-weight:500">CP + Bat + Gen</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#f78166;font-weight:700">{{ getFleetDistributionConfigCount('cpBatteryGen') }}</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('cpBatteryGen')" style="background:#7d1e1e"></div></div></td>
-                  </tr>
-                  <tr>
-                    <td style="color:var(--foreground);font-weight:500">All Sources</td>
-                    <td><span style="font-family:'Space Mono',monospace;font-size:12px;color:#bc8cff;font-weight:700">{{ getFleetDistributionConfigCount('allSources') }}</span></td>
-                    <td><div class="bar-wrap"><div class="bar-fill" [style.width.%]="getFleetDistributionConfigShare('allSources')" style="background:#3d1f74"></div></div></td>
-                  </tr>
-                </tbody>
-              </table>
+                </ng-template>
+              </p-table>
             </div>
 
           </div>

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DevicesService, ToastService } from '@app/core';
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, takeUntil } from 'rxjs/operators';
 
 type SiteDashboardTab =
   | 'site-pulse'
@@ -21,6 +21,7 @@ export class SiteDashboardTabsComponent implements OnInit, OnDestroy {
   activeTab: SiteDashboardTab = 'site-pulse';
   deviceId: string | null = null;
   deviceDetails: any = null;
+  isLoadingDevice = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -41,6 +42,7 @@ export class SiteDashboardTabsComponent implements OnInit, OnDestroy {
         this.deviceId = id;
         if (!id) {
           this.deviceDetails = null;
+          this.isLoadingDevice = false;
           return;
         }
 
@@ -54,8 +56,14 @@ export class SiteDashboardTabsComponent implements OnInit, OnDestroy {
   }
 
   private loadDeviceDetails(id: string): void {
+    this.isLoadingDevice = true;
     this.devicesService.getDeviceById(id)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoadingDevice = false;
+        })
+      )
       .subscribe({
         next: (response: any) => {
           const payload = response?.data ?? response ?? null;

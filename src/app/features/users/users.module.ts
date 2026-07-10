@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TableModule } from 'primeng/table';
 import { ConfirmationService } from 'primeng/api';
 import { ModalDialogComponent } from '@app/shared';
 
@@ -21,7 +22,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [UsersComponent, AddUserComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, ModalDialogComponent, FormsModule],
+  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, CheckboxModule, ConfirmDialogModule, TableModule, ModalDialogComponent, FormsModule],
   providers: [ConfirmationService],
 })
 export class UsersModule {}

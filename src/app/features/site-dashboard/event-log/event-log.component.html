@@ -29,8 +29,13 @@
   </section>
 
   <section class="alarm-table-wrap">
-    <table class="alarm-table">
-      <thead>
+    <p-table
+      [value]="alarmRows"
+      [loading]="isLoadingDevice"
+      styleClass="p-datatable-sm alarm-table"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
         <tr>
           <th>Description (alarmCode)</th>
           <th>Severity</th>
@@ -38,9 +43,9 @@
           <th>Timestamp</th>
           <th>Status</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of alarmRows">
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
           <td>{{ row.descriptionWithCode }}</td>
           <td>{{ row.severity }}</td>
           <td>{{ row.source }}</td>
@@ -49,10 +54,12 @@
             <span class="status-pill" [class.cleared]="row.status === 'Cleared'">{{ row.status }}</span>
           </td>
         </tr>
-        <tr *ngIf="alarmRows.length === 0">
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
           <td colspan="5" class="empty">No alarm records yet.</td>
         </tr>
-      </tbody>
-    </table>
+      </ng-template>
+    </p-table>
   </section>
 </main>

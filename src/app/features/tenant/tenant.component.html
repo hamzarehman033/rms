@@ -38,17 +38,22 @@
   </div>
   <!-- Table -->
   <div class="card p-0">
-    <table class="table">
-      <thead>
+    <p-table
+      [value]="filteredTenants"
+      [loading]="isLoading"
+      styleClass="p-datatable-sm"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
         <tr>
           <th>Tenant ID</th>
           <th>Tenant</th>
           <th>Code</th>
           <th>Status</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let tenant of filteredTenants">
+      </ng-template>
+      <ng-template pTemplate="body" let-tenant>
+        <tr>
           <td><span class="mono">{{ tenant.id ?? tenant.tenantId ?? '-' }}</span></td>
           <td>
             <div class="font-medium">{{ tenant.name }}</div>
@@ -59,11 +64,13 @@
             <span class="badge warning" *ngIf="tenant.status === 'Disabled'">● {{ tenant.status }}</span>
           </td>
         </tr>
-        <tr *ngIf="!isLoading && filteredTenants.length === 0">
-          <td colspan="6" class="text-center py-8 text-muted">No tenants found</td>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center py-8 text-muted">No tenants found</td>
         </tr>
-      </tbody>
-    </table>
+      </ng-template>
+    </p-table>
   </div>
 
 </main>

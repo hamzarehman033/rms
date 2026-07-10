@@ -15,7 +15,7 @@
         <app-equipment-view [deviceDetails]="deviceDetails"></app-equipment-view>
       </p-tabpanel>
       <p-tabpanel value="event-log">
-        <app-event-log [deviceDetails]="deviceDetails"></app-event-log>
+        <app-event-log [deviceDetails]="deviceDetails" [isLoadingDevice]="isLoadingDevice"></app-event-log>
       </p-tabpanel>
       <p-tabpanel value="analysis">
         <app-analysis-view [deviceDetails]="deviceDetails"></app-analysis-view>
