@@ -3,17 +3,19 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenuModule, Menu } from 'primeng/menu';
 import { AuthService } from '../../../core/services/auth.service';
 import { CustomerService } from '../../../core/services/customer.service';
+import { DevicesService } from '../../../core/services/devices.service';
 import { SignalrService } from '../../../core/services/signalr.service';
 import { AppRole } from '../../../core/constants/roles';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownModule, MenuModule],
+  imports: [CommonModule, FormsModule, AutoCompleteModule, DropdownModule, MenuModule],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.css',
 })
@@ -28,13 +30,16 @@ export class TopbarComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private customerService: CustomerService,
+    private devicesService: DevicesService,
     private signalrService: SignalrService
   ) {}
   showNotifications = false;
 
   status = 'All systems operational';
   isSocketConnected = false;
-  searchQuery = '';
+  devices: any[] = [];
+  selectedDevice: any = null;
+  filteredDevices: Array<{ id: string; name: string; code: string }> = [];
   showCustomerSelector = false;
   selectedCustomerId: string | null = null;
   customers: Array<{ label: string; value: string }> = [];
@@ -66,6 +71,11 @@ export class TopbarComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(activeCustomer => {
         this.selectedCustomerId = activeCustomer?.id ?? null;
+        this.devices = [];
+        this.filteredDevices = [];
+        if (activeCustomer?.id) {
+          this.loadDevices();
+        }
       });
 
     this.signalrService.isConnected$
@@ -73,6 +83,31 @@ export class TopbarComponent implements OnInit {
       .subscribe((isConnected) => {
         this.isSocketConnected = isConnected;
         this.status = isConnected ? 'All systems operational' : 'Connection disconnected';
+      });
+  }
+
+  filterDevices(event: { query: string }): any[] {
+    const query = event.query.toLowerCase();
+    return this.filteredDevices = this.devices.filter(device =>
+      device.name.toLowerCase().includes(query) ||
+      device.code.toLowerCase().includes(query)
+    );
+  }
+
+  onDeviceSelect(event: { value: { id: string } }): void {
+    const id = event.value?.id;
+    if (id) {
+      this.router.navigate(['/site-dashboard', id]);
+      this.selectedDevice = null;
+    }
+  }
+
+  private loadDevices(): void {
+    this.devicesService.getDevices()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(response => {
+        this.devices = response?.data?.pageData || [];
+        this.filteredDevices = this.devices;
       });
   }
 

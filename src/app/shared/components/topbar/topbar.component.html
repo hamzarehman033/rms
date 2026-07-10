@@ -13,11 +13,16 @@
     (ngModelChange)="onCustomerChange($event)">
   </p-dropdown>
   <div class="right">
-    <div class="search"><input placeholder="Search devices, alerts…" /></div>
-    <!-- <button class="theme-toggle" type="button" (click)="onThemeToggle()" aria-label="Toggle theme">
-      <i class="icon-moon pi pi-moon"></i>
-      <i class="icon-sun pi pi-sun"></i>
-    </button> -->
+    <div class="search">
+      <p-autocomplete
+        [ngModel]="selectedDevice"
+        [suggestions]="filteredDevices"
+        (completeMethod)="filterDevices($event)"
+        optionLabel="name"
+        placeholder="Search devices"
+        (onSelect)="onDeviceSelect($event)"
+      ></p-autocomplete>
+    </div>
     <button class="icon-btn" (click)="onNotificationMenuToggle($event)" aria-label="Notifications"><i class="pi pi-bell"></i><span class="dot" *ngIf="notifications.length > 0"></span></button>
     <div *ngIf="showNotifications" style="position: fixed; top: 60px; right: 20px; min-width: 350px; max-width: 400px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000;">
       <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px;">
