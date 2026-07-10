@@ -28,30 +28,30 @@ export class SiteConfigurationComponent {
   ) {
     this.configForm = this.formBuilder.group({
       rectifier: this.formBuilder.group({
-        brand: ['', Validators.required],
-        qty: ['', [Validators.required, Validators.min(0)]],
-        capacity: ['', [Validators.required, Validators.min(0)]]
+        brand: [''],
+        qty: [''],
+        capacity: ['']
       }),
       battery: this.formBuilder.group({
-        brand: ['', Validators.required],
-        qty: ['', [Validators.required, Validators.min(0)]],
-        capacity: ['', [Validators.required, Validators.min(0)]]
+        brand: [''],
+        qty: [''],
+        capacity: ['']
       }),
       solar: this.formBuilder.group({
-        brand: ['', Validators.required],
-        qty: ['', [Validators.required, Validators.min(0)]],
-        capacity: ['', [Validators.required, Validators.min(0)]]
+        brand: [''],
+        qty: [''],
+        capacity: ['']
       }),
       generator: this.formBuilder.group({
-        brand: ['', Validators.required],
-        qty: ['', [Validators.required, Validators.min(0)]],
-        capacity: ['', [Validators.required, Validators.min(0)]]
+        brand: [''],
+        qty: [''],
+        capacity: ['']
       }),
-      rmsSerialNumber: ['', Validators.required],
-      simCardNumber: ['', Validators.required],
+      rmsSerialNumber: [''],
+      simCardNumber: [''],
       aiEhsInstalled: [false],
       aiSecurityInstalled: [false],
-      camerasInstalledCount: ['', [Validators.required, Validators.min(0)]]
+      camerasInstalledCount: ['']
     });
   }
 

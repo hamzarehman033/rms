@@ -340,15 +340,15 @@
     <div class="filter-bar">
       <select [ngModel]="selectedRegions" (ngModelChange)="setRegionFilter($event)">
         <option value="">All Regions</option>
-        <option *ngFor="let option of regionOptions" [value]="option.value">{{ option.label }}</option>
+        <option *ngFor="let option of regionOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <select [ngModel]="selectedSubRegions" (ngModelChange)="setSubRegionFilter($event)">
         <option value="">All Sub-Regions</option>
-        <option *ngFor="let option of subRegionOptions" [value]="option.value">{{ option.label }}</option>
+        <option *ngFor="let option of subRegionOptions" [value]="option.id">{{ option.name }}</option>
       </select>
-      <select [ngModel]="selectedSiteTypes" (ngModelChange)="setSiteTypeFilter($event)">
-        <option value="">All Site Types</option>
-        <option *ngFor="let option of siteTypeOptions" [value]="option.value">{{ option.label }}</option>
+      <select [ngModel]="selectedZones" (ngModelChange)="setZoneFilter($event)">
+        <option value="">All Zones</option>
+        <option *ngFor="let option of zoneOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <select [ngModel]="selectedDeviceType" (ngModelChange)="setDeviceTypeFilter($event)">
         <option value="">All Device Types</option>
@@ -368,7 +368,7 @@
       </select>
       <select [ngModel]="selectedTenant" (ngModelChange)="setTenantFilter($event)">
         <option value="">All Tenants</option>
-        <option *ngFor="let option of tenantOptions" [value]="option.value">{{ option.label }}</option>
+        <option *ngFor="let option of tenantOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <div style="flex:1"></div>
       <button class="apply" (click)="applyFilters()">Apply</button>
@@ -424,32 +424,32 @@
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#3fb950"></div>
               <div class="s-lbl"><i class="ti ti-circle-check" style="color:#3fb950"></i> Healthy</div>
-              <div class="s-num" style="color:#3fb950">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#3fb950">{{ getDgOnlineSitesCount() }}</div>
+              <div class="s-sub">{{ getDgFleetPercentageText(getDgOnlineSitesCount()) }} of DG fleet</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#f85149"></div>
               <div class="s-lbl"><i class="ti ti-bolt-off" style="color:#f85149"></i> On Outage</div>
-              <div class="s-num" style="color:#f85149">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#f85149">{{ getDgOfflineSitesCount() }}</div>
+              <div class="s-sub">{{ getDgFleetPercentageText(getDgOfflineSitesCount()) }} of DG fleet</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#ff7b72"></div>
               <div class="s-lbl"><i class="ti ti-alert-octagon" style="color:#ff7b72"></i> Critical</div>
-              <div class="s-num" style="color:#ff7b72">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#ff7b72">{{ getDgCriticalAlarmCount() }}</div>
+              <div class="s-sub">Devices with 3+ alarms</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#d29922"></div>
               <div class="s-lbl"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Major Alarm</div>
-              <div class="s-num" style="color:#d29922">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#d29922">{{ getDgMajorAlarmCount() }}</div>
+              <div class="s-sub">Devices with 2 alarms</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#6b7280"></div>
               <div class="s-lbl"><i class="ti ti-info-circle" style="color:#6b7280"></i> Minor Alarm</div>
-              <div class="s-num" style="color:#6b7280">-</div>
-              <div class="s-sub">-</div>
+              <div class="s-num" style="color:#6b7280">{{ getDgMinorAlarmCount() }}</div>
+              <div class="s-sub">Devices with 1 alarm</div>
             </div>
           </div>
         </div>

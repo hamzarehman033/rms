@@ -4,6 +4,7 @@ import { DevicesService, SignalrService, Site, ToastService } from '@app/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DecodedPayload, DeviceDataEvent } from '../../core/constants/device-message.model';
+import { SitesStreamStateService } from './sites-stream-state.service';
 
 @Component({
   selector: 'app-sites',
@@ -25,15 +26,19 @@ export class SitesComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly powerSourceByDeviceId = new Map<number, string>();
   private readonly realtimeMetricsByDeviceId = new Map<number, { batteryPercent: number | null; loadKw: number | null }>();
-  private readonly activeStreamingDeviceIds = new Set<number>();
-  private readonly streamActionInProgressIds = new Set<number>();
+  private readonly activeStreamingDeviceIds: Set<number>;
+  private readonly streamActionInProgressIds: Set<number>;
 
   constructor(
     private router: Router,
     private devicesService: DevicesService,
     private signalrService: SignalrService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private sitesStreamStateService: SitesStreamStateService
+  ) {
+    this.activeStreamingDeviceIds = this.sitesStreamStateService.activeStreamingDeviceIds;
+    this.streamActionInProgressIds = this.sitesStreamStateService.streamActionInProgressIds;
+  }
 
   ngOnInit(): void {
     this.initializeRealtimeStream();
@@ -41,7 +46,6 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.activeStreamingDeviceIds.clear();
     this.powerSourceByDeviceId.clear();
     this.realtimeMetricsByDeviceId.clear();
     this.destroy$.next();

@@ -192,6 +192,15 @@ main.content { flex: 1; padding: 12px; display: flex; flex-direction: column; ga
   box-shadow: var(--shadow-glow);
 }
 .btn.primary:hover { filter: brightness(1.05); }
+.btn:disabled,
+.btn[disabled],
+.btn.p-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+  filter: none;
+  box-shadow: none;
+}
 .btn.sm { height: 30px; padding: 0 10px; font-size: 12px; }
 
 /* Tabs / segmented */

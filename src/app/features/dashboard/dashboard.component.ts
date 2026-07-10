@@ -63,8 +63,9 @@ interface RecentDeviceActivity {
 }
 
 interface FilterOption {
-  label: string;
-  value: string;
+  name: string;
+  id: string;
+  children?: FilterOption[];
 }
 
 interface LocationTreeNode {
@@ -139,6 +140,7 @@ export class DashboardComponent implements OnInit {
     }
   };
   distributionDonutData: DistributionDonutPoint[] = [];
+  private generatorInstalledDeviceIds = new Set<number>();
   private locationTree: LocationTreeNode[] = [];
   locationsOverviewRows: LocationOverviewRow[] = [];
 
@@ -193,6 +195,7 @@ export class DashboardComponent implements OnInit {
   searchTerm = '';
   selectedRegions: string = '';
   selectedSubRegions: string = '';
+  selectedZones: string = '';
   selectedStatuses: string = '';
   selectedSiteTypes: string = '';
   selectedDeviceType: string = '';
@@ -203,6 +206,8 @@ export class DashboardComponent implements OnInit {
   regionOptions: FilterOption[] = [];
 
   subRegionOptions: FilterOption[] = [];
+
+  zoneOptions: FilterOption[] = [];
 
   statusOptions = [
     { label: 'Online', value: 'online' },
@@ -288,6 +293,7 @@ export class DashboardComponent implements OnInit {
           const list = response?.data?.pageData ?? response?.data ?? response ?? [];
           const devices = Array.isArray(list) ? list : [];
           this.fleetDistribution = this.buildFleetDistribution(devices);
+          this.generatorInstalledDeviceIds = this.extractGeneratorInstalledDeviceIds(devices);
           this.distributionDonutData = this.buildFleetDistributionDonutData(this.fleetDistribution);
         },
         error: () => {
@@ -305,9 +311,29 @@ export class DashboardComponent implements OnInit {
               allSources: 0
             }
           };
+          this.generatorInstalledDeviceIds.clear();
           this.distributionDonutData = [];
         }
       });
+  }
+
+  private extractGeneratorInstalledDeviceIds(devices: any[]): Set<number> {
+    const ids = new Set<number>();
+
+    devices.forEach(device => {
+      const source = device?.infrastructure ?? device?.deviceInfrastructure ?? device ?? {};
+      const supportsGenerator = this.hasPositiveCapability(source?.generatorQty);
+      if (!supportsGenerator) {
+        return;
+      }
+
+      const numericId = Number(device?.id ?? device?.deviceId);
+      if (Number.isFinite(numericId) && numericId > 0) {
+        ids.add(numericId);
+      }
+    });
+
+    return ids;
   }
 
   private buildFleetDistribution(devices: any[]): FleetDistributionSummary {
@@ -428,13 +454,14 @@ export class DashboardComponent implements OnInit {
   private buildRecentSitesFilters(): RecentSitesFilterRequest {
     const regionId = this.toPositiveInt(this.selectedRegions);
     const subRegionId = this.toPositiveInt(this.selectedSubRegions);
+    const zoneId = this.toPositiveInt(this.selectedZones);
     const status = this.mapStatusToCode(this.selectedStatuses);
     const deviceType = String(this.selectedSiteTypes || this.selectedDeviceType || '').trim();
 
     return {
       regionId,
       subRegionId,
-      zoneId: 0,
+      zoneId,
       status,
       deviceId: 0,
       deviceType: deviceType || undefined,
@@ -475,8 +502,9 @@ export class DashboardComponent implements OnInit {
           this.regionOptions = this.locationTree
             .filter(region => region?.id !== undefined && region?.id !== null)
             .map(region => ({
-              label: String(region?.name ?? ''),
-              value: String(region.id)
+              name: String(region?.name ?? ''),
+              id: String(region.id),
+              children: region.children as any[] ?? []
             }));
 
           this.syncSubRegionOptions();
@@ -485,8 +513,10 @@ export class DashboardComponent implements OnInit {
           this.locationTree = [];
           this.regionOptions = [];
           this.subRegionOptions = [];
+          this.zoneOptions = [];
           this.selectedRegions = '';
           this.selectedSubRegions = '';
+          this.selectedZones = '';
         }
       });
   }
@@ -497,37 +527,23 @@ export class DashboardComponent implements OnInit {
   }
 
   private syncSubRegionOptions(): void {
-    const selectedRegionSet = new Set([String(this.selectedRegions)]);
-    const selectedRegions = selectedRegionSet.size
-      ? this.locationTree.filter(region => selectedRegionSet.has(String(region?.id ?? '')))
-      : this.locationTree;
+    const selectedRegionId = String(this.selectedRegions ?? '').trim();
+    const selectedRegion = this.regionOptions.find(option => String(option.id) === selectedRegionId);
+    
+    if(!selectedRegionId || !selectedRegion) {
+      this.subRegionOptions = [];
+      this.selectedSubRegions = '';
+      return;
+    }
+    
+    this.subRegionOptions = selectedRegion?.children?.map(child => ({
+      name: String(child?.name ?? ''),
+      id: String(child?.id ?? ''),
+      children: child?.children as any[] ?? []
+    })) ?? [];
+  
+    this.selectedSubRegions = '';
 
-    const subRegions = selectedRegions.flatMap(region =>
-      Array.isArray(region?.children) ? region.children : []
-    );
-
-    const subRegionMap = new Map<string, string>();
-    subRegions.forEach(subRegion => {
-      const id = subRegion?.id;
-      if (id === undefined || id === null) {
-        return;
-      }
-
-      const value = String(id);
-      if (!subRegionMap.has(value)) {
-        subRegionMap.set(value, String(subRegion?.name ?? ''));
-      }
-    });
-
-    this.subRegionOptions = Array.from(subRegionMap.entries()).map(([value, label]) => ({
-      label,
-      value
-    }));
-
-    const validSubRegionValues = new Set(this.subRegionOptions.map(option => option.value));
-    this.selectedSubRegions = validSubRegionValues.has(String(this.selectedSubRegions))
-      ? this.selectedSubRegions
-      : '';
   }
 
   private loadDashboardSummary(): void {
@@ -1094,6 +1110,27 @@ export class DashboardComponent implements OnInit {
 
   setSubRegionFilter(value: string): void {
     this.selectedSubRegions = value ? value : '';
+    this.syncZoneOptionsForSelectedSubRegion();
+  }
+
+  setZoneFilter(value: string): void {
+    this.selectedZones = value ? value : '';
+  }
+
+  private syncZoneOptionsForSelectedSubRegion(): void {
+    const selectedSubRegionId = String(this.selectedSubRegions ?? '').trim();
+    const selectedSubRegion = this.subRegionOptions.find(option => String(option.id) === selectedSubRegionId);
+
+    if (!selectedSubRegionId || !selectedSubRegion) {
+      this.zoneOptions = [];
+      this.selectedZones = '';
+      return;
+    }
+
+    this.zoneOptions = selectedSubRegion?.children?.map(child => ({
+      name: String(child?.name ?? ''),
+      id: String(child?.id ?? ''),
+    })) ?? [];
   }
 
   setStatusFilter(value: string): void {
@@ -1191,6 +1228,77 @@ export class DashboardComponent implements OnInit {
     }
 
     return this.realtimeDevices.filter(device => device.activeAlarmCount === 1).length;
+  }
+
+  private getRealtimeGeneratorDevices(): DeviceRealtimeData[] {
+    if (!this.realtimeDevices.length || this.generatorInstalledDeviceIds.size === 0) {
+      return [];
+    }
+
+    return this.realtimeDevices.filter(device => this.generatorInstalledDeviceIds.has(Number(device.deviceId)));
+  }
+
+  getDgTotalSitesCount(): number {
+    return this.generatorInstalledDeviceIds.size;
+  }
+
+  getDgOnlineSitesCount(): number | string {
+    const generatorDevices = this.getRealtimeGeneratorDevices();
+    if (!generatorDevices.length) {
+      return '-';
+    }
+
+    return generatorDevices.filter(device => device.isOnline).length;
+  }
+
+  getDgOfflineSitesCount(): number | string {
+    const generatorDevices = this.getRealtimeGeneratorDevices();
+    if (!generatorDevices.length) {
+      return '-';
+    }
+
+    return generatorDevices.filter(device => !device.isOnline).length;
+  }
+
+  getDgCriticalAlarmCount(): number | string {
+    const generatorDevices = this.getRealtimeGeneratorDevices();
+    if (!generatorDevices.length) {
+      return '-';
+    }
+
+    return generatorDevices.filter(device => device.activeAlarmCount >= 3).length;
+  }
+
+  getDgMajorAlarmCount(): number | string {
+    const generatorDevices = this.getRealtimeGeneratorDevices();
+    if (!generatorDevices.length) {
+      return '-';
+    }
+
+    return generatorDevices.filter(device => device.activeAlarmCount === 2).length;
+  }
+
+  getDgMinorAlarmCount(): number | string {
+    const generatorDevices = this.getRealtimeGeneratorDevices();
+    if (!generatorDevices.length) {
+      return '-';
+    }
+
+    return generatorDevices.filter(device => device.activeAlarmCount === 1).length;
+  }
+
+  getDgFleetPercentageText(count: number | string): string {
+    if (typeof count !== 'number' || count <= 0) {
+      return '-';
+    }
+
+    const total = this.getDgTotalSitesCount();
+    if (total <= 0) {
+      return '-';
+    }
+
+    const percentage = (count / total) * 100;
+    return `${percentage.toFixed(1)}%`;
   }
 
   getFleetPercentageText(count: number): string {
