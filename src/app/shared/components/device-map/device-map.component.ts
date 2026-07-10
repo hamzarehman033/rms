@@ -1,6 +1,11 @@
-import { Component, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, Input, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
+import { DevicesService } from '../../../core/services/devices.service';
+import { LocationsService } from '../../../core/services/locations.service';
+import { SignalrService } from '../../../core/services/signalr.service';
+import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
 
 export interface Device {
   id: string;
@@ -12,6 +17,9 @@ export interface Device {
   };
   type?: string;
   battery?: number;
+  regionName?: string;
+  subRegionName?: string;
+  zoneName?: string;
 }
 
 @Component({
@@ -20,47 +28,102 @@ export interface Device {
   templateUrl: './device-map.component.html',
   styleUrl: './device-map.component.css'
 })
-export class DeviceMapComponent implements OnInit {
+export class DeviceMapComponent implements OnInit, AfterViewInit {
   @Input() devices: Device[] = [];
   @Input() showSidebar: boolean = false;
   @ViewChild('mapContainer') mapContainer?: ElementRef;
 
+  selectedDeviceId = '';
+  selectedRegion: any = null;
+  selectedSubRegion: any = null;
+  selectedZone: any = null;
+  selectedBatteryLevel = 0;
+  deviceOptions: Array<{ label: string; value: string }> = [];
+  regionOptions: any[] = [];
+  subRegionOptions: any[] = [];
+  zoneOptions: any[] = [];
+
+  private readonly destroyRef = inject(DestroyRef);
   private map?: L.Map;
+  private markers = L.layerGroup();
+  private allDevices: Device[] = [];
+  private locationTree: any[] = [];
+
+  constructor(
+    private devicesService: DevicesService,
+    private locationsService: LocationsService,
+    private signalrService: SignalrService
+  ) {}
 
   ngOnInit() {
-    // Set default devices if none provided
-    if (this.devices.length === 0) {
-      this.devices = [
-        {
-          id: 'DV-001',
-          name: 'Sector 3',
-          status: 'online',
-          location: { lat: 24.8607, lng: 67.0011 },
-          type: 'Sensor',
-          battery: 87
-        },
-        {
-          id: 'DV-002',
-          name: 'North Perimeter',
-          status: 'offline',
-          location: { lat: 31.5204, lng: 74.3587 },
-          type: 'Camera',
-          battery: 100
-        },
-        {
-          id: 'DV-003',
-          name: 'Warehouse B',
-          status: 'warning',
-          location: { lat: 33.6844, lng: 73.0479 },
-          type: 'Actuator',
-          battery: 22
-        }
-      ];
+    this.loadLocationFilters();
+
+    if (!this.devices.length) {
+      this.loadDevices();
+    } else {
+      this.allDevices = this.devices;
+      this.setDeviceOptions();
+      this.subscribeMapDevices();
     }
+
+    this.signalrService.onDeviceData$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => this.updateDeviceFromSocket(event));
   }
 
   ngAfterViewInit() {
     this.initMap();
+  }
+
+  private loadDevices(): void {
+    this.devicesService.getDevices().subscribe((response: any) => {
+      const list = response?.data?.pageData || response?.data || response || [];
+      this.allDevices = (Array.isArray(list) ? list : [])
+        .map(item => this.mapDevice(item))
+        .filter((device): device is Device => !!device);
+      this.devices = this.allDevices;
+      this.setDeviceOptions();
+      this.subscribeMapDevices();
+      this.renderMarkers();
+    });
+  }
+
+  private loadLocationFilters(): void {
+    this.locationsService.getLocationTree().subscribe((response: any) => {
+      this.locationTree = response?.data ?? [];
+      this.regionOptions = response?.data ?? [];
+    });
+  }
+
+  onFilterChange(fitBounds = true): void {
+    this.devices = this.allDevices.filter(device => {
+      const matchesRegion = !this.selectedRegion || device.regionName === this.selectedRegion;
+      const matchesSubRegion = !this.selectedSubRegion || device.subRegionName === this.selectedSubRegion;
+      const matchesZone = !this.selectedZone || device.zoneName === this.selectedZone;
+      const matchesDevice = !this.selectedDeviceId || device.id === this.selectedDeviceId;
+      const matchesBattery = !this.selectedBatteryLevel || Number(device.battery ?? 0) >= this.selectedBatteryLevel;
+      return matchesRegion && matchesSubRegion && matchesZone && matchesDevice && matchesBattery;
+    });
+
+    this.renderMarkers(fitBounds);
+  }
+
+  onRegionChange(region: any): void {
+    debugger
+    this.selectedRegion = region;
+    const ts = this.regionOptions.find(region => region.name === region.name);
+    this.subRegionOptions = ts?.children ?? [];
+    this.selectedSubRegion = null;
+    this.selectedZone = null;
+    this.onFilterChange();
+  }
+
+  onSubRegionChange(subRegion: any): void { 
+    debugger
+    this.selectedSubRegion = subRegion;
+    this.zoneOptions = this.subRegionOptions.find(subRegion => subRegion.name === subRegion.name)?.children ?? [];
+    this.selectedZone = null;
+    this.onFilterChange();
   }
 
   private initMap() {
@@ -75,15 +138,20 @@ export class DeviceMapComponent implements OnInit {
       maxZoom: 19,
     }).addTo(this.map);
 
-    // Add device markers
-    this.devices.forEach(device => {
-      const marker = this.createMarker(device);
-      marker.addTo(this.map!);
-    });
+    this.markers.addTo(this.map);
+    this.renderMarkers();
+  }
 
-    // Fit bounds to show all markers
-    const bounds = L.latLngBounds(this.devices.map(d => [d.location.lat, d.location.lng]));
-    this.map.fitBounds(bounds, { padding: [50, 50] });
+  private renderMarkers(fitBounds = true): void {
+    if (!this.map) return;
+
+    this.markers.clearLayers();
+    this.devices.forEach(device => this.createMarker(device).addTo(this.markers));
+
+    if (fitBounds && this.devices.length) {
+      const bounds = L.latLngBounds(this.devices.map(d => [d.location.lat, d.location.lng]));
+      this.map.fitBounds(bounds, { padding: [50, 50] });
+    }
   }
 
   private createMarker(device: Device): L.Marker {
@@ -118,6 +186,85 @@ export class DeviceMapComponent implements OnInit {
     marker.bindPopup(popupContent);
     return marker;
   }
+
+  private mapDevice(item: any): Device | null {
+    const location = this.parseCoordinates(item?.coordinates);
+    if (!location) {
+      return null;
+    }
+
+    return {
+      id: String(item?.deviceId ?? item?.siteId ?? item?.id ?? item?.code ?? ''),
+      name: String(item?.name ?? item?.siteName ?? item?.deviceName ?? 'Device'),
+      status: 'offline',
+      location,
+      type: item?.type,
+      battery: Number(item?.batteryRemainingPercent ?? item?.battery ?? 0),
+      regionName: item?.regionName,
+      subRegionName: item?.subRegionName,
+      zoneName: item?.zoneName,
+    };
+  }
+
+  private setDeviceOptions(): void {
+    this.deviceOptions = this.allDevices.map(device => ({
+      label: device.name,
+      value: device.id
+    }));
+  }
+
+  private getLocationName(node: any): string {
+    return String((node?.data || node)?.name ?? '').trim();
+  }
+
+  private getLocationChildren(node: any): any[] {
+    if (!node) {
+      return [];
+    }
+
+    const location = node?.data || node;
+    return Array.isArray(node?.children) ? node.children : Array.isArray(location?.children) ? location.children : [];
+  }
+
+  private subscribeMapDevices(): void {
+    const ids = this.devices
+      .map(device => Number(device.id))
+      .filter(id => Number.isFinite(id) && id > 0);
+
+    if (ids.length) {
+      void this.signalrService.subscribeToDevices(ids).catch(() => {});
+    }
+  }
+
+  private updateDeviceFromSocket(event: DeviceDataEvent | null): void {
+    if (!event?.decodedPayload) {
+      return;
+    }
+
+    const payload = event.decodedPayload as DecodedPayload;
+    const deviceId = String(event.deviceId ?? payload.deviceId ?? '');
+    const device = this.allDevices.find(item => item.id === deviceId);
+    if (!device) {
+      return;
+    }
+
+    device.status = 'online';
+    const battery = Number(payload.batteryRemainingPercent);
+    if (Number.isFinite(battery)) {
+      device.battery = battery;
+    }
+
+    this.onFilterChange(false);
+  }
+
+  private parseCoordinates(value: unknown): { lat: number; lng: number } | null {
+    const [latRaw, lngRaw] = String(value ?? '').split(',').map(part => Number(part.trim()));
+    if (!Number.isFinite(latRaw) || !Number.isFinite(lngRaw)) {
+      return null;
+    }
+    return { lat: latRaw, lng: lngRaw };
+  }
+
 
   private getColorForStatus(status: string): string {
     switch (status) {

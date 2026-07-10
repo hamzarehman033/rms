@@ -19,6 +19,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   selectedSiteForConfig: Site | null = null;
   selectedSiteForEdit: Site | null = null;
   selectedTab = 0;
+  searchTerm = '';
   isLoading = false;
 
   sites: Site[] = [];
@@ -81,6 +82,11 @@ export class SitesComponent implements OnInit, OnDestroy {
 
   onTabChange(tab: number): void {
     this.selectedTab = tab;
+    this.sites = this.getFilteredSites();
+  }
+
+  onSearchChange(value: string): void {
+    this.searchTerm = value;
     this.sites = this.getFilteredSites();
   }
 
@@ -173,15 +179,25 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   private getFilteredSites(): Site[] {
+    let filteredSites = this.allSites;
+
     if (this.selectedTab === 1) {
-      return this.allSites.filter(site => this.isOnlineStatus(site.status));
+      filteredSites = filteredSites.filter(site => this.isOnlineStatus(site.status));
     }
 
     if (this.selectedTab === 2) {
-      return this.allSites.filter(site => this.isOfflineStatus(site.status));
+      filteredSites = filteredSites.filter(site => this.isOfflineStatus(site.status));
     }
 
-    return this.allSites;
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      return filteredSites;
+    }
+
+    return filteredSites.filter(site =>
+      String(site.name ?? '').toLowerCase().includes(term) ||
+      String(site.code ?? '').toLowerCase().includes(term)
+    );
   }
 
   private isOnlineStatus(status: any): boolean {

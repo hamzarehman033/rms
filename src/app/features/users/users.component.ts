@@ -150,13 +150,14 @@ export class UsersComponent {
     }
 
     if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        u =>
-          String(u.id).toLowerCase().includes(term) ||
-          String(u.firstName).toLowerCase().includes(term) ||
-          String(u.lastName).toLowerCase().includes(term) ||
-          String(u.email).toLowerCase().includes(term)
+      const term = this.searchTerm.trim().toLowerCase();
+      if (!term) {
+        return filtered;
+      }
+
+      return filtered.filter(u =>
+        String(u.userName ?? '').toLowerCase().includes(term) ||
+        String(u.email ?? '').toLowerCase().includes(term)
       );
     }
 

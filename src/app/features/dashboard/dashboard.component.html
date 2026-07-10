@@ -370,7 +370,7 @@
         <option value="">All Tenants</option>
         <option *ngFor="let option of tenantOptions" [value]="option.id">{{ option.name }}</option>
       </select>
-      <div style="flex:1"></div>
+      <!-- <div style="flex:1"></div> -->
       <button class="apply" (click)="applyFilters()">Apply</button>
     </div>
 
@@ -499,7 +499,12 @@
 
       <!-- ══ RIGHT COLUMN — Device KPIs (vertical) ══ -->
       <div class="right-col">
-        <div class="right-sec-title"><i class="ti ti-devices" style="font-size:11px"></i> Device Status</div>
+        <div class="hstack justify-between items-center">
+          <div class="right-sec-title"><i class="ti ti-devices" style="font-size:11px"></i> Device Status</div>
+        </div>
+        <button routerLink="/map-dashboard" type="button" class="justify-center btn primary" pButton label="Map View" icon="pi pi-map">
+          Map View
+        </button>
 
         <div class="kpi-vert">
           <div class="kpi-stripe" style="background:#0ea5e9"></div>

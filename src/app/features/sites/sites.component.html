@@ -61,7 +61,7 @@
       <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="onTabChange(2)">Offline <span class="muted">{{ getOfflineCount() }}</span></button>
     </div>
     <div class="hstack">
-      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…"></div>
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…" [value]="searchTerm" (input)="onSearchChange($any($event.target).value)"></div>
       <button class="btn primary" (click)="openAddSiteDialog()"><i class="pi pi-plus"></i><span>Add
           site</span></button>
     </div>
@@ -85,7 +85,6 @@
           <th>Power Source</th>
           <th>Battery %</th>
           <th>Load (kW)</th>
-          <th>Location</th>
           <th>Actions</th>
         </tr>
       </ng-template>
@@ -106,7 +105,6 @@
           <td>{{ getPowerSource(site) }}</td>
           <td class="mono">{{ getBatteryPercentage(site) }}</td>
           <td class="mono">{{ getLoadKw(site) }}</td>
-          <td>{{ site.location }}</td>
           <td>
             <div class="flex gap-2">
               <button
