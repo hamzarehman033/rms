@@ -20,41 +20,41 @@
         <div class="flex gap-8">
             <!-- Avatar Section -->
             <div class="flex flex-col items-center gap-4">
-                <p-avatar [label]="currentUser.avatar" size="xlarge" shape="circle" styleClass="text-2xl"></p-avatar>
+                <!-- <p-avatar [label]="currentUser.avatar" size="xlarge" shape="circle" styleClass="text-2xl"></p-avatar>
                 <p-button label="Upload Photo" severity="secondary" [text]="false" (click)="onUploadPhoto()"
                     styleClass="p-button-sm">
-                </p-button>
-                <div class="text-xs text-muted-foreground">JPG, PNG, GIF max 5MB</div>
+                </p-button> -->
+                <!-- <div class="text-xs text-muted-foreground">JPG, PNG, GIF max 5MB</div> -->
             </div>
 
             <!-- Form Section -->
             <div class="flex-1">
                 <form [formGroup]="profileForm" class="flex flex-col gap-3">
                     <div class="form-group">
-                        <label class="block font-medium">First Name</label>
-                        <input pInputText formControlName="firstName" placeholder="First name" class="w-full" />
-                    </div>
-
-                    <div class="form-group">
-                        <label class="block font-medium">Last Name</label>
-                        <input pInputText formControlName="lastName" placeholder="Last name" class="w-full" />
+                        <label class="block font-medium">Username</label>
+                        <input pInputText [value]="currentUser?.userName || '-'" [disabled]="true" class="w-full" />
                     </div>
 
                     <div class="form-group">
                         <label class="block font-medium">Email</label>
-                        <input pInputText formControlName="email" placeholder="Email address" type="email"
-                            class="w-full" />
+                        <input pInputText [value]="currentUser?.email || '-'" [disabled]="true" class="w-full" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block font-medium">Phone Number</label>
+                        <input pInputText formControlName="phoneNumber" placeholder="Phone number" class="w-full" />
                     </div>
 
                     <div class="form-group">
                         <label class="block font-medium">Role</label>
-                        <input pInputText [value]="currentUser.role | uppercase" [disabled]="true" class="w-full" />
+                        <input pInputText [value]="roleLabel | uppercase" [disabled]="true" class="w-full" />
                     </div>
 
                     <div class="hstack justify-end gap-3 mt-6">
                         <p-button label="Cancel" severity="secondary" (click)="onCancel()" icon="pi pi-times">
                         </p-button>
-                        <p-button class="p-button-primary" label="Save Changes" (click)="onSaveProfile()" icon="pi pi-check">
+                        <p-button class="p-button-primary" label="Save Changes" (click)="onSaveProfile()" icon="pi pi-check"
+                            [loading]="isSaving">
                         </p-button>
                     </div>
                 </form>
@@ -70,58 +70,51 @@
             permission allows you to create, edit, and delete content.
         </p>
 
-        <form [formGroup]="profileForm">
-            <p-table [value]="modules" styleClass="p-datatable-sm" responsiveLayout="scroll">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th class="text-left">Module</th>
-                        <th class="text-center w-30">Read Access</th>
-                        <th class="text-center w-30">Write Access</th>
-                        <th class="text-center w-25">Status</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-module>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-3">
-                                <i [class]="module.icon" class="text-primary"></i>
-                                <span class="font-medium">{{ module.label }}</span>
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <p-checkbox [formControl]="getReadControl(module.value)" [binary]="true">
-                            </p-checkbox>
-                        </td>
-                        <td class="text-center">
-                            <p-checkbox [formControl]="getWriteControl(module.value)" [binary]="true">
-                            </p-checkbox>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge" [ngClass]="isModuleEnabled(module.value) ? 'success' : 'info'">
-                                {{ isModuleEnabled(module.value) ? 'Enabled' : 'Disabled' }}
-                            </span>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </form>
+        <p-table [value]="modules" [loading]="isLoading" styleClass="p-datatable-sm" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="text-left">Module</th>
+                    <th class="text-center w-25">Access</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-module>
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-3">
+                            <i [class]="module.icon" class="text-primary"></i>
+                            <span class="font-medium">{{ module.label }}</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge" [ngClass]="hasModule(module.id) ? 'success' : 'info'">
+                            {{ hasModule(module.id) ? 'Enabled' : 'Disabled' }}
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 
     <!-- Security Tab -->
     <div *ngIf="selectedTab === 2" class="card">
         <h3 class="mb-4">Security Settings</h3>
 
-        <div class="mb-6">
-            <div class="flex justify-between items-center p-4 border border-border rounded mb-4">
-                <div>
+        <form [formGroup]="passwordForm" class="flex flex-col gap-3 mb-6">
+            <div class="flex justify-between items-end gap-3 p-4 border border-border rounded mb-4">
+                <div class="flex-1">
                     <h4 class="font-semibold m-0 mb-1">Password</h4>
-                    <p class="text-xs text-muted-foreground m-0">Last changed 90 days ago</p>
+                    <div class="grid cols-2 gap-3 mt-3">
+                        <input pInputText formControlName="oldPassword" type="password" placeholder="Old password" />
+                        <input pInputText formControlName="newPassword" type="password" placeholder="New password" />
+                    </div>
                 </div>
-                <p-button label="Change Password" severity="secondary" (click)="onChangePassword()" icon="pi pi-lock">
+                <p-button label="Change Password" severity="secondary" (click)="onChangePassword()" icon="pi pi-lock"
+                    [loading]="isChangingPassword">
                 </p-button>
             </div>
-        </div>
+        </form>
 
+        <!-- 2FA hidden for now.
         <div class="mb-6">
             <div class="flex justify-between items-center p-4 border border-border rounded mb-4">
                 <div>
@@ -133,5 +126,6 @@
                 </p-button>
             </div>
         </div>
+        -->
     </div>
 </main>

@@ -1,13 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-  FormControl,
-} from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { toast } from '../../utils/global-toast';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AppRole, AuthService, ToastService, UsersService } from '@app/core';
+import { Menu, MenuOptions } from '../../core/constants/sideMenu';
 
 @Component({
   selector: 'app-profile',
@@ -17,142 +11,135 @@ import { toast } from '../../utils/global-toast';
 })
 export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
+  passwordForm!: FormGroup;
   selectedTab = 0;
+  isLoading = false;
+  isSaving = false;
+  isChangingPassword = false;
+  currentUser: any = null;
+  modules = MenuOptions;
 
-  // Current user profile data
-  currentUser = {
-    firstName: 'Anna',
-    lastName: 'Smith',
-    email: 'anna@pulse.io',
-    role: 'admin',
-    avatar: 'A',
-    joinDate: 'Jan 10, 2025',
-  };
-
-  // Modules for permission management
-  modules = [
-    { label: 'Dashboard', value: 'dashboard', icon: 'pi pi-chart-bar' },
-    { label: 'Devices', value: 'devices', icon: 'pi pi-microchip' },
-    { label: 'Locations', value: 'locations', icon: 'pi pi-map' },
-    { label: 'Users', value: 'users', icon: 'pi pi-users' },
-    { label: 'Rules', value: 'rules', icon: 'pi pi-cog' },
-    { label: 'Alarms', value: 'alarms', icon: 'pi pi-bell' },
-    { label: 'Reports', value: 'reports', icon: 'pi pi-file' },
-    { label: 'Settings', value: 'settings', icon: 'pi pi-sliders-v' },
-  ];
-
-  // User permissions
-  userPermissions = [
-    { module: 'dashboard', read: true, write: true },
-    { module: 'devices', read: true, write: true },
-    { module: 'locations', read: true, write: true },
-    { module: 'users', read: true, write: true },
-    { module: 'rules', read: true, write: true },
-    { module: 'alarms', read: true, write: true },
-    { module: 'reports', read: true, write: true },
-    { module: 'settings', read: true, write: true },
-  ];
-
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private usersService: UsersService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadProfile();
   }
 
   initializeForm(): void {
     this.profileForm = this.fb.group({
-      firstName: [this.currentUser.firstName, Validators.required],
-      lastName: [this.currentUser.lastName, Validators.required],
-      email: [this.currentUser.email, [Validators.required, Validators.email]],
+      phoneNumber: [''],
     });
 
-    // Add permission controls
-    this.modules.forEach((module) => {
-      const permission = this.userPermissions.find(
-        (p) => p.module === module.value,
-      );
-      this.profileForm.addControl(
-        `${module.value}_read`,
-        new FormControl({ value: permission?.read || false, disabled: true }),
-      );
-      this.profileForm.addControl(
-        `${module.value}_write`,
-        new FormControl({ value: permission?.write || false, disabled: true }),
-      );
+    this.passwordForm = this.fb.group({
+      oldPassword: ['', Validators.required],
+      newPassword: ['', Validators.required],
     });
   }
 
-  getPermissionForModule(module: string): any {
-    return this.userPermissions.find((p) => p.module === module);
+  loadProfile(): void {
+    const authUser = this.authService.getCurrentUser();
+    const userId = authUser?.id;
+
+    if (!userId) {
+      this.toastService.showError('Error', 'Unable to load current user.');
+      return;
+    }
+
+    this.isLoading = true;
+    this.usersService.getUserById(userId).subscribe({
+      next: (response: any) => {
+        this.currentUser = response?.data || response;
+        this.profileForm.patchValue({
+          phoneNumber: this.currentUser?.phoneNumber || '',
+        });
+        if(!this.currentUser?.roles?.includes(AppRole.SysAdmin)) {
+          this.modules = MenuOptions.filter(module => module.id !== Menu.Settings && module.id !== Menu.Customers);
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+        this.toastService.showError('Error', 'Failed to load profile.');
+      }
+    });
   }
 
   onSaveProfile(): void {
-    if (this.profileForm.valid) {
-      try {
-        // Update user profile
-        this.currentUser.firstName = this.profileForm.get('firstName')?.value;
-        this.currentUser.lastName = this.profileForm.get('lastName')?.value;
-        this.currentUser.email = this.profileForm.get('email')?.value;
-
-        // Update permissions
-        this.modules.forEach((module) => {
-          const permission = this.userPermissions.find(
-            (p) => p.module === module.value,
-          );
-          if (permission) {
-            const readValue = this.profileForm.get(
-              `${module.value}_read`,
-            )?.value;
-            const writeValue = this.profileForm.get(
-              `${module.value}_write`,
-            )?.value;
-            permission.read = readValue || false;
-            permission.write = writeValue || false;
-          }
-        });
-
-        console.log('Profile saved:', {
-          user: this.currentUser,
-          permissions: this.userPermissions,
-        });
-
-        // Show success toast
-        toast.success(
-          'Profile Updated',
-          'Your profile and permissions have been saved successfully.',
-        );
-      } catch (error) {
-        // Show error toast
-        toast.error(
-          'Failed to Save',
-          'An error occurred while saving your profile. Please try again.',
-        );
-        console.error('Error saving profile:', error);
-      }
+    if (this.profileForm.invalid || !this.currentUser?.id) {
+      return;
     }
+
+    const roles = this.currentUser.roles || this.currentUser.role || [];
+    const payload = {
+      id: this.currentUser.id,
+      userName: this.currentUser.userName,
+      email: this.currentUser.email,
+      phoneNumber: this.profileForm.value.phoneNumber,
+      role: Array.isArray(roles) ? roles[0] || '' : roles || '',
+      modules: this.currentUser.modules || []
+    };
+
+    this.isSaving = true;
+    this.usersService.updateUser(this.currentUser.id, payload).subscribe({
+      next: () => {
+        this.currentUser = { ...this.currentUser, phoneNumber: payload.phoneNumber };
+        this.isSaving = false;
+        this.toastService.showSuccess('Success', 'Profile updated successfully.');
+      },
+      error: () => {
+        this.isSaving = false;
+        this.toastService.showError('Error', 'Failed to update profile.');
+      }
+    });
   }
 
   onChangePassword(): void {
-    console.log('Change password clicked');
+    if (this.passwordForm.invalid) {
+      return;
+    }
+
+    this.isChangingPassword = true;
+    this.authService.changePassword(this.passwordForm.value).subscribe({
+      next: () => {
+        this.isChangingPassword = false;
+        this.passwordForm.reset();
+        this.toastService.showSuccess('Success', 'Password changed successfully.');
+      },
+      error: () => {
+        this.isChangingPassword = false;
+        this.toastService.showError('Error', 'Failed to change password.');
+      }
+    });
   }
 
   onUploadPhoto(): void {}
 
+  onDownloadPhoto(): void {
+    console.log('Download photo');
+  }
+
+  onDeletePhoto(): void {
+    console.log('Delete photo');
+  }
   onCancel(): void {
-    this.initializeForm();
+    this.profileForm.patchValue({
+      phoneNumber: this.currentUser?.phoneNumber || '',
+    });
   }
 
-  getReadControl(moduleValue: string): FormControl {
-    return this.profileForm.get(`${moduleValue}_read`) as FormControl;
+  hasModule(moduleId: number): boolean {
+    const modules = this.currentUser?.modules || [];
+    return modules.map((id: any) => Number(id)).includes(moduleId);
   }
 
-  getWriteControl(moduleValue: string): FormControl {
-    return this.profileForm.get(`${moduleValue}_write`) as FormControl;
-  }
-
-  isModuleEnabled(moduleValue: string): boolean {
-    const readValue = this.profileForm.get(`${moduleValue}_read`)?.value;
-    const writeValue = this.profileForm.get(`${moduleValue}_write`)?.value;
-    return readValue || writeValue;
+  get roleLabel(): string {
+    const roles = this.currentUser?.roles || this.currentUser?.role || [];
+    return Array.isArray(roles) ? roles[0] || '-' : roles || '-';
   }
 }
