@@ -211,12 +211,10 @@ export class DashboardComponent implements OnInit {
     { label: 'Error', value: 'error' }
   ];
 
-  siteTypeOptions = [
-    { label: 'Manufacturing', value: 'manufacturing' },
-    { label: 'Storage', value: 'storage' },
-    { label: 'Data Center', value: 'datacenter' },
-    { label: 'Office', value: 'office' }
-  ];
+  siteTypeOptions = DEVICE_TYPE_OPTIONS.map(option => ({
+    label: option.label,
+    value: option.value
+  }));
 
   deviceTypeOptions = DEVICE_TYPE_OPTIONS.map(option => ({
     label: option.label,
@@ -431,7 +429,7 @@ export class DashboardComponent implements OnInit {
     const regionId = this.toPositiveInt(this.selectedRegions);
     const subRegionId = this.toPositiveInt(this.selectedSubRegions);
     const status = this.mapStatusToCode(this.selectedStatuses);
-    const deviceType = String(this.selectedDeviceType ?? '').trim();
+    const deviceType = String(this.selectedSiteTypes || this.selectedDeviceType || '').trim();
 
     return {
       regionId,
