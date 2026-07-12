@@ -1,7 +1,8 @@
 export const environment = {
   production: true,
-  baseUrl: 'https://localhost:7170/api',
-  // baseUrl: 'https://hamzarehman033-001-site1.jtempurl.com/api',
-  signalrHubUrl: 'http://localhost:7170/hubs/device-data',
+  // baseUrl: 'https://localhost:7170/api',
+  // signalrHubUrl: 'http://localhost:7170/hubs/device-data',
+  baseUrl: 'https://iotdashboard-cua2ehdzbwgnefba.eastasia-01.azurewebsites.net/api',
+  signalrHubUrl: 'https://iotdashboard-cua2ehdzbwgnefba.eastasia-01.azurewebsites.net/hubs/device-data',
 
 };
