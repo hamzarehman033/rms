@@ -59,6 +59,11 @@
       <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="onTabChange(0)">All <span class="muted">{{ getAllCount() }}</span></button>
       <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="onTabChange(1)">Online <span class="muted">{{ getOnlineCount() }}</span></button>
       <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="onTabChange(2)">Offline <span class="muted">{{ getOfflineCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="onTabChange(3)">Healthy <span class="muted">{{ getHealthyCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="onTabChange(4)">Outage <span class="muted">{{ getOutageCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 5 }" (click)="onTabChange(5)">Critical <span class="muted">{{ getCriticalCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 6 }" (click)="onTabChange(6)">Major <span class="muted">{{ getMajorCount() }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 7 }" (click)="onTabChange(7)">Minor <span class="muted">{{ getMinorCount() }}</span></button>
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…" [value]="searchTerm" (input)="onSearchChange($any($event.target).value)"></div>
@@ -76,7 +81,7 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Site</th>
-          <th>Site Code</th>
+          <!-- <th>Site Code</th> -->
           <th>Site Type</th>
           <th>Status</th>
           <th>Region</th>
@@ -84,7 +89,9 @@
           <th>Zone</th>
           <th>Power Source</th>
           <th>Battery %</th>
-          <th>Load (kW)</th>
+          <!-- <th>Load (kW)</th> -->
+          <th>Rect/DC Voltage</th>
+          <th>Grid Voltage</th>
           <th>Actions</th>
         </tr>
       </ng-template>
@@ -96,15 +103,17 @@
               <div class="muted mono text-xs">{{ site.code }}</div>
             </a>
           </td>
-          <td class="mono">{{ site.siteCode || site.code || '-' }}</td>
+          <!-- <td class="mono">{{ site.siteCode || site.code || '-' }}</td> -->
           <td>{{ site.type || '-' }}</td>
-          <td><span style="text-wrap-mode: nowrap;" [ngClass]="'badge ' + site.status">● {{ site.status | titlecase }}</span></td>
+          <td><span style="text-wrap-mode: nowrap;" [ngClass]="'badge ' + getSiteStatus(site)">● {{ getSiteStatus(site) | titlecase }}</span></td>
           <td>{{ site.regionName || '-' }}</td>
           <td>{{ site.subRegionName || '-' }}</td>
           <td>{{ site.zoneName || '-' }}</td>
           <td>{{ getPowerSource(site) }}</td>
           <td class="mono">{{ getBatteryPercentage(site) }}</td>
-          <td class="mono">{{ getLoadKw(site) }}</td>
+          <!-- <td class="mono">{{ getLoadKw(site) }}</td> -->
+          <td class="mono">{{ getRectDcVoltage(site) }}</td>
+          <td class="mono">{{ getGridVoltage(site) }}</td>
           <td>
             <div class="flex gap-2">
               <button
@@ -130,7 +139,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="12" class="text-center py-8 text-muted">No sites found</td>
+          <td colspan="13" class="text-center py-8 text-muted">No sites found</td>
         </tr>
       </ng-template>
     </p-table>

@@ -21,6 +21,7 @@
     "@angular/router": "^19.2.0",
     "@microsoft/signalr": "^10.0.0",
     "@primeng/themes": "^19.0.4",
+    "@tabler/icons-webfont": "^3.44.0",
     "echarts": "^6.0.0",
     "leaflet": "^1.9.4",
     "ngx-echarts": "^19.0.0",

@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DevicesService, SignalrService, Site, ToastService } from '@app/core';
+import { DevicesService, RealtimeDataSourceService, SignalrService, Site, ToastService } from '@app/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DecodedPayload, DeviceDataEvent } from '../../core/constants/device-message.model';
 import { SitesStreamStateService } from './sites-stream-state.service';
+
+type SiteFilterTab = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 @Component({
   selector: 'app-sites',
@@ -18,7 +19,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   displayConfigDialog = false;
   selectedSiteForConfig: Site | null = null;
   selectedSiteForEdit: Site | null = null;
-  selectedTab = 0;
+  selectedTab: SiteFilterTab = 0;
   searchTerm = '';
   isLoading = false;
 
@@ -26,7 +27,14 @@ export class SitesComponent implements OnInit, OnDestroy {
   allSites: Site[] = [];
   private readonly destroy$ = new Subject<void>();
   private readonly powerSourceByDeviceId = new Map<number, string>();
-  private readonly realtimeMetricsByDeviceId = new Map<number, { batteryPercent: number | null; loadKw: number | null }>();
+  private readonly realtimeMetricsByDeviceId = new Map<number, {
+    batteryPercent: number | null;
+    loadKw: number | null;
+    dcBusVoltage: number | null;
+    gridVoltage: number | null;
+    activeAlarmCount: number;
+    alarmSeverity: string | null;
+  }>();
   private readonly activeStreamingDeviceIds: Set<number>;
   private readonly streamActionInProgressIds: Set<number>;
 
@@ -35,14 +43,15 @@ export class SitesComponent implements OnInit, OnDestroy {
     private devicesService: DevicesService,
     private signalrService: SignalrService,
     private toastService: ToastService,
-    private sitesStreamStateService: SitesStreamStateService
+    private sitesStreamStateService: SitesStreamStateService,
+    private realtimeDataSourceService: RealtimeDataSourceService
   ) {
     this.activeStreamingDeviceIds = this.sitesStreamStateService.activeStreamingDeviceIds;
     this.streamActionInProgressIds = this.sitesStreamStateService.streamActionInProgressIds;
   }
 
   ngOnInit(): void {
-    this.initializeRealtimeStream();
+    this.initializeRealtimeMetrics();
     this.loadSites();
   }
 
@@ -80,7 +89,7 @@ export class SitesComponent implements OnInit, OnDestroy {
     });
   }
 
-  onTabChange(tab: number): void {
+  onTabChange(tab: SiteFilterTab): void {
     this.selectedTab = tab;
     this.sites = this.getFilteredSites();
   }
@@ -95,11 +104,31 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   getOnlineCount(): number {
-    return this.allSites.filter(site => this.isOnlineStatus(site.status)).length;
+    return this.allSites.filter(site => this.isOnlineStatus(this.getSiteStatus(site))).length;
   }
 
   getOfflineCount(): number {
-    return this.allSites.filter(site => this.isOfflineStatus(site.status)).length;
+    return this.allSites.filter(site => this.isOfflineStatus(this.getSiteStatus(site))).length;
+  }
+
+  getHealthyCount(): number {
+    return this.allSites.filter(site => this.isHealthySite(site)).length;
+  }
+
+  getOutageCount(): number {
+    return this.allSites.filter(site => this.isOutageSite(site)).length;
+  }
+
+  getCriticalCount(): number {
+    return this.allSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'critical').length;
+  }
+
+  getMajorCount(): number {
+    return this.allSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'major').length;
+  }
+
+  getMinorCount(): number {
+    return this.allSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'minor').length;
   }
 
   getWarningCount(): number {
@@ -110,6 +139,11 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   getActiveAlarmsCount(): number {
+    if (this.realtimeMetricsByDeviceId.size > 0) {
+      return Array.from(this.realtimeMetricsByDeviceId.values())
+        .reduce((total, metric) => total + metric.activeAlarmCount, 0);
+    }
+
     let total = 0;
     let hasExplicitAlarmData = false;
 
@@ -147,6 +181,11 @@ export class SitesComponent implements OnInit, OnDestroy {
     return this.powerSourceByDeviceId.get(deviceId) ?? '-';
   }
 
+  getSiteStatus(site: Site): string {
+    const deviceId = this.toDeviceNumericId(site);
+    return deviceId !== null && this.realtimeMetricsByDeviceId.has(deviceId) ? 'active' : 'offline';
+  }
+
   getBatteryPercentage(site: Site): string {
     const deviceId = this.toDeviceNumericId(site);
     if (deviceId === null) {
@@ -178,15 +217,55 @@ export class SitesComponent implements OnInit, OnDestroy {
     return `${(value as number).toFixed(2)} kW`;
   }
 
+  getRectDcVoltage(site: Site): string {
+    const deviceId = this.toDeviceNumericId(site);
+    if (deviceId === null) {
+      return '-';
+    }
+
+    const value = this.realtimeMetricsByDeviceId.get(deviceId)?.dcBusVoltage;
+    return Number.isFinite(value) ? `${(value as number).toFixed(1)} V` : '-';
+  }
+
+  getGridVoltage(site: Site): string {
+    const deviceId = this.toDeviceNumericId(site);
+    if (deviceId === null) {
+      return '-';
+    }
+
+    const value = this.realtimeMetricsByDeviceId.get(deviceId)?.gridVoltage;
+    return Number.isFinite(value) ? `${(value as number).toFixed(1)} V` : '-';
+  }
+
   private getFilteredSites(): Site[] {
     let filteredSites = this.allSites;
 
     if (this.selectedTab === 1) {
-      filteredSites = filteredSites.filter(site => this.isOnlineStatus(site.status));
+      filteredSites = filteredSites.filter(site => this.isOnlineStatus(this.getSiteStatus(site)));
     }
 
     if (this.selectedTab === 2) {
-      filteredSites = filteredSites.filter(site => this.isOfflineStatus(site.status));
+      filteredSites = filteredSites.filter(site => this.isOfflineStatus(this.getSiteStatus(site)));
+    }
+
+    if (this.selectedTab === 3) {
+      filteredSites = filteredSites.filter(site => this.isHealthySite(site));
+    }
+
+    if (this.selectedTab === 4) {
+      filteredSites = filteredSites.filter(site => this.isOutageSite(site));
+    }
+
+    if (this.selectedTab === 5) {
+      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'critical');
+    }
+
+    if (this.selectedTab === 6) {
+      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'major');
+    }
+
+    if (this.selectedTab === 7) {
+      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'minor');
     }
 
     const term = this.searchTerm.trim().toLowerCase();
@@ -208,6 +287,21 @@ export class SitesComponent implements OnInit, OnDestroy {
   private isOfflineStatus(status: any): boolean {
     const normalized = String(status ?? '').trim().toLowerCase();
     return normalized === 'offline' || normalized === 'inactive' || normalized === 'down';
+  }
+
+  private isHealthySite(site: Site): boolean {
+    const metric = this.getRealtimeMetric(site);
+    return !!metric && metric.activeAlarmCount === 0;
+  }
+
+  private isOutageSite(site: Site): boolean {
+    const dcBusVoltage = this.getRealtimeMetric(site)?.dcBusVoltage;
+    return Number.isFinite(dcBusVoltage) && (dcBusVoltage as number) < 40;
+  }
+
+  private getRealtimeMetric(site: Site) {
+    const deviceId = this.toDeviceNumericId(site);
+    return deviceId === null ? null : this.realtimeMetricsByDeviceId.get(deviceId) ?? null;
   }
 
   openAddSiteDialog() {
@@ -313,39 +407,23 @@ export class SitesComponent implements OnInit, OnDestroy {
     this.selectedSiteForConfig = null;
   }
 
-  private initializeRealtimeStream(): void {
-    this.signalrService.onDeviceData$
+  private initializeRealtimeMetrics(): void {
+    this.realtimeDataSourceService.devices$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((event: DeviceDataEvent | null) => {
-        if (!event || !event.decodedPayload) {
-          return;
-        }
+      .subscribe(devicesById => {
+        this.realtimeMetricsByDeviceId.clear();
 
-        this.applyRealtimeMetrics(event);
+        Object.values(devicesById ?? {}).forEach(device => {
+          this.realtimeMetricsByDeviceId.set(Number(device.deviceId), {
+            batteryPercent: device.batteryRemainingPercent,
+            loadKw: device.dcLoadPowerW === null ? null : device.dcLoadPowerW / 1000,
+            dcBusVoltage: device.dcBusVoltage,
+            gridVoltage: device.lineAVoltage,
+            activeAlarmCount: device.activeAlarmCount,
+            alarmSeverity: device.alarmSeverity
+          });
+        });
       });
-  }
-
-  private applyRealtimeMetrics(event: DeviceDataEvent): void {
-    const payload: DecodedPayload = (event.decodedPayload ?? {}) as DecodedPayload;
-    const eventDeviceId = this.toNumericValue(event.deviceId) ?? this.toNumericValue(payload?.deviceId);
-
-    if (eventDeviceId === null) {
-      return;
-    }
-
-    const hasMatchingSite = this.allSites.some(site => this.toDeviceNumericId(site) === eventDeviceId);
-    if (!hasMatchingSite) {
-      return;
-    }
-
-    const batteryPercent = this.toNumericValue(payload?.batteryRemainingPercent);
-    const dcLoadPowerW = this.toNumericValue(payload?.dcLoadPowerW);
-    const loadKw = dcLoadPowerW === null ? null : dcLoadPowerW / 1000;
-
-    this.realtimeMetricsByDeviceId.set(eventDeviceId, {
-      batteryPercent,
-      loadKw
-    });
   }
 
   private toDeviceNumericId(site: Site): number | null {
@@ -396,44 +474,15 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   private resolvePowerSourceLabel(item: any): string {
-    const explicitValue = item?.powerSource
-      ?? item?.powerSourceName
-      ?? item?.powerSourceType
-      ?? item?.powerConfiguration
-      ?? item?.sourceConfiguration;
-
-    if (explicitValue !== null && explicitValue !== undefined && String(explicitValue).trim() !== '') {
-      return String(explicitValue).trim();
+    const powerSources = item?.powerSources;
+    if (!Array.isArray(powerSources) || powerSources.length === 0) {
+      return '-';
     }
 
-    const source = item?.infrastructure ?? item?.deviceInfrastructure ?? item ?? {};
-    const supportsCp = this.hasPositiveCapability(source?.rectifierQty ?? source?.rectifierInstalledCount);
-    const supportsBattery = this.hasPositiveCapability(source?.batteryQty);
-    const supportsSolar = this.hasPositiveCapability(source?.solarQty);
-    const supportsGenerator = this.hasPositiveCapability(source?.generatorQty);
-
-    if (supportsCp && supportsBattery && supportsSolar && supportsGenerator) {
-      return 'CP + Bat + Gen + Solar';
-    }
-    if (supportsCp && supportsBattery && supportsSolar && !supportsGenerator) {
-      return 'CP + Bat + Solar';
-    }
-    if (supportsCp && supportsBattery && !supportsSolar && supportsGenerator) {
-      return 'CP + Bat + Gen';
-    }
-    if (supportsCp && supportsBattery && !supportsSolar && !supportsGenerator) {
-      return 'CP + Battery';
-    }
-    if (supportsCp && !supportsBattery && !supportsSolar && !supportsGenerator) {
-      return 'CP Only';
-    }
-
-    return '-';
-  }
-
-  private hasPositiveCapability(value: unknown): boolean {
-    const numeric = Number(value);
-    return Number.isFinite(numeric) && numeric > 0;
+    return powerSources
+      .map(source => String(source ?? '').trim())
+      .filter(Boolean)
+      .join(', ');
   }
 
   private toDeviceNumericIdFromAny(item: any): number | null {
@@ -442,12 +491,4 @@ export class SitesComponent implements OnInit, OnDestroy {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
 
-  private toNumericValue(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') {
-      return null;
-    }
-
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
 }

@@ -41,6 +41,7 @@ export interface DeviceInfrastructurePayload {
   camerasInstalledCount: number;
   aiEhsInstalled: boolean;
   aiSecurityInstalled: boolean;
+  powerSources: string[];
 }
 
 @Injectable({

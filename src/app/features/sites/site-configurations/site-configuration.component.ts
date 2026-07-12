@@ -6,6 +6,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CalendarModule } from 'primeng/calendar';
 import { DeviceInfrastructurePayload, DevicesService, Site, ToastService } from '@app/core';
 
+type InfrastructureSection = 'Battery' | 'Solar' | 'Generator';
+
 @Component({
   selector: 'app-site-configuration',
   templateUrl: './site-configuration.component.html',
@@ -20,6 +22,7 @@ export class SiteConfigurationComponent {
   configForm: FormGroup;
   isLoadingConfiguration = false;
   isSaving = false;
+  sectionEnabled: InfrastructureSection[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -28,9 +31,9 @@ export class SiteConfigurationComponent {
   ) {
     this.configForm = this.formBuilder.group({
       rectifier: this.formBuilder.group({
-        brand: [''],
-        qty: [''],
-        capacity: ['']
+        brand: ['', Validators.required],
+        qty: ['', Validators.required],
+        capacity: ['', Validators.required]
       }),
       battery: this.formBuilder.group({
         brand: [''],
@@ -96,6 +99,21 @@ export class SiteConfigurationComponent {
     this.siteConfigured.emit(null);
   }
 
+  isSectionEnabled(section: InfrastructureSection): boolean {
+    return this.sectionEnabled.includes(section);
+  }
+
+  setSectionEnabled(section: InfrastructureSection, isEnabled: boolean): void {
+    if (isEnabled && !this.isSectionEnabled(section)) {
+      this.sectionEnabled = [...this.sectionEnabled, section];
+      return;
+    }
+
+    if (!isEnabled) {
+      this.sectionEnabled = this.sectionEnabled.filter(item => item !== section);
+    }
+  }
+
   private loadInfrastructure(): void {
     const resolvedDeviceId = this.resolveDeviceId();
     if (!resolvedDeviceId) {
@@ -154,6 +172,8 @@ export class SiteConfigurationComponent {
       aiSecurityInstalled: !!payload?.aiSecurityInstalled,
       camerasInstalledCount: this.toNumberOrBlank(payload?.camerasInstalledCount)
     });
+
+    this.sectionEnabled = payload.powerSources ?? [];
   }
 
   private buildPayload(): DeviceInfrastructurePayload {
@@ -162,20 +182,21 @@ export class SiteConfigurationComponent {
       rectifierBrand: formValue.rectifier?.brand ?? '',
       rectifierQty: Number(formValue.rectifier?.qty) || 0,
       rectifierCapacity: formValue.rectifier?.capacity ?? '',
-      batteryBrand: formValue.battery?.brand ?? '',
-      batteryQty: Number(formValue.battery?.qty) || 0,
-      batteryCapacity: formValue.battery?.capacity ?? '',
-      solarBrand: formValue.solar?.brand ?? '',
-      solarQty: Number(formValue.solar?.qty) || 0,
-      solarCapacity: formValue.solar?.capacity ?? '',
-      generatorBrand: formValue.generator?.brand ?? '',
-      generatorQty: Number(formValue.generator?.qty) || 0,
-      generatorCapacity: formValue.generator?.capacity ?? '',
+      batteryBrand: this.isSectionEnabled('Battery') ? formValue.battery?.brand ?? '' : '',
+      batteryQty: this.isSectionEnabled('Battery') ? Number(formValue.battery?.qty) || 0 : 0,
+      batteryCapacity: this.isSectionEnabled('Battery') ? formValue.battery?.capacity ?? '' : '',
+      solarBrand: this.isSectionEnabled('Solar') ? formValue.solar?.brand ?? '' : '',
+      solarQty: this.isSectionEnabled('Solar') ? Number(formValue.solar?.qty) || 0 : 0,
+      solarCapacity: this.isSectionEnabled('Solar') ? formValue.solar?.capacity ?? '' : '',
+      generatorBrand: this.isSectionEnabled('Generator') ? formValue.generator?.brand ?? '' : '',
+      generatorQty: this.isSectionEnabled('Generator') ? Number(formValue.generator?.qty) || 0 : 0,
+      generatorCapacity: this.isSectionEnabled('Generator') ? formValue.generator?.capacity ?? '' : '',
       rmsSerialNumber: formValue.rmsSerialNumber ?? '',
       simCardNumber: formValue.simCardNumber ?? '',
       camerasInstalledCount: Number(formValue.camerasInstalledCount) || 0,
       aiEhsInstalled: !!formValue.aiEhsInstalled,
-      aiSecurityInstalled: !!formValue.aiSecurityInstalled
+      aiSecurityInstalled: !!formValue.aiSecurityInstalled,
+      powerSources: this.sectionEnabled
     };
   }
 
@@ -187,4 +208,5 @@ export class SiteConfigurationComponent {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : '';
   }
+
 }

@@ -77,9 +77,10 @@
   </div>
 
   <!-- Detail Cards (3x2) -->
+  <div class="sec-title"><i class="pi pi-th-large"></i> Equipment Details</div>
   <div class="detail-cards-grid mb-6">
-    <div class="card detail-card">
-      <div class="detail-card-head">Grid / CP</div>
+    <div class="card detail-card detail-card-grid">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-bolt"></i></span><span>Grid / CP</span></div>
       <div class="detail-row"><span class="detail-label">Voltage L1</span><span class="detail-value">{{ detailCards.gridCp.voltageL1 }}</span></div>
       <div class="detail-row"><span class="detail-label">Voltage L2</span><span class="detail-value">{{ detailCards.gridCp.voltageL2 }}</span></div>
       <div class="detail-row"><span class="detail-label">Voltage L3</span><span class="detail-value">{{ detailCards.gridCp.voltageL3 }}</span></div>
@@ -88,8 +89,8 @@
       <div class="detail-row"><span class="detail-label">Power</span><span class="detail-value">{{ detailCards.gridCp.power }}</span></div>
     </div>
 
-    <div class="card detail-card">
-      <div class="detail-card-head">Rectifier</div>
+    <div class="card detail-card detail-card-rectifier">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-bolt"></i></span><span>Rectifier</span></div>
       <div class="detail-row"><span class="detail-label">Output Voltage</span><span class="detail-value">{{ detailCards.rectifier.outputVoltage }}</span></div>
       <div class="detail-row"><span class="detail-label">Output Current</span><span class="detail-value">{{ detailCards.rectifier.outputCurrent }}</span></div>
       <div class="detail-row"><span class="detail-label">Output Power</span><span class="detail-value">{{ detailCards.rectifier.outputPower }}</span></div>
@@ -97,8 +98,8 @@
       <div class="detail-row"><span class="detail-label">DC Bus</span><span class="detail-value">{{ detailCards.rectifier.dcBus }}</span></div>
     </div>
 
-    <div class="card detail-card">
-      <div class="detail-card-head">Battery Bank</div>
+    <div class="card detail-card detail-card-battery">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-box"></i></span><span>Battery Bank</span></div>
       <div class="detail-row"><span class="detail-label">State of Charge</span><span class="detail-value">{{ detailCards.batteryBank.stateOfCharge }}</span></div>
       <div class="detail-row"><span class="detail-label">Voltage</span><span class="detail-value">{{ detailCards.batteryBank.voltage }}</span></div>
       <div class="detail-row"><span class="detail-label">Current</span><span class="detail-value">{{ detailCards.batteryBank.current }}</span></div>
@@ -107,16 +108,16 @@
       <div class="detail-row"><span class="detail-label">Temp</span><span class="detail-value">{{ detailCards.batteryBank.temp }}</span></div>
     </div>
 
-    <div class="card detail-card">
-      <div class="detail-card-head">Solar PV</div>
+    <div class="card detail-card detail-card-solar">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-sun"></i></span><span>Solar PV</span></div>
       <div class="detail-row"><span class="detail-label">DC Voltage</span><span class="detail-value">{{ detailCards.solarPv.dcVoltage }}</span></div>
       <div class="detail-row"><span class="detail-label">DC Current</span><span class="detail-value">{{ detailCards.solarPv.dcCurrent }}</span></div>
       <div class="detail-row"><span class="detail-label">Power Output</span><span class="detail-value">{{ detailCards.solarPv.powerOutput }}</span></div>
       <div class="detail-row"><span class="detail-label">Irradiance</span><span class="detail-value">{{ detailCards.solarPv.irradiance }}</span></div>
     </div>
 
-    <div class="card detail-card">
-      <div class="detail-card-head">Generator</div>
+    <div class="card detail-card detail-card-generator">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-cog"></i></span><span>Generator</span></div>
       <div class="detail-row"><span class="detail-label">Model</span><span class="detail-value">{{ detailCards.generator.model }}</span></div>
       <div class="detail-row"><span class="detail-label">Fuel Level</span><span class="detail-value">{{ detailCards.generator.fuelLevel }}</span></div>
       <div class="detail-row"><span class="detail-label">Run Hours</span><span class="detail-value">{{ detailCards.generator.runHours }}</span></div>
@@ -124,14 +125,15 @@
       <div class="detail-row"><span class="detail-label">Coolant Temp</span><span class="detail-value">{{ detailCards.generator.coolantTemp }}</span></div>
     </div>
 
-    <div class="card detail-card">
-      <div class="detail-card-head">Active Alarms</div>
+    <div class="card detail-card detail-card-alarm">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-exclamation-triangle"></i></span><span>Active Alarms</span></div>
       <div class="detail-row"><span class="detail-label">Title</span><span class="detail-value">{{ detailCards.activeAlarms.title }}</span></div>
       <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value">{{ detailCards.activeAlarms.status }}</span></div>
     </div>
   </div>
 
   <!-- Tenant Details (1x4) -->
+  <div class="sec-title"><i class="pi pi-sitemap"></i> Tenant Details</div>
   <div class="tenant-strip-grid mb-6">
     <div class="tenant-card" [ngClass]="getTenantAccentClass(i)" *ngFor="let tenant of tenantCards; let i = index">
       <div class="tenant-head">
@@ -144,12 +146,6 @@
       <div class="tenant-metrics">
         <div class="tenant-row"><span>Load</span><strong>{{ tenant.load }}</strong></div>
         <div class="tenant-row"><span>Current</span><strong>{{ tenant.current }}</strong></div>
-        <div class="tenant-row"><span>Voltage</span><strong>{{ tenant.voltage }}</strong></div>
-        <div class="tenant-row"><span>Today</span><strong>{{ tenant.today }}</strong></div>
-      </div>
-      <div class="tenant-foot">
-        <div class="tenant-foot-top"><span>Allocation</span><strong>{{ tenant.allocation }}%</strong></div>
-        <div class="tenant-progress"><div class="tenant-progress-fill" [style.width.%]="tenant.allocation"></div></div>
       </div>
     </div>
 

@@ -1,5 +1,5 @@
-.report-filters {
-	margin-bottom: 1rem;
+main.content{
+	padding: 0px;
 }
 
 .report-filters-grid {
@@ -33,6 +33,73 @@
 
 .export-format-select {
 	min-width: 8rem;
+}
+
+.report-kpi-row {
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.report-kpi-row .stat {
+	position: relative;
+	overflow: hidden;
+	padding: 0;
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	box-shadow: var(--shadow-card);
+	transition: border-color 0.2s;
+}
+
+.report-kpi-row .stat::before {
+	content: '';
+	display: block;
+	height: 2px;
+	background: var(--report-kpi-color, #0ea5e9);
+}
+
+.report-kpi-row .stat:nth-child(1) {
+	--report-kpi-color: #0ea5e9;
+}
+
+.report-kpi-row .stat:nth-child(2) {
+	--report-kpi-color: #3fb950;
+}
+
+.report-kpi-row .stat:nth-child(3) {
+	--report-kpi-color: #d29922;
+}
+
+.report-kpi-row .stat:nth-child(4) {
+	--report-kpi-color: #f59e0b;
+}
+
+.report-kpi-row .stat .label,
+.report-kpi-row .stat .value,
+.report-kpi-row .stat .hint {
+	margin-left: 15px;
+	margin-right: 15px;
+}
+
+.report-kpi-row .stat .label {
+	margin-top: 13px;
+	margin-bottom: 7px;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+}
+
+.report-kpi-row .stat .value {
+	margin-bottom: 4px;
+	color: var(--report-kpi-color);
+	font-size: 26px;
+	font-weight: 500;
+	line-height: 1;
+}
+
+.report-kpi-row .stat .hint {
+	margin-bottom: 10px;
 }
 
 @media (max-width: 1200px) {

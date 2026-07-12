@@ -20,8 +20,11 @@
 
   <!-- Battery Section -->
   <div formGroupName="battery" class="config-section border-t border-surface-border pt-6">
-    <h4 class="text-lg font-bold mb-3">Battery</h4>
-    <div class="grid cols-3 gap-3">
+    <div class="flex items-center gap-2 mb-3">
+      <input type="checkbox" id="batteryEnabled" [checked]="isSectionEnabled('Battery')" (change)="setSectionEnabled('Battery', $any($event.target).checked)" class="w-4 h-4 cursor-pointer" />
+      <label for="batteryEnabled" class="text-lg font-bold cursor-pointer">Battery</label>
+    </div>
+    <div *ngIf="isSectionEnabled('Battery')" class="grid cols-3 gap-3">
       <div class="vstack gap-1">
         <label class="text-sm font-semibold">Brand</label>
         <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />
@@ -39,8 +42,11 @@
 
   <!-- Solar Section -->
   <div formGroupName="solar" class="config-section border-t border-surface-border pt-6">
-    <h4 class="text-lg font-bold mb-3">Solar</h4>
-    <div class="grid cols-3 gap-3">
+    <div class="flex items-center gap-2 mb-3">
+      <input type="checkbox" id="solarEnabled" [checked]="isSectionEnabled('Solar')" (change)="setSectionEnabled('Solar', $any($event.target).checked)" class="w-4 h-4 cursor-pointer" />
+      <label for="solarEnabled" class="text-lg font-bold cursor-pointer">Solar</label>
+    </div>
+    <div *ngIf="isSectionEnabled('Solar')" class="grid cols-3 gap-3">
       <div class="vstack gap-1">
         <label class="text-sm font-semibold">Brand</label>
         <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />
@@ -58,8 +64,11 @@
 
   <!-- Generator Section -->
   <div formGroupName="generator" class="config-section border-t border-surface-border pt-6">
-    <h4 class="text-lg font-bold mb-3">Generator</h4>
-    <div class="grid cols-3 gap-3">
+    <div class="flex items-center gap-2 mb-3">
+      <input type="checkbox" id="generatorEnabled" [checked]="isSectionEnabled('Generator')" (change)="setSectionEnabled('Generator', $any($event.target).checked)" class="w-4 h-4 cursor-pointer" />
+      <label for="generatorEnabled" class="text-lg font-bold cursor-pointer">Generator</label>
+    </div>
+    <div *ngIf="isSectionEnabled('Generator')" class="grid cols-3 gap-3">
       <div class="vstack gap-1">
         <label class="text-sm font-semibold">Brand</label>
         <input type="text" formControlName="brand" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter brand" />

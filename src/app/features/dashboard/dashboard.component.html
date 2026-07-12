@@ -382,86 +382,86 @@
 
         <!-- ROW 1: ONLINE SITE STATUS -->
         <div>
-          <div class="sec-title"><i class="ti ti-signal"></i> Online Site Status</div>
+          <div class="sec-title"><i class="pi pi-wifi"></i> Online Site Status</div>
           <div class="status-row">
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#3fb950"></div>
-              <div class="s-lbl"><i class="ti ti-circle-check" style="color:#3fb950"></i> Healthy</div>
-              <div class="s-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
-              <div class="s-sub">{{ getFleetPercentageText(getOnlineSitesCount()) }} of fleet</div>
+              <div class="s-lbl">Healthy</div>
+              <div class="s-num" style="color:#3fb950">{{ getHealthySitesCount() }}</div>
+              <div class="s-sub">{{ getFleetPercentageText(getHealthySitesCount()) }} of fleet</div>
             </div>
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#f85149"></div>
-              <div class="s-lbl"><i class="ti ti-bolt-off" style="color:#f85149"></i> Power Outage</div>
-              <div class="s-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
-              <div class="s-sub">{{ getFleetPercentageText(getOfflineSitesCount()) }} of fleet</div>
+              <div class="s-lbl">Power Outage</div>
+              <div class="s-num" style="color:#f85149">{{ getPowerOutageSitesCount() }}</div>
+              <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
             </div>
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#ff7b72"></div>
-              <div class="s-lbl"><i class="ti ti-alert-octagon" style="color:#ff7b72"></i> Critical</div>
+              <div class="s-lbl">Critical</div>
               <div class="s-num" style="color:#ff7b72">{{ getCriticalAlarmCount() }}</div>
-              <div class="s-sub">Devices with 3+ alarms</div>
+              <div class="s-sub">Devices with critical alarm</div>
             </div>
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#d29922"></div>
-              <div class="s-lbl"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Major Alarm</div>
+              <div class="s-lbl">Major Alarm</div>
               <div class="s-num" style="color:#d29922">{{ getMajorAlarmCount() }}</div>
-              <div class="s-sub">Devices with 2 alarms</div>
+              <div class="s-sub">Devices with major alarm</div>
             </div>
             <div class="s-card online-card">
               <div class="s-card-bar" style="background:#6b7280"></div>
-              <div class="s-lbl"><i class="ti ti-info-circle" style="color:#6b7280"></i> Minor Alarm</div>
+              <div class="s-lbl">Minor Alarm</div>
               <div class="s-num" style="color:#6b7280">{{ getMinorAlarmCount() }}</div>
-              <div class="s-sub">Devices with 1 alarm</div>
+              <div class="s-sub">Devices with minor alarm</div>
             </div>
           </div>
         </div>
 
         <!-- ROW 2: DG SITE STATUS -->
         <div>
-          <div class="sec-title"><i class="ti ti-engine"></i> Generator (DG) Sites Status</div>
+          <div class="sec-title"><i class="pi pi-cog"></i> Generator (DG) Sites Status</div>
           <div class="status-row">
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#3fb950"></div>
-              <div class="s-lbl"><i class="ti ti-circle-check" style="color:#3fb950"></i> Healthy</div>
-              <div class="s-num" style="color:#3fb950">{{ getDgOnlineSitesCount() }}</div>
-              <div class="s-sub">{{ getDgFleetPercentageText(getDgOnlineSitesCount()) }} of DG fleet</div>
+              <div class="s-lbl">Healthy</div>
+              <div class="s-num" style="color:#3fb950">{{ getDgHealthySitesCount() }}</div>
+              <div class="s-sub">{{ getDgFleetPercentageText(getDgHealthySitesCount()) }} of DG fleet</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#f85149"></div>
-              <div class="s-lbl"><i class="ti ti-bolt-off" style="color:#f85149"></i> On Outage</div>
-              <div class="s-num" style="color:#f85149">{{ getDgOfflineSitesCount() }}</div>
-              <div class="s-sub">{{ getDgFleetPercentageText(getDgOfflineSitesCount()) }} of DG fleet</div>
+              <div class="s-lbl">Outage</div>
+              <div class="s-num" style="color:#f85149">{{ getDgPowerOutageSitesCount() }}</div>
+              <div class="s-sub">{{ getDgFleetPercentageText(getDgPowerOutageSitesCount()) }} of DG fleet</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#ff7b72"></div>
-              <div class="s-lbl"><i class="ti ti-alert-octagon" style="color:#ff7b72"></i> Critical</div>
+              <div class="s-lbl">Critical</div>
               <div class="s-num" style="color:#ff7b72">{{ getDgCriticalAlarmCount() }}</div>
-              <div class="s-sub">Devices with 3+ alarms</div>
+              <div class="s-sub">Devices with critical alarm</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#d29922"></div>
-              <div class="s-lbl"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Major Alarm</div>
+              <div class="s-lbl">Major Alarm</div>
               <div class="s-num" style="color:#d29922">{{ getDgMajorAlarmCount() }}</div>
-              <div class="s-sub">Devices with 2 alarms</div>
+              <div class="s-sub">Devices with major alarm</div>
             </div>
             <div class="s-card dg-card">
               <div class="s-card-bar" style="background:#6b7280"></div>
-              <div class="s-lbl"><i class="ti ti-info-circle" style="color:#6b7280"></i> Minor Alarm</div>
+              <div class="s-lbl">Minor Alarm</div>
               <div class="s-num" style="color:#6b7280">{{ getDgMinorAlarmCount() }}</div>
-              <div class="s-sub">Devices with 1 alarm</div>
+              <div class="s-sub">Devices with minor alarm</div>
             </div>
           </div>
         </div>
 
         <!-- ROW 3: CHARTS — pie + power source table -->
         <div>
-          <div class="sec-title"><i class="ti ti-chart-pie"></i> Fleet Distribution</div>
+          <div class="sec-title"><i class="pi pi-chart-pie"></i> Fleet Distribution</div>
           <div class="pie-row">
 
             <!-- Donut: active power source -->
             <div class="pie-card">
-              <div class="pie-card-title"><i class="ti ti-chart-donut" style="font-size:12px"></i> Live Power Source — Online Sites</div>
+              <div class="pie-card-title">Live Power Source — Online Sites</div>
               <div class="donut-wrap" *ngIf="distributionDonutData.length > 0">
                 <app-pie-chart [options]="getFleetDistributionDonutOptions()"></app-pie-chart>
               </div>
@@ -469,7 +469,7 @@
 
             <!-- Power source breakdown table -->
             <div class="pie-card">
-              <div class="pie-card-title"><i class="ti ti-plug" style="font-size:12px"></i> Sites by Power Source</div>
+              <div class="pie-card-title">Sites by Power Source</div>
               <p-table
                 [value]="powerSourceTableRows"
                 styleClass="p-datatable-sm pwr-table"
@@ -500,7 +500,7 @@
       <!-- ══ RIGHT COLUMN — Device KPIs (vertical) ══ -->
       <div class="right-col">
         <div class="hstack justify-between items-center">
-          <div class="right-sec-title"><i class="ti ti-devices" style="font-size:11px"></i> Device Status</div>
+          <div class="right-sec-title"><i class="pi pi-server" style="font-size:11px"></i> Device Status</div>
         </div>
         <button routerLink="/map-dashboard" type="button" class="justify-center btn primary" pButton label="Map View" icon="pi pi-map">
           Map View
@@ -509,7 +509,7 @@
         <div class="kpi-vert">
           <div class="kpi-stripe" style="background:#0ea5e9"></div>
           <div class="kpi-body">
-            <div class="kpi-label"><i class="ti ti-server" style="color:#0ea5e9"></i> Total Sites</div>
+            <div class="kpi-label">Sites</div>
             <div class="kpi-num" style="color:#0ea5e9">{{ getTotalSitesCount() }}</div>
             <div class="kpi-sub">Realtime power {{ getTotalPowerText() }}</div>
           </div>
@@ -518,7 +518,7 @@
         <div class="kpi-vert">
           <div class="kpi-stripe" style="background:#3fb950"></div>
           <div class="kpi-body">
-            <div class="kpi-label"><i class="ti ti-wifi" style="color:#3fb950"></i> Online</div>
+            <div class="kpi-label"></div>
             <div class="kpi-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
             <div class="kpi-sub">Avg temp {{ getAverageTemperatureText() }}</div>
           </div>
@@ -527,7 +527,7 @@
         <div class="kpi-vert">
           <div class="kpi-stripe" style="background:#f85149"></div>
           <div class="kpi-body">
-            <div class="kpi-label"><i class="ti ti-wifi-off" style="color:#f85149"></i> Offline</div>
+            <div class="kpi-label">Offline</div>
             <div class="kpi-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
             <div class="kpi-sub">Avg humidity {{ getAverageHumidityText() }}</div>
           </div>
@@ -536,9 +536,9 @@
         <div class="kpi-vert">
           <div class="kpi-stripe" style="background:#d29922"></div>
           <div class="kpi-body">
-            <div class="kpi-label"><i class="ti ti-alert-triangle" style="color:#d29922"></i> Active Alerts</div>
+            <div class="kpi-label">Active Alerts</div>
             <div class="kpi-num" style="color:#d29922">{{ getActiveAlertsCount() }}</div>
-            <div class="kpi-sub">{{ getPacketsPerMinute() }} packets/min</div>
+            <div class="kpi-sub">Devices with active alerts</div>
           </div>
         </div>
 

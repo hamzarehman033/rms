@@ -54,14 +54,14 @@
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'energy' }"></ng-container>
 
-        <div class="grid cols-4">
+        <div class="grid cols-4 report-kpi-row">
           <div class="stat">
-            <div class="label">Average Total AC Energy</div>
+            <div class="label">Average AC Energy</div>
             <div class="value">{{ formatNumber(energyAvgAcWh) }} Wh</div>
             <div class="hint">across records</div>
           </div>
           <div class="stat">
-            <div class="label">Average Total DC Energy</div>
+            <div class="label">Average DC Energy</div>
             <div class="value">{{ formatNumber(energyAvgDcWh) }} Wh</div>
             <div class="hint">across records</div>
           </div>
@@ -109,8 +109,8 @@
               <tr>
                 <th>Site</th>
                 <th>Date</th>
-                <th>Average Total AC Energy (Wh)</th>
-                <th>Average Total DC Energy (Wh)</th>
+                <th>Average AC Energy (Wh)</th>
+                <th>Average DC Energy (Wh)</th>
                 <th>Average Solar Energy Today (Wh)</th>
                 <th>Average AC Input Power (W)</th>
                 <th>Average DC Load Power (W)</th>
@@ -152,7 +152,7 @@
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'grid' }"></ng-container>
 
-        <div class="grid cols-4">
+        <div class="grid cols-4 report-kpi-row">
           <div class="stat">
             <div class="label">Grid Availability</div>
             <div class="value">{{ formatNumber(gridAvailability) }}%</div>
@@ -243,7 +243,7 @@
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'battery' }"></ng-container>
 
-        <div class="grid cols-4">
+        <div class="grid cols-4 report-kpi-row">
           <div class="stat">
             <div class="label">Avg Battery Voltage</div>
             <div class="value">{{ formatNumber(batteryAvgVoltage) }} V</div>
@@ -338,7 +338,7 @@
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'solar' }"></ng-container>
 
-        <div class="grid cols-4">
+        <div class="grid cols-4 report-kpi-row">
           <div class="stat">
             <div class="label">Solar Availability</div>
             <div class="value">{{ formatNumber(solarAvailability) }}%</div>
@@ -433,7 +433,7 @@
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'alarms' }"></ng-container>
 
-        <div class="grid cols-4">
+        <div class="grid cols-4 report-kpi-row">
           <div class="stat">
             <div class="label">Average Active Alarms</div>
             <div class="value">{{ formatNumber(alarmAvgActiveCount, 0) }}</div>

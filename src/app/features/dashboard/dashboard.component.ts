@@ -328,9 +328,7 @@ export class DashboardComponent implements OnInit {
     const ids = new Set<number>();
 
     devices.forEach(device => {
-      const source = device?.infrastructure ?? device?.deviceInfrastructure ?? device ?? {};
-      const supportsGenerator = this.hasPositiveCapability(source?.generatorQty);
-      if (!supportsGenerator) {
+      if (!this.getDevicePowerSources(device).includes('Generator')) {
         return;
       }
 
@@ -360,36 +358,51 @@ export class DashboardComponent implements OnInit {
     };
 
     devices.forEach(device => {
-      const source = device?.infrastructure ?? device?.deviceInfrastructure ?? device ?? {};
-      const supportsCp = this.hasPositiveCapability(source?.rectifierQty ?? source?.rectifierInstalledCount);
-      const supportsBattery = this.hasPositiveCapability(source?.batteryQty);
-      const supportsSolar = this.hasPositiveCapability(source?.solarQty);
-      const supportsGenerator = this.hasPositiveCapability(source?.generatorQty);
+      const powerSources = this.getDevicePowerSources(device);
+      const supportsCp = powerSources.includes('CP');
+      const supportsBattery = powerSources.includes('Battery');
+      const supportsSolar = powerSources.includes('Solar');
+      const supportsGenerator = powerSources.includes('Generator');
 
       if (supportsCp) summary.cpCount += 1;
       if (supportsBattery) summary.batteryCount += 1;
       if (supportsSolar) summary.solarCount += 1;
       if (supportsGenerator) summary.generatorCount += 1;
 
-      if (supportsCp && !supportsBattery && !supportsSolar && !supportsGenerator) {
-        summary.configCounts['cpOnly'] += 1;
-      } else if (supportsCp && supportsBattery && !supportsSolar && !supportsGenerator) {
-        summary.configCounts['cpBattery'] += 1;
-      } else if (supportsCp && supportsBattery && supportsSolar && !supportsGenerator) {
-        summary.configCounts['cpBatterySolar'] += 1;
-      } else if (supportsCp && supportsBattery && !supportsSolar && supportsGenerator) {
-        summary.configCounts['cpBatteryGen'] += 1;
-      } else if (supportsCp && supportsBattery && supportsSolar && supportsGenerator) {
-        summary.configCounts['allSources'] += 1;
+      const configKey = this.getPowerSourceConfigKey(powerSources);
+      if (configKey) {
+        summary.configCounts[configKey] += 1;
       }
     });
 
     return summary;
   }
 
-  private hasPositiveCapability(value: unknown): boolean {
-    const numeric = Number(value);
-    return Number.isFinite(numeric) && numeric > 0;
+  private getPowerSourceConfigKey(powerSources: Array<'CP' | 'Battery' | 'Solar' | 'Generator'>): string | null {
+    const supportsCp = powerSources.includes('CP');
+    const supportsBattery = powerSources.includes('Battery');
+    const supportsSolar = powerSources.includes('Solar');
+    const supportsGenerator = powerSources.includes('Generator');
+
+    if (!supportsCp) return null;
+    if (supportsBattery && supportsSolar && supportsGenerator) return 'allSources';
+    if (supportsBattery && supportsSolar) return 'cpBatterySolar';
+    if (supportsBattery && supportsGenerator) return 'cpBatteryGen';
+    if (supportsBattery) return 'cpBattery';
+    if (!supportsBattery && !supportsSolar && !supportsGenerator) return 'cpOnly';
+    return 'allSources';
+  }
+
+  private getDevicePowerSources(device: any): Array<'CP' | 'Battery' | 'Solar' | 'Generator'> {
+    const rawSources = device.powerSources ?? [];
+    const normalized = rawSources.map((source: unknown) => String(source ?? '').trim().toLowerCase());
+
+    return [
+      normalized.includes('cp') ? 'CP' : null,
+      normalized.includes('battery') || normalized.includes('bat') ? 'Battery' : null,
+      normalized.includes('solar') ? 'Solar' : null,
+      normalized.includes('generator') || normalized.includes('gen') ? 'Generator' : null
+    ].filter((source): source is 'CP' | 'Battery' | 'Solar' | 'Generator' => !!source);
   }
 
   private buildFleetDistributionDonutData(summary: FleetDistributionSummary): DistributionDonutPoint[] {
@@ -578,7 +591,7 @@ export class DashboardComponent implements OnInit {
   private loadTelemetryEnvironmentCounts(): void {
     this.startStatsRequest();
     this.statisticsService
-      .getTelemetryEnvironmentCounts({})
+      .getTelemetryEnvironmentCounts({timeRange:1})
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -1161,22 +1174,15 @@ export class DashboardComponent implements OnInit {
   }
 
   getTotalSitesCount(): number {
-    const realtimeTotal = Number(this.realtimeFleetMetrics?.totalDevices ?? 0);
-    if (realtimeTotal > 0) {
-      return realtimeTotal;
+    if (this.fleetDistribution.totalDevices > 0) {
+      return this.fleetDistribution.totalDevices;
     }
 
     return Number(this.dashboardSummaryView?.totalSites?.current ?? 0);
   }
 
   getOnlineSitesCount(): number {
-    const realtimeTotal = Number(this.realtimeFleetMetrics?.totalDevices ?? 0);
-    const realtimeOnline = Number(this.realtimeFleetMetrics?.onlineDevices ?? 0);
-    if (realtimeTotal > 0) {
-      return Math.max(realtimeOnline, 0);
-    }
-
-    return Number(this.dashboardSummaryView?.onlineOnce?.current ?? 0);
+    return this.realtimeDevices.length;
   }
 
   getOfflineSitesCount(): number {
@@ -1185,13 +1191,19 @@ export class DashboardComponent implements OnInit {
     return Math.max(total - online, 0);
   }
 
-  getActiveAlertsCount(): number {
-    const realtimeTotal = Number(this.realtimeFleetMetrics?.totalDevices ?? 0);
-    if (realtimeTotal > 0) {
-      return Number(this.realtimeFleetMetrics?.devicesWithAlarms ?? 0);
-    }
+  getPowerOutageSitesCount(): number {
+    return this.realtimeDevices.filter(device => {
+      const dcBusVoltage = Number(device.dcBusVoltage);
+      return Number.isFinite(dcBusVoltage) && dcBusVoltage < 40;
+    }).length;
+  }
 
-    return Number(this.dashboardSummaryView?.activeAlerts?.current ?? 0);
+  getActiveAlertsCount(): number {
+    return this.realtimeDevices.filter(device => device.activeAlarmCount > 0).length;
+  }
+
+  getHealthySitesCount(): number {
+    return this.realtimeDevices.filter(device => device.activeAlarmCount === 0).length;
   }
 
   getPacketsPerMinute(): number {
@@ -1214,27 +1226,15 @@ export class DashboardComponent implements OnInit {
   }
 
   getCriticalAlarmCount(): number | string {
-    if (!this.realtimeDevices.length) {
-      return '-';
-    }
-
-    return this.realtimeDevices.filter(device => device.activeAlarmCount >= 3).length;
+    return this.realtimeDevices.filter(device => device.alarmSeverity === 'critical').length;
   }
 
   getMajorAlarmCount(): number | string {
-    if (!this.realtimeDevices.length) {
-      return '-';
-    }
-
-    return this.realtimeDevices.filter(device => device.activeAlarmCount === 2).length;
+    return this.realtimeDevices.filter(device => device.alarmSeverity === 'major').length;
   }
 
   getMinorAlarmCount(): number | string {
-    if (!this.realtimeDevices.length) {
-      return '-';
-    }
-
-    return this.realtimeDevices.filter(device => device.activeAlarmCount === 1).length;
+    return this.realtimeDevices.filter(device => device.alarmSeverity === 'minor').length;
   }
 
   private getRealtimeGeneratorDevices(): DeviceRealtimeData[] {
@@ -1249,53 +1249,41 @@ export class DashboardComponent implements OnInit {
     return this.generatorInstalledDeviceIds.size;
   }
 
-  getDgOnlineSitesCount(): number | string {
+  getDgOnlineSitesCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    if (!generatorDevices.length) {
-      return '-';
-    }
-
     return generatorDevices.filter(device => device.isOnline).length;
   }
 
-  getDgOfflineSitesCount(): number | string {
+  getDgHealthySitesCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    if (!generatorDevices.length) {
-      return '-';
-    }
-
-    return generatorDevices.filter(device => !device.isOnline).length;
+    return generatorDevices.filter(device => device.activeAlarmCount === 0).length;
   }
 
-  getDgCriticalAlarmCount(): number | string {
+  getDgPowerOutageSitesCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    if (!generatorDevices.length) {
-      return '-';
-    }
-
-    return generatorDevices.filter(device => device.activeAlarmCount >= 3).length;
+    return generatorDevices.filter(device => {
+      const dcBusVoltage = Number(device.dcBusVoltage);
+      return Number.isFinite(dcBusVoltage) && dcBusVoltage < 40;
+    }).length;
   }
 
-  getDgMajorAlarmCount(): number | string {
+  getDgCriticalAlarmCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    if (!generatorDevices.length) {
-      return '-';
-    }
-
-    return generatorDevices.filter(device => device.activeAlarmCount === 2).length;
+    return generatorDevices.filter(device => device.alarmSeverity === 'critical').length;
   }
 
-  getDgMinorAlarmCount(): number | string {
+  getDgMajorAlarmCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    if (!generatorDevices.length) {
-      return '-';
-    }
-
-    return generatorDevices.filter(device => device.activeAlarmCount === 1).length;
+    return generatorDevices.filter(device => device.alarmSeverity === 'major').length;
   }
 
-  getDgFleetPercentageText(count: number | string): string {
-    if (typeof count !== 'number' || count <= 0) {
+  getDgMinorAlarmCount(): number {
+    const generatorDevices = this.getRealtimeGeneratorDevices();
+    return generatorDevices.filter(device => device.alarmSeverity === 'minor').length;
+  }
+
+  getDgFleetPercentageText(count: number): string {
+    if (count <= 0) {
       return '-';
     }
 
@@ -1338,7 +1326,7 @@ export class DashboardComponent implements OnInit {
       return {
         donut: true,
         showLegend: false,
-        height: '180px',
+        height: '280px',
         data: [{ name: 'No Data', value: 1, color: '#cbd5e1' }]
       };
     }
@@ -1346,12 +1334,12 @@ export class DashboardComponent implements OnInit {
     return {
       donut: true,
       showLegend: false,
-      height: '180px',
+      height: '280px',
       data: donutData
     };
   }
 
-  getFleetDistributionConfigCount(configKey: 'cpOnly' | 'cpBattery' | 'cpBatterySolar' | 'cpBatteryGen' | 'allSources'): number | string {
+  getFleetDistributionConfigCount(configKey: string): number | string {
     const total = this.fleetDistribution.totalDevices;
     if (total <= 0) {
       return '-';
@@ -1360,7 +1348,7 @@ export class DashboardComponent implements OnInit {
     return this.fleetDistribution.configCounts[configKey] ?? 0;
   }
 
-  getFleetDistributionConfigShare(configKey: 'cpOnly' | 'cpBattery' | 'cpBatterySolar' | 'cpBatteryGen' | 'allSources'): number {
+  getFleetDistributionConfigShare(configKey: string): number {
     const total = this.fleetDistribution.totalDevices;
     if (total <= 0) {
       return 0;

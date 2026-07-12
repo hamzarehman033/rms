@@ -5,6 +5,7 @@ import { DecodedPayload, DeviceDataEvent, SYSTEM_STATUS_ENUM } from '../constant
 import { SignalrService } from './signalr.service';
 
 export type DeviceStatusCategory = 'normal' | 'warning' | 'major' | 'critical' | 'comms' | 'unknown';
+export type AlarmSeverity = 'critical' | 'major' | 'minor';
 
 export interface FleetStatusBuckets {
   normal: number;
@@ -26,10 +27,14 @@ export interface DeviceRealtimeData {
   statusCategory: DeviceStatusCategory;
   statusText: string;
   activeAlarmCount: number;
+  alarmSeverity: AlarmSeverity | null;
   temperatureC: number | null;
   humidityPercent: number | null;
   powerW: number | null;
+  dcLoadPowerW: number | null;
   batteryRemainingPercent: number | null;
+  dcBusVoltage: number | null;
+  lineAVoltage: number | null;
   mainsAvailable: string;
 }
 
@@ -111,25 +116,31 @@ export class RealtimeDataSourceService {
     const systemStatusCode = this.resolveSystemStatusCode(packet, previous?.systemStatusCode ?? null);
     const systemStatusLabel = this.resolveSystemStatusLabel(systemStatusCode);
     const statusCategory = this.resolveStatusCategory(systemStatusCode);
+    const alarmSeverity = this.resolveAlarmSeverity(systemStatusCode);
+    const activeAlarmCount = this.resolveNumeric(packet?.activeAlarmCount, null) ?? (alarmSeverity ? 1 : 0);
 
     const nextRecord: DeviceRealtimeData = {
       deviceId,
       topic: String(event.topic ?? previous?.topic ?? ''),
       lastPacketAt: this.resolveLastPacketAt(event, packet),
       packetCount: (previous?.packetCount ?? 0) + 1,
-      isOnline: this.resolveOnlineStatus(packet, event),
+      isOnline: true,
       systemStatusCode,
       systemStatusLabel,
       statusCategory,
       statusText: systemStatusLabel,
-      activeAlarmCount: this.resolveInt(packet?.activeAlarmCount) ?? 0,
+      activeAlarmCount,
+      alarmSeverity,
       temperatureC: this.resolveTemperature(packet, previous?.temperatureC ?? null),
       humidityPercent: this.resolveNumeric(packet?.humidity, previous?.humidityPercent ?? null),
       powerW: this.resolvePower(packet, previous?.powerW ?? null),
+      dcLoadPowerW: this.resolveNumeric(packet?.dcLoadPowerW, previous?.dcLoadPowerW ?? null),
       batteryRemainingPercent: this.resolveNumeric(
         packet?.batteryRemainingPercent,
         previous?.batteryRemainingPercent ?? null
       ),
+      dcBusVoltage: this.resolveNumeric(packet?.dcBusVoltage, previous?.dcBusVoltage ?? null),
+      lineAVoltage: this.resolveNumeric(packet?.lineAVoltage, previous?.lineAVoltage ?? null),
       mainsAvailable: String(packet?.mainsAvailable ?? previous?.mainsAvailable ?? '-')
     };
 
@@ -228,16 +239,16 @@ export class RealtimeDataSourceService {
 
   private resolveStatusCategory(statusCode: number | null): DeviceStatusCategory {
     switch (statusCode) {
-      case 1:
+      case 0:
         return 'normal';
-      case 2:
+      case 1:
         return 'major';
-      case 3:
+      case 2:
         return 'critical';
+      case 3:
+        return 'warning';
       case 4:
         return 'warning';
-      case 5:
-        return 'comms';
       default:
         return 'unknown';
     }
@@ -256,17 +267,6 @@ export class RealtimeDataSourceService {
     const candidates = [payload?.portalReceiveTime, payload?.receivedAtUtc, event.receivedAt];
     const valid = candidates.find(value => this.toTimeMs(value) > 0);
     return valid ? new Date(this.toTimeMs(valid)).toISOString() : new Date().toISOString();
-  }
-
-  private resolveOnlineStatus(payload: DecodedPayload, event: DeviceDataEvent): boolean {
-    const mainsText = String(payload?.mainsAvailable ?? '').toLowerCase();
-    if (mainsText.includes('not') || mainsText.includes('fail') || mainsText.includes('off')) {
-      return false;
-    }
-
-    const lastPacketAt = this.resolveLastPacketAt(event, payload);
-    const ageMs = Date.now() - this.toTimeMs(lastPacketAt);
-    return ageMs <= 10 * 60 * 1000;
   }
 
   private resolveTemperature(payload: DecodedPayload, fallback: number | null): number | null {
@@ -311,13 +311,11 @@ export class RealtimeDataSourceService {
     return numeric === null ? fallback : numeric;
   }
 
-  private resolveInt(value: unknown): number | null {
-    const numeric = this.toNumber(value);
-    if (numeric === null) {
-      return null;
-    }
-
-    return Math.max(0, Math.round(numeric));
+  private resolveAlarmSeverity(statusCode: number | null): AlarmSeverity | null {
+    if (statusCode === 1) return 'major';
+    if (statusCode === 2) return 'critical';
+    if (statusCode === 3) return 'minor';
+    return null;
   }
 
   private pruneOldPacketTimestamps(nowMs: number): void {
