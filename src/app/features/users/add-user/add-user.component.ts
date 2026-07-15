@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { ROLE_OPTIONS } from '../../../core/constants/roles';
+import { AppRole, ROLE_OPTIONS } from '../../../core/constants/roles';
 import { Menu } from '../../../core/constants/sideMenu';
 import { CustomerService } from '@app/core';
 
@@ -23,7 +23,6 @@ export class AddUserComponent implements OnInit, OnChanges {
   roles = ROLE_OPTIONS;
   
   modules = [
-
     { id: Menu.Overview, label: 'Overview', value: 'dashboard', icon: 'pi pi-chart-bar', selected: false },
     { id: Menu.Sites, label: 'Sites', value: 'devices', icon: 'pi pi-server', selected: false },
     { id: Menu.Telemetry, label: 'Telemetry', value: 'telemetry', icon: 'pi pi-chart-line', selected: false },
@@ -32,6 +31,7 @@ export class AddUserComponent implements OnInit, OnChanges {
     { id: Menu.Locations, label: 'Locations', value: 'locations', icon: 'pi pi-map-marker', selected: false },
     { id: Menu.Tenants, label: 'Tenant', value: 'tenant', icon: 'pi pi-building', selected: false },
     { id: Menu.Users, label: 'Users', value: 'users', icon: 'pi pi-users', selected: false },
+    { id: Menu.Customers, label: 'Customers', value: 'customers', icon: 'pi pi-building', selected: false },
     { id: Menu.Settings, label: 'Settings', value: 'settings', icon: 'pi pi-cog', selected: false }
   ];
 
@@ -162,6 +162,10 @@ export class AddUserComponent implements OnInit, OnChanges {
       this.modules.forEach(module => {
         module.selected = user.modules.includes(module.id);
       });
+    }
+
+    if(!user.roles?.includes(AppRole.SysAdmin)) {
+      this.modules = this.modules.filter(module => module.id !== Menu.Customers && module.id !== Menu.Settings);
     }
   }
 
