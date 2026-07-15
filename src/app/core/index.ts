@@ -4,7 +4,7 @@ export * from './services/customer.service';
 export * from './services/dashboard.service';
 export * from './services/statistics.service';
 export * from './services/graph.service';
-export * from './services/graph.types';
+export * from './constants/graph.types';
 export * from './services/locations.service';
 export * from './services/profile.service';
 export * from './services/settings.service';

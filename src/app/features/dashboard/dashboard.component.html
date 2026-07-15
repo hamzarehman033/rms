@@ -384,36 +384,36 @@
         <div>
           <div class="sec-title"><i class="pi pi-wifi"></i> Online Site Status</div>
           <div class="status-row">
-            <div class="s-card online-card">
+            <a routerLink="/sites" [queryParams]="{ status: 'healthy' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#3fb950"></div>
               <div class="s-lbl">Healthy</div>
               <div class="s-num" style="color:#3fb950">{{ getHealthySitesCount() }}</div>
               <div class="s-sub">{{ getFleetPercentageText(getHealthySitesCount()) }} of fleet</div>
-            </div>
-            <div class="s-card online-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'outage' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#f85149"></div>
               <div class="s-lbl">Power Outage</div>
               <div class="s-num" style="color:#f85149">{{ getPowerOutageSitesCount() }}</div>
               <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
-            </div>
-            <div class="s-card online-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'critical' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#ff7b72"></div>
               <div class="s-lbl">Critical</div>
               <div class="s-num" style="color:#ff7b72">{{ getCriticalAlarmCount() }}</div>
               <div class="s-sub">Devices with critical alarm</div>
-            </div>
-            <div class="s-card online-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'major' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#d29922"></div>
               <div class="s-lbl">Major Alarm</div>
               <div class="s-num" style="color:#d29922">{{ getMajorAlarmCount() }}</div>
               <div class="s-sub">Devices with major alarm</div>
-            </div>
-            <div class="s-card online-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'minor' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#6b7280"></div>
               <div class="s-lbl">Minor Alarm</div>
               <div class="s-num" style="color:#6b7280">{{ getMinorAlarmCount() }}</div>
               <div class="s-sub">Devices with minor alarm</div>
-            </div>
+            </a>
           </div>
         </div>
 
@@ -421,36 +421,36 @@
         <div>
           <div class="sec-title"><i class="pi pi-cog"></i> Generator (DG) Sites Status</div>
           <div class="status-row">
-            <div class="s-card dg-card">
+            <a routerLink="/sites" [queryParams]="{ status: 'healthy', powerSource: 'generator' }" class="s-card dg-card status-link">
               <div class="s-card-bar" style="background:#3fb950"></div>
               <div class="s-lbl">Healthy</div>
               <div class="s-num" style="color:#3fb950">{{ getDgHealthySitesCount() }}</div>
               <div class="s-sub">{{ getDgFleetPercentageText(getDgHealthySitesCount()) }} of DG fleet</div>
-            </div>
-            <div class="s-card dg-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'outage', powerSource: 'generator' }" class="s-card dg-card status-link">
               <div class="s-card-bar" style="background:#f85149"></div>
               <div class="s-lbl">Outage</div>
               <div class="s-num" style="color:#f85149">{{ getDgPowerOutageSitesCount() }}</div>
               <div class="s-sub">{{ getDgFleetPercentageText(getDgPowerOutageSitesCount()) }} of DG fleet</div>
-            </div>
-            <div class="s-card dg-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'critical', powerSource: 'generator' }" class="s-card dg-card status-link">
               <div class="s-card-bar" style="background:#ff7b72"></div>
               <div class="s-lbl">Critical</div>
               <div class="s-num" style="color:#ff7b72">{{ getDgCriticalAlarmCount() }}</div>
               <div class="s-sub">Devices with critical alarm</div>
-            </div>
-            <div class="s-card dg-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'major', powerSource: 'generator' }" class="s-card dg-card status-link">
               <div class="s-card-bar" style="background:#d29922"></div>
               <div class="s-lbl">Major Alarm</div>
               <div class="s-num" style="color:#d29922">{{ getDgMajorAlarmCount() }}</div>
               <div class="s-sub">Devices with major alarm</div>
-            </div>
-            <div class="s-card dg-card">
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'minor', powerSource: 'generator' }" class="s-card dg-card status-link">
               <div class="s-card-bar" style="background:#6b7280"></div>
               <div class="s-lbl">Minor Alarm</div>
               <div class="s-num" style="color:#6b7280">{{ getDgMinorAlarmCount() }}</div>
               <div class="s-sub">Devices with minor alarm</div>
-            </div>
+            </a>
           </div>
         </div>
 
@@ -511,16 +511,16 @@
           <div class="kpi-body">
             <div class="kpi-label">Sites</div>
             <div class="kpi-num" style="color:#0ea5e9">{{ getTotalSitesCount() }}</div>
-            <div class="kpi-sub">Realtime power {{ getTotalPowerText() }}</div>
+            <div class="kpi-sub">Total Devices Count</div>
           </div>
         </div>
 
         <div class="kpi-vert">
           <div class="kpi-stripe" style="background:#3fb950"></div>
           <div class="kpi-body">
-            <div class="kpi-label"></div>
+            <div class="kpi-label">Online</div>
             <div class="kpi-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
-            <div class="kpi-sub">Avg temp {{ getAverageTemperatureText() }}</div>
+            <div class="kpi-sub">Online Devices Count</div>
           </div>
         </div>
 
@@ -529,7 +529,7 @@
           <div class="kpi-body">
             <div class="kpi-label">Offline</div>
             <div class="kpi-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
-            <div class="kpi-sub">Avg humidity {{ getAverageHumidityText() }}</div>
+            <div class="kpi-sub">Offline Devices Count</div>
           </div>
         </div>
 

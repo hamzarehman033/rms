@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DevicesService, RealtimeDataSourceService, SignalrService, Site, ToastService } from '@app/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -22,6 +22,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   selectedTab: SiteFilterTab = 0;
   searchTerm = '';
   isLoading = false;
+  private selectedPowerSourceFilter = '';
 
   sites: Site[] = [];
   allSites: Site[] = [];
@@ -39,6 +40,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   private readonly streamActionInProgressIds: Set<number>;
 
   constructor(
+    private route: ActivatedRoute,
     private router: Router,
     private devicesService: DevicesService,
     private signalrService: SignalrService,
@@ -51,6 +53,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.initializeRouteFilters();
     this.initializeRealtimeMetrics();
     this.loadSites();
   }
@@ -268,6 +271,10 @@ export class SitesComponent implements OnInit, OnDestroy {
       filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'minor');
     }
 
+    if (this.selectedPowerSourceFilter === 'generator') {
+      filteredSites = filteredSites.filter(site => this.siteHasGenerator(site));
+    }
+
     const term = this.searchTerm.trim().toLowerCase();
     if (!term) {
       return filteredSites;
@@ -302,6 +309,50 @@ export class SitesComponent implements OnInit, OnDestroy {
   private getRealtimeMetric(site: Site) {
     const deviceId = this.toDeviceNumericId(site);
     return deviceId === null ? null : this.realtimeMetricsByDeviceId.get(deviceId) ?? null;
+  }
+
+  private initializeRouteFilters(): void {
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.selectedTab = this.getTabFromStatusParam(params.get('status'));
+        this.selectedPowerSourceFilter = this.getPowerSourceFilterFromParam(params.get('powerSource'));
+        this.sites = this.getFilteredSites();
+      });
+  }
+
+  private getTabFromStatusParam(value: string | null): SiteFilterTab {
+    switch (String(value ?? '').trim().toLowerCase()) {
+      case 'online':
+        return 1;
+      case 'offline':
+        return 2;
+      case 'healthy':
+        return 3;
+      case 'outage':
+      case 'power-outage':
+        return 4;
+      case 'critical':
+        return 5;
+      case 'major':
+      case 'major-alarm':
+        return 6;
+      case 'minor':
+      case 'minor-alarm':
+        return 7;
+      default:
+        return 0;
+    }
+  }
+
+  private getPowerSourceFilterFromParam(value: string | null): string {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return normalized === 'generator' || normalized === 'dg' ? 'generator' : '';
+  }
+
+  private siteHasGenerator(site: Site): boolean {
+    const powerSource = this.getPowerSource(site).toLowerCase();
+    return powerSource.includes('generator') || powerSource.includes('gen');
   }
 
   openAddSiteDialog() {
@@ -423,6 +474,8 @@ export class SitesComponent implements OnInit, OnDestroy {
             alarmSeverity: device.alarmSeverity
           });
         });
+
+        this.sites = this.getFilteredSites();
       });
   }
 

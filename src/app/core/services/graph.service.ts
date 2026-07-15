@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { GraphFetchOptions, GraphRequestPayload, GraphResponse } from './graph.types';
+import { GraphFetchOptions, GraphRequestPayload, GraphResponse } from '../constants/graph.types';
 
 interface CacheEntry {
   expiry: number;
