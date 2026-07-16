@@ -28,13 +28,13 @@ export const routes: Routes = [
         loadChildren: () =>
           import("./features/sites/sites.module").then((m) => m.SitesModule),
       },
-      {
-        path: "telemetry",
-        loadChildren: () =>
-          import("./features/telemetry/telemetry.module").then(
-            (m) => m.TelemetryModule,
-          ),
-      },
+      // {
+      //   path: "telemetry",
+      //   loadChildren: () =>
+      //     import("./features/telemetry/telemetry.module").then(
+      //       (m) => m.TelemetryModule,
+      //     ),
+      // },
       {
         path: "reports",
         loadChildren: () =>
