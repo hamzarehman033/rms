@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { TenantService } from '../../core/services/tenant.service';
+import { Tenant, TenantService } from '../../core/services/tenant.service';
 import { ToastService } from '../../core/services/toast.service';
+import { CustomerService } from '../../core/services/customer.service';
 
 @Component({
   selector: 'app-tenant',
@@ -10,13 +11,18 @@ import { ToastService } from '../../core/services/toast.service';
 })
 export class TenantComponent {
   displayAddTenantDialog = false;
+  displayEditTenantDialog = false;
+  displayDeleteTenantDialog = false;
+  selectedTenantForEdit: Tenant | null = null;
+  selectedTenantForDelete: Tenant | null = null;
   selectedTab = 0;
   isLoading = false;
   searchTerm = '';
-  tenants: any[] = [];
+  tenants: Tenant[] = [];
 
   constructor(
     private tenantService: TenantService,
+    private customerService: CustomerService,
     private toastService: ToastService
   ) {}
 
@@ -28,7 +34,8 @@ export class TenantComponent {
     this.isLoading = true;
     this.tenantService.getTenants().subscribe({
       next: (response: any) => {
-        this.tenants = response?.data?.pageData ?? [];
+        const tenants = response?.data?.pageData ?? response?.data ?? response ?? [];
+        this.tenants = Array.isArray(tenants) ? tenants : [];
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -44,8 +51,71 @@ export class TenantComponent {
   }
 
   onTenantAdded(tenantData: any) {
-    console.log('Tenant added:', tenantData);
-    this.displayAddTenantDialog = false;
+    const payload = this.buildTenantPayload(tenantData);
+
+    this.tenantService.createTenant(payload).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Tenant added successfully');
+        this.displayAddTenantDialog = false;
+        this.loadTenants();
+      },
+      error: (error: any) => {
+        console.error('Error adding tenant:', error);
+        this.toastService.showError('Error', 'Failed to add tenant. Please try again.');
+      }
+    });
+  }
+
+  openEditTenantDialog(tenant: Tenant): void {
+    this.selectedTenantForEdit = tenant;
+    this.displayEditTenantDialog = true;
+  }
+
+  onTenantUpdated(tenantData: any): void {
+    const tenantId = this.getTenantId(this.selectedTenantForEdit);
+    if (!tenantId) {
+      return;
+    }
+
+    const payload = this.buildTenantPayload(tenantData, tenantId);
+
+    this.tenantService.updateTenant(tenantId, payload).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Tenant updated successfully');
+        this.displayEditTenantDialog = false;
+        this.selectedTenantForEdit = null;
+        this.loadTenants();
+      },
+      error: (error: any) => {
+        console.error('Error updating tenant:', error);
+        this.toastService.showError('Error', 'Failed to update tenant. Please try again.');
+      }
+    });
+  }
+
+  openDeleteTenantDialog(tenant: Tenant): void {
+    this.selectedTenantForDelete = tenant;
+    this.displayDeleteTenantDialog = true;
+  }
+
+  confirmDeleteTenant(): void {
+    const tenantId = this.getTenantId(this.selectedTenantForDelete);
+    if (!tenantId) {
+      return;
+    }
+
+    this.tenantService.deleteTenant(tenantId).subscribe({
+      next: () => {
+        this.toastService.showSuccess('Tenant deleted successfully');
+        this.displayDeleteTenantDialog = false;
+        this.selectedTenantForDelete = null;
+        this.loadTenants();
+      },
+      error: (error: any) => {
+        console.error('Error deleting tenant:', error);
+        this.toastService.showError('Error', 'Failed to delete tenant. Please try again.');
+      }
+    });
   }
 
   get totalTenants(): number {
@@ -62,7 +132,7 @@ export class TenantComponent {
 
  
 
-  get filteredTenants(): any[] {
+  get filteredTenants(): Tenant[] {
     let filtered = this.tenants;
 
     if (this.searchTerm) {
@@ -70,11 +140,28 @@ export class TenantComponent {
       filtered = filtered.filter(
         t =>
           String(t.id).toLowerCase().includes(term) ||
-          String(t.name).toLowerCase().includes(term)
+          String(t.tenantId ?? '').toLowerCase().includes(term) ||
+          String(t.name).toLowerCase().includes(term) ||
+          String(t.code).toLowerCase().includes(term)
       );
     }
 
     return filtered;
+  }
+
+  private buildTenantPayload(formData: any, id?: number | string): Tenant {
+    return {
+      ...(id ? { id } : {}),
+      name: formData.name,
+      code: formData.code,
+      status: formData.status,
+      description: formData.description,
+      customerId: this.customerService.getActiveCustomerId()
+    };
+  }
+
+  private getTenantId(tenant: Tenant | null): number | string | null {
+    return tenant?.id ?? tenant?.tenantId ?? null;
   }
 
 }

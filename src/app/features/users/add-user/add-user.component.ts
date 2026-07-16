@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -21,11 +21,12 @@ export class AddUserComponent implements OnInit, OnChanges {
   isLoading = false;
   isEditMode = false;
   roles = ROLE_OPTIONS;
+  customerOptions: Array<{ name: string; id: number | string }> = [];
   
   modules = [
     { id: Menu.Overview, label: 'Overview', value: 'dashboard', icon: 'pi pi-chart-bar', selected: false },
     { id: Menu.Sites, label: 'Sites', value: 'devices', icon: 'pi pi-server', selected: false },
-    { id: Menu.Telemetry, label: 'Telemetry', value: 'telemetry', icon: 'pi pi-chart-line', selected: false },
+    // { id: Menu.Telemetry, label: 'Telemetry', value: 'telemetry', icon: 'pi pi-chart-line', selected: false },
     { id: Menu.Alarms, label: 'Alarms', value: 'alarms', icon: 'pi pi-bell', selected: false },
     { id: Menu.Reports, label: 'Reports', value: 'reports', icon: 'pi pi-file-pdf', selected: false },
     { id: Menu.Locations, label: 'Locations', value: 'locations', icon: 'pi pi-map-marker', selected: false },
@@ -47,11 +48,13 @@ export class AddUserComponent implements OnInit, OnChanges {
       password: [''],
       phoneNumber: [''],
       role: ['', Validators.required],
+      assignedCustomerIds: [[]],
       permissions: [[]]
     });
   }
 
   ngOnInit(): void {
+    this.loadCustomerOptions();
     if (this.userData) {
       this.isEditMode = true;
       this.fetchAndPopulateUserData();
@@ -79,6 +82,7 @@ export class AddUserComponent implements OnInit, OnChanges {
     this.isLoading = true;
     const formValue = this.userForm.value;
     const moduleIds = this.modules.map(module => module.selected ? module.id : null).filter(id => id !== null);
+    const selectedCustomerIds = this.isManagerRole(formValue.role) ? formValue.assignedCustomerIds || [] : [];
 
     const payload = {
       id: this.isEditMode ? this.userData?.id : 0,
@@ -87,6 +91,7 @@ export class AddUserComponent implements OnInit, OnChanges {
       phoneNumber: formValue.phoneNumber,
       role: formValue.role,
       modules: moduleIds,
+      assignedCustomerIds: selectedCustomerIds,
       customerId: this.customerService.getActiveCustomerId() || ''
     };
 
@@ -156,6 +161,7 @@ export class AddUserComponent implements OnInit, OnChanges {
       userName: user.userName || '',
       email: user.email || user.Email || '',
       phoneNumber: user.phoneNumber || user.PhoneNumber || '',
+      assignedCustomerIds: user.assignedCustomerIds || [],
       role: Array.isArray(roles) ? roles[0] || '' : roles || ''
     });
     if(user.modules && Array.isArray(user.modules)) {
@@ -177,10 +183,32 @@ export class AddUserComponent implements OnInit, OnChanges {
         password: '',
         phoneNumber: '',
         role: '',
+        assignedCustomerIds: [],
         permissions: []
       });
       this.isEditMode = false;
       this.userData = null;
     }
+  }
+
+  get showCustomerSelector(): boolean {
+    return this.isManagerRole(this.userForm.get('role')?.value);
+  }
+
+  private isManagerRole(role: string): boolean {
+    return String(role ?? '').trim().toLowerCase() === AppRole.Manager.toLowerCase();
+  }
+
+  private loadCustomerOptions(): void {
+    this.customerService.getCustomers()
+      .subscribe({
+        next: response => {
+          this.customerOptions = response?.data?.pageData ?? [];
+        },
+        error: error => {
+          console.error('Error loading customers:', error);
+          this.customerOptions = [];
+        }
+      });
   }
 }

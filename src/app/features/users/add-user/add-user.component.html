@@ -42,6 +42,12 @@
         </small>
     </div>
 
+    <div class="form-group" *ngIf="showCustomerSelector">
+        <label for="assignedCustomerIds">Customers</label>
+        <p-multiSelect id="assignedCustomerIds" formControlName="assignedCustomerIds" [options]="customerOptions" optionLabel="name"
+            optionValue="id" placeholder="Select customers" class="w-full" display="chip"></p-multiSelect>
+    </div>
+
     <div class="form-group">
         <label style="display:block;margin-bottom:12px;font-weight:500">Module Permissions</label>
         <div style="display:flex;flex-direction:column;">

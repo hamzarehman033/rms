@@ -53,7 +53,7 @@ export class TopbarComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.showCustomerSelector = this.authService.hasAnyRole([AppRole.SysAdmin]);
+    this.showCustomerSelector = this.authService.hasAnyRole([AppRole.SysAdmin, AppRole.Manager]);
 
     this.customerService.customers$
       .pipe(takeUntilDestroyed(this.destroyRef))

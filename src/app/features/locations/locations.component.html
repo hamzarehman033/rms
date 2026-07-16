@@ -63,7 +63,7 @@
         </td> -->
         <td>
           <!-- Add Sub Location button -->
-          <button pButton type="button" 
+          <button *ngIf="rowData.level < 3" pButton type="button" 
             icon="pi pi-plus" class="p-button-rounded p-button-text p-button-warning"
             (click)="openAddSubLocationDialog(rowNode)" title="Add Sub Location">
           </button>

@@ -10,6 +10,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { TableModule } from 'primeng/table';
 import { ModalDialogComponent } from '@app/shared';
+import { DialogModule } from 'primeng/dialog';
 
 const routes: Routes = [
   {
@@ -20,6 +21,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [TenantComponent, AddTenantComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, InputSwitchModule, TableModule, ModalDialogComponent],
+  imports: [CommonModule, RouterModule.forChild(routes), ReactiveFormsModule, ButtonModule, InputTextModule, DropdownModule, InputSwitchModule, TableModule, DialogModule, ModalDialogComponent],
 })
 export class TenantModule {}
