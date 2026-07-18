@@ -17,9 +17,7 @@ export class UsersService {
   ) {}
 
   getUsers(customerId?: string): Observable<any> {
-    return this.http.get(this.baseUrl + this.url, {
-      params: this.getCustomerParams(customerId),
-    });
+    return this.http.get(this.baseUrl + this.url);
   }
 
   getUserById(id: number | string, customerId?: string): Observable<any> {

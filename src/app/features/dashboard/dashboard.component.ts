@@ -275,7 +275,7 @@ export class DashboardComponent implements OnInit {
 
   private loadDashboardStatistics(): void {
     this.loadDashboardSummary();
-    this.loadTelemetryEnvironmentCounts();
+    // this.loadTelemetryEnvironmentCounts(); 
     this.loadTelemetryHourlyTempHumidityStats();
     this.loadTop5DevicesByActivityInLastHour();
     this.loadRecentAnomalies();
