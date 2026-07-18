@@ -86,10 +86,14 @@ CRC_TYPE = "modbus"             # "modbus" or "ccitt"
 # PACKET MAP
 # =============================================================================
 
-PACKET_LENGTH = 188
+PACKET_LENGTH = 425
 CRC_OFFSET = 0x9E
 RESERVED_OFFSET = 0x96
 RESERVED_LENGTH = 8
+EXTENSION_CRC_OFFSET = 0x1A7
+EXTENSION_CRC_START = 0xA0
+FUTURE_RESERVED_OFFSET = 0x167
+FUTURE_RESERVED_LENGTH = EXTENSION_CRC_OFFSET - FUTURE_RESERVED_OFFSET
 
 MANUFACTURERS = {
     "huawei": 0x01,
@@ -209,6 +213,90 @@ FIELD_MAP = [
     (0xB4, 2, "tenant3_current", "I16", 10, "A"),
     (0xB6, 4, "tenant4_load", "U32", 1, "W"),
     (0xBA, 2, "tenant4_current", "I16", 10, "A"),
+    (0xBC, 4, "device_uptime", "U32", 1, "s"),
+    (0xC0, 2, "signal_strength", "I16", 1, "dBm"),
+    (0xC2, 1, "network_type", "U8", 1, ""),
+    (0xC3, 1, "sim_status", "U8", 1, ""),
+    (0xC4, 4, "data_validity_bitmap", "U32", 1, "bitmask"),
+    (0xC8, 2, "last_successful_poll_age", "U16", 1, "s"),
+    (0xCA, 1, "gateway_cpu_usage", "U8", 1, "%"),
+    (0xCB, 1, "gateway_ram_usage", "U8", 1, "%"),
+    (0xCC, 2, "gateway_temperature", "I16", 10, "degC"),
+    (0xCE, 1, "active_power_source", "U8", 1, ""),
+    (0xCF, 2, "power_source_priority", "U16", 1, ""),
+    (0xD1, 1, "hybrid_mode_enabled", "U8", 1, ""),
+    (0xD2, 2, "genset_voltage_l1", "U16", 10, "V"),
+    (0xD4, 2, "genset_voltage_l2", "U16", 10, "V"),
+    (0xD6, 2, "genset_voltage_l3", "U16", 10, "V"),
+    (0xD8, 2, "genset_current_l1", "I16", 10, "A"),
+    (0xDA, 2, "genset_current_l2", "I16", 10, "A"),
+    (0xDC, 2, "genset_current_l3", "I16", 10, "A"),
+    (0xDE, 2, "genset_frequency", "U16", 10, "Hz"),
+    (0xE0, 2, "genset_battery_voltage", "U16", 10, "V"),
+    (0xE2, 2, "genset_fuel_consumption_rate", "U16", 10, "L/h"),
+    (0xE4, 2, "genset_next_service_hours", "U16", 1, "h"),
+    (0xE6, 2, "fuel_tank_capacity", "U16", 1, "L"),
+    (0xE8, 1, "fuel_sensor_status", "U8", 1, ""),
+    (0xE9, 2, "fuel_consumption_rate", "U16", 10, "L/h"),
+    (0xEB, 2, "fuel_runtime_remaining", "U16", 1, "min"),
+    (0xED, 1, "battery_soc", "U8", 1, "%"),
+    (0xEE, 2, "battery_cycle_count", "U16", 1, ""),
+    (0xF0, 2, "battery_total_discharge_times", "U16", 1, ""),
+    (0xF2, 4, "battery_total_discharge_energy", "U32", 1, "Wh"),
+    (0xF6, 2, "battery_max_cell_voltage", "U16", 1, "mV"),
+    (0xF8, 2, "battery_min_cell_voltage", "U16", 1, "mV"),
+    (0xFA, 2, "battery_max_cell_temp", "I16", 10, "degC"),
+    (0xFC, 2, "battery_status_extended", "U16", 1, "bitmask"),
+    (0xFE, 1, "battery_contactor_status", "U8", 1, ""),
+    (0xFF, 1, "rectifier_fault_count", "U8", 1, ""),
+    (0x100, 4, "rectifier_capacity_total", "U32", 1, "W"),
+    (0x104, 2, "rectifier_capacity_used_percent", "U16", 10, "%"),
+    (0x106, 2, "rectifier_efficiency", "U16", 10, "%"),
+    (0x108, 1, "rectifier_redundancy_status", "U8", 1, ""),
+    (0x109, 2, "rectifier_highest_load_module_percent", "U16", 10, "%"),
+    (0x10B, 1, "dc_lvd1_status", "U8", 1, ""),
+    (0x10C, 1, "dc_lvd2_status", "U8", 1, ""),
+    (0x10D, 4, "dc_fuse_alarm_bitmap", "U32", 1, "bitmask"),
+    (0x111, 4, "dc_branch_alarm_bitmap", "U32", 1, "bitmask"),
+    (0x115, 2, "dc_critical_load_current", "I16", 10, "A"),
+    (0x117, 2, "dc_noncritical_load_current", "I16", 10, "A"),
+    (0x119, 1, "battery_lvd_status", "U8", 1, ""),
+    (0x11A, 4, "solar_total_energy_lifetime", "U32", 1, "Wh"),
+    (0x11E, 1, "solar_controller_fault_count", "U8", 1, ""),
+    (0x11F, 2, "solar_battery_charge_current", "I16", 10, "A"),
+    (0x121, 1, "solar_mppt_status", "U8", 1, ""),
+    (0x122, 4, "solar_daily_peak_power", "U32", 1, "W"),
+    (0x126, 4, "solar_panel_string_alarm_bitmap", "U32", 1, "bitmask"),
+    (0x12A, 2, "rectifier1_output_current", "U16", 10, "A"),
+    (0x12C, 2, "rectifier2_output_current", "U16", 10, "A"),
+    (0x12E, 2, "rectifier3_output_current", "U16", 10, "A"),
+    (0x130, 2, "rectifier4_output_current", "U16", 10, "A"),
+    (0x132, 2, "alarm_4_code", "U16", 1, ""),
+    (0x134, 1, "alarm_4_level", "U8", 1, ""),
+    (0x135, 2, "alarm_5_code", "U16", 1, ""),
+    (0x137, 1, "alarm_5_level", "U8", 1, ""),
+    (0x138, 2, "alarm_6_code", "U16", 1, ""),
+    (0x13A, 1, "alarm_6_level", "U8", 1, ""),
+    (0x13B, 2, "ext_main_l1_voltage", "U16", 10, "V"),
+    (0x13D, 2, "ext_main_l2_voltage", "U16", 10, "V"),
+    (0x13F, 2, "ext_main_l3_voltage", "U16", 10, "V"),
+    (0x141, 2, "ext_main_l1_current", "I16", 10, "A"),
+    (0x143, 2, "ext_main_l2_current", "I16", 10, "A"),
+    (0x145, 2, "ext_main_l3_current", "I16", 10, "A"),
+    (0x147, 2, "ext_main_frequency", "U16", 10, "Hz"),
+    (0x149, 4, "ext_main_total_power", "U32", 1, "W"),
+    (0x14D, 4, "ext_main_total_energy", "U32", 1, "Wh"),
+    (0x151, 2, "ext_genset_l1_voltage", "U16", 10, "V"),
+    (0x153, 2, "ext_genset_l2_voltage", "U16", 10, "V"),
+    (0x155, 2, "ext_genset_l3_voltage", "U16", 10, "V"),
+    (0x157, 2, "ext_genset_l1_current", "I16", 10, "A"),
+    (0x159, 2, "ext_genset_l2_current", "I16", 10, "A"),
+    (0x15B, 2, "ext_genset_l3_current", "I16", 10, "A"),
+    (0x15D, 2, "ext_genset_frequency", "U16", 10, "Hz"),
+    (0x15F, 4, "ext_genset_total_power", "U32", 1, "W"),
+    (0x163, 4, "ext_genset_total_energy", "U32", 1, "Wh"),
+    (0x167, FUTURE_RESERVED_LENGTH, "future_reserved_buffer", "BYTES", 1, ""),
+    (0x1A7, 2, "extension_crc16", "U16", 1, ""),
 ]
 
 
@@ -337,6 +425,16 @@ class TelecomRmsState:
     phase_count: int = 3
 
     packet_sequence: int = 0
+    device_start_time: int = field(default_factory=lambda: int(time.time()))
+    signal_strength: float = -72.0
+    network_type: int = 4
+    sim_status: int = 2
+    last_successful_poll_age: int = 5
+    gateway_cpu_usage: float = 23.0
+    gateway_ram_usage: float = 48.0
+    gateway_temperature: float = 42.5
+    power_source_priority: int = 0x1206
+    hybrid_mode_enabled: int = 1
 
     mains_available: int = 1
     mains_failure: int = 0
@@ -388,11 +486,33 @@ class TelecomRmsState:
     genset_run_hours: int = 320
     genset_start_count: int = 45
     genset_power: float = 0.0
+    genset_voltage_l1: float = 221.0
+    genset_voltage_l2: float = 220.0
+    genset_voltage_l3: float = 222.0
+    genset_current_l1: float = 0.0
+    genset_current_l2: float = 0.0
+    genset_current_l3: float = 0.0
+    genset_frequency: float = 50.0
+    genset_battery_voltage: float = 12.6
+    genset_fuel_consumption_rate: float = 0.0
+    genset_next_service_hours: int = 120
 
     fuel_tank_capacity_liters: int = 500
     fuel_level_percent: float = 70.0
     fuel_theft_alarm: int = 0
     fuel_low_alarm: int = 0
+    fuel_sensor_status: int = 1
+    fuel_consumption_rate: float = 0.0
+    fuel_runtime_remaining: int = 0
+
+    battery_cycle_count: int = 24
+    battery_total_discharge_times: int = 18
+    battery_total_discharge_energy: float = 125000.0
+    battery_max_cell_voltage: int = 3650
+    battery_min_cell_voltage: int = 3625
+    battery_max_cell_temp: float = 30.0
+    battery_status_extended: int = 0
+    battery_contactor_status: int = 2
 
     tenant1_load: float = 2500.0
     tenant2_load: float = 2000.0
@@ -410,10 +530,25 @@ class TelecomRmsState:
     digital_input_bitmap: int = 0
     relay_output_bitmap: int = 0
 
+    dc_lvd1_status: int = 1
+    dc_lvd2_status: int = 1
+    dc_fuse_alarm_bitmap: int = 0
+    dc_branch_alarm_bitmap: int = 0
+    battery_lvd_status: int = 1
+    solar_total_energy_lifetime: float = 500000.0
+    solar_daily_peak_power: float = 0.0
+    solar_panel_string_alarm_bitmap: int = 0
+    ext_genset_total_energy: float = 0.0
+
     active_alarms: List[Tuple[int, int]] = field(default_factory=list)
 
     def update(self, interval_seconds: float) -> None:
         self.packet_sequence = (self.packet_sequence + 1) % 65536
+        self.signal_strength = random_walk(self.signal_strength, -95.0, -55.0, 2.0)
+        self.last_successful_poll_age = 0 if chance(0.95) else int(clamp(self.last_successful_poll_age + interval_seconds, 0, 65535))
+        self.gateway_cpu_usage = random_walk(self.gateway_cpu_usage, 5.0, 90.0, 4.0)
+        self.gateway_ram_usage = random_walk(self.gateway_ram_usage, 20.0, 85.0, 2.0)
+        self.gateway_temperature = random_walk(self.gateway_temperature, 28.0, 65.0, 0.5)
 
         if self.mains_available and chance(0.01):
             self.mains_available = 0
@@ -474,12 +609,16 @@ class TelecomRmsState:
             self.solar_power = max(0.0, self.solar_voltage * self.solar_current)
             self.solar_controller_comm_fail = 1 if chance(0.005) else 0
             self.solar_energy_today += self.solar_power * interval_seconds / 3600.0
+            self.solar_total_energy_lifetime += self.solar_power * interval_seconds / 3600.0
+            self.solar_daily_peak_power = max(self.solar_daily_peak_power, self.solar_power)
+            self.solar_panel_string_alarm_bitmap = 1 if self.solar_controller_comm_fail else 0
         else:
             self.solar_voltage = 0.0
             self.solar_current = 0.0
             self.solar_power = 0.0
             self.solar_controller_count = 0
             self.solar_controller_comm_fail = 0
+            self.solar_panel_string_alarm_bitmap = 0
 
         if ac_source_active:
             self.battery_status = 1 if self.battery_remaining_percent >= 90 else 2
@@ -495,9 +634,15 @@ class TelecomRmsState:
             ah_used = abs(self.battery_current) * interval_seconds / 3600.0
             percent_drop = (ah_used / max(self.battery_total_capacity, 1.0)) * 100.0
             self.battery_remaining_percent = clamp(self.battery_remaining_percent - percent_drop, 0.0, 100.0)
+            self.battery_total_discharge_energy += load_after_solar * interval_seconds / 3600.0
 
         self.battery_temperature = random_walk(self.battery_temperature, 18.0, 42.0, 0.25)
         self.battery_soh = int(clamp(self.battery_soh + random.choice([0, 0, 0, 0, -1]), 80, 100))
+        self.battery_max_cell_voltage = int(clamp(self.battery_voltage / 15.0 * 1000 + random.uniform(5, 20), 2500, 4200))
+        self.battery_min_cell_voltage = int(clamp(self.battery_voltage / 15.0 * 1000 - random.uniform(5, 20), 2500, 4200))
+        self.battery_max_cell_temp = random_walk(self.battery_max_cell_temp, 20.0, 50.0, 0.3)
+        self.battery_status_extended = 1 if self.battery_remaining_percent < 20 else 0
+        self.battery_contactor_status = 2 if self.battery_voltage > 44 else 3
 
         if ac_source_active:
             self.rectifier_ac_fail = 0
@@ -537,12 +682,30 @@ class TelecomRmsState:
 
         if self.genset_running:
             self.genset_run_hours = min(65535, self.genset_run_hours + int(interval_seconds / 3600))
-            consumed_liters = random.uniform(1.0, 3.0) * interval_seconds / 3600.0
+            self.genset_fuel_consumption_rate = random_walk(self.genset_fuel_consumption_rate or 2.2, 1.0, 8.0, 0.25)
+            self.fuel_consumption_rate = self.genset_fuel_consumption_rate
+            consumed_liters = self.genset_fuel_consumption_rate * interval_seconds / 3600.0
             consumed_percent = consumed_liters / max(self.fuel_tank_capacity_liters, 1) * 100.0
             self.fuel_level_percent = clamp(self.fuel_level_percent - consumed_percent, 0.0, 100.0)
             self.genset_power = max(0.0, self.dc_load_power - self.solar_power)
+            self.genset_voltage_l1 = random_walk(self.genset_voltage_l1, 210.0, 245.0, 1.5)
+            self.genset_voltage_l2 = random_walk(self.genset_voltage_l2, 210.0, 245.0, 1.5)
+            self.genset_voltage_l3 = random_walk(self.genset_voltage_l3, 210.0, 245.0, 1.5)
+            avg_genset_voltage = max((self.genset_voltage_l1 + self.genset_voltage_l2 + self.genset_voltage_l3) / 3.0, 1.0)
+            genset_phase_current = self.genset_power / (3.0 * avg_genset_voltage)
+            self.genset_current_l1 = clamp(genset_phase_current * random.uniform(0.92, 1.08), 0.0, 120.0)
+            self.genset_current_l2 = clamp(genset_phase_current * random.uniform(0.92, 1.08), 0.0, 120.0)
+            self.genset_current_l3 = clamp(genset_phase_current * random.uniform(0.92, 1.08), 0.0, 120.0)
+            self.genset_frequency = random_walk(self.genset_frequency, 49.7, 50.3, 0.05)
+            self.genset_battery_voltage = random_walk(self.genset_battery_voltage, 11.8, 14.4, 0.08)
+            self.ext_genset_total_energy += self.genset_power * interval_seconds / 3600.0
         else:
             self.genset_power = 0.0
+            self.genset_current_l1 = 0.0
+            self.genset_current_l2 = 0.0
+            self.genset_current_l3 = 0.0
+            self.genset_fuel_consumption_rate = 0.0
+            self.fuel_consumption_rate = 0.0
 
         if chance(0.001):
             self.fuel_theft_alarm = 1
@@ -550,6 +713,9 @@ class TelecomRmsState:
         elif chance(0.05):
             self.fuel_theft_alarm = 0
         self.fuel_low_alarm = 1 if self.fuel_level_percent < 20.0 else 0
+        fuel_volume_liters = self.fuel_tank_capacity_liters * self.fuel_level_percent / 100.0
+        self.fuel_runtime_remaining = int((fuel_volume_liters / max(self.fuel_consumption_rate, 0.1)) * 60) if self.genset_running else 0
+        self.fuel_sensor_status = 1 if ENABLE_FUEL else 2
 
         self.ambient_temperature_1 = random_walk(self.ambient_temperature_1, 18.0, 48.0, 0.35)
         self.ambient_temperature_2 = random_walk(self.ambient_temperature_2, 18.0, 50.0, 0.35)
@@ -579,6 +745,12 @@ class TelecomRmsState:
             self.digital_input_bitmap |= 1 << 4
         if self.mains_failure:
             self.digital_input_bitmap |= 1 << 5
+
+        self.dc_fuse_alarm_bitmap = 1 if self.dc_load_percent > 105 else 0
+        self.dc_branch_alarm_bitmap = 1 if self.tenant1_load > self.dc_load_power * 0.50 else 0
+        self.dc_lvd1_status = 2 if self.dc_load_percent > 110 else 1
+        self.dc_lvd2_status = 2 if self.battery_remaining_percent < 15 else 1
+        self.battery_lvd_status = self.dc_lvd2_status
 
         self.active_alarms = self.build_active_alarm_list()
 
@@ -642,7 +814,7 @@ class TelecomRmsState:
             alarms.append((922, 4))
         if self.ambient_temperature_1 > 40 or self.ambient_temperature_2 > 42:
             alarms.append((930, 3))
-        return alarms[:3]
+        return alarms[:6]
 
     def system_status(self) -> int:
         levels = [level for _, level in self.active_alarms]
@@ -664,8 +836,51 @@ class TelecomRmsState:
         backup_minutes = remaining_ah / max(abs(self.dc_load_current), 1.0) * 60.0
         battery_power_kw = abs(self.battery_voltage * self.battery_current) / 1000.0
         fuel_volume = self.fuel_tank_capacity_liters * self.fuel_level_percent / 100.0
+        now = int(time.time())
+        active_power_source = 5 if sum([
+            bool(self.mains_available),
+            bool(self.genset_running),
+            bool(self.solar_power > 100),
+            bool(self.battery_status == 3),
+        ]) > 1 else (
+            1 if self.mains_available else
+            2 if self.genset_running else
+            3 if self.solar_power > 100 else
+            4 if self.battery_status == 3 else
+            0
+        )
+        data_validity_bitmap = 0
+        data_validity_bitmap |= 1 << 0  # AC
+        data_validity_bitmap |= 1 << 1  # DC
+        data_validity_bitmap |= 1 << 2  # battery
+        if ENABLE_FUEL:
+            data_validity_bitmap |= 1 << 3
+        if self.solar_available:
+            data_validity_bitmap |= 1 << 4
+        if self.genset_available:
+            data_validity_bitmap |= 1 << 5
+        rectifier_fault_count = max(self.rectifier_installed_count - self.rectifier_comm_count, 0)
+        rectifier_capacity_total = self.rectifier_installed_count * 3000
+        rectifier_capacity_used_percent = (self.rectifier_total_dc_power / max(rectifier_capacity_total, 1)) * 100.0
+        rectifier_redundancy_status = 4 if rectifier_fault_count else (3 if rectifier_capacity_used_percent > 95 else 1)
+        rectifier_highest_load_module_percent = rectifier_capacity_used_percent / max(self.rectifier_comm_count, 1)
+        per_rectifier_current = self.rectifier_total_current / max(self.rectifier_comm_count, 1)
+        solar_battery_charge_current = max(self.solar_current - (self.dc_load_current * 0.10), 0.0)
+        solar_mppt_status = 2 if self.solar_controller_comm_fail else (1 if self.solar_available else 4)
 
         return {
+            "device_uptime": max(now - self.device_start_time, 0),
+            "signal_strength": self.signal_strength,
+            "network_type": self.network_type,
+            "sim_status": self.sim_status,
+            "data_validity_bitmap": data_validity_bitmap,
+            "last_successful_poll_age": self.last_successful_poll_age,
+            "gateway_cpu_usage": self.gateway_cpu_usage,
+            "gateway_ram_usage": self.gateway_ram_usage,
+            "gateway_temperature": self.gateway_temperature,
+            "active_power_source": active_power_source,
+            "power_source_priority": self.power_source_priority,
+            "hybrid_mode_enabled": self.hybrid_mode_enabled,
             "packet_sequence": self.packet_sequence,
             "system_status": self.system_status(),
             "active_alarm_count": len(self.active_alarms),
@@ -724,11 +939,25 @@ class TelecomRmsState:
             "genset_run_hours": self.genset_run_hours,
             "genset_start_count": self.genset_start_count,
             "genset_power": self.genset_power,
+            "genset_voltage_l1": self.genset_voltage_l1,
+            "genset_voltage_l2": self.genset_voltage_l2,
+            "genset_voltage_l3": self.genset_voltage_l3,
+            "genset_current_l1": self.genset_current_l1,
+            "genset_current_l2": self.genset_current_l2,
+            "genset_current_l3": self.genset_current_l3,
+            "genset_frequency": self.genset_frequency,
+            "genset_battery_voltage": self.genset_battery_voltage,
+            "genset_fuel_consumption_rate": self.genset_fuel_consumption_rate,
+            "genset_next_service_hours": self.genset_next_service_hours,
 
             "fuel_level_percent": self.fuel_level_percent,
             "fuel_volume_liters": fuel_volume,
             "fuel_theft_alarm": self.fuel_theft_alarm,
             "fuel_low_alarm": self.fuel_low_alarm,
+            "fuel_tank_capacity": self.fuel_tank_capacity_liters,
+            "fuel_sensor_status": self.fuel_sensor_status,
+            "fuel_consumption_rate": self.fuel_consumption_rate,
+            "fuel_runtime_remaining": self.fuel_runtime_remaining,
 
             "ambient_temperature_1": self.ambient_temperature_1,
             "ambient_temperature_2": self.ambient_temperature_2,
@@ -743,6 +972,57 @@ class TelecomRmsState:
 
             "alarm_bitmap_1": self.build_alarm_bitmap(),
             "active_alarms": self.active_alarms,
+
+            "battery_soc": self.battery_remaining_percent,
+            "battery_cycle_count": self.battery_cycle_count,
+            "battery_total_discharge_times": self.battery_total_discharge_times,
+            "battery_total_discharge_energy": self.battery_total_discharge_energy,
+            "battery_max_cell_voltage": self.battery_max_cell_voltage,
+            "battery_min_cell_voltage": self.battery_min_cell_voltage,
+            "battery_max_cell_temp": self.battery_max_cell_temp,
+            "battery_status_extended": self.battery_status_extended,
+            "battery_contactor_status": self.battery_contactor_status,
+            "rectifier_fault_count": rectifier_fault_count,
+            "rectifier_capacity_total": rectifier_capacity_total,
+            "rectifier_capacity_used_percent": rectifier_capacity_used_percent,
+            "rectifier_efficiency": 95.0 if self.rectifier_total_dc_power > 0 else 0.0,
+            "rectifier_redundancy_status": rectifier_redundancy_status,
+            "rectifier_highest_load_module_percent": rectifier_highest_load_module_percent,
+            "dc_lvd1_status": self.dc_lvd1_status,
+            "dc_lvd2_status": self.dc_lvd2_status,
+            "dc_fuse_alarm_bitmap": self.dc_fuse_alarm_bitmap,
+            "dc_branch_alarm_bitmap": self.dc_branch_alarm_bitmap,
+            "dc_critical_load_current": self.tenant1_load / max(self.dc_bus_voltage, 1.0),
+            "dc_noncritical_load_current": (self.tenant2_load + self.tenant3_load + self.tenant4_load) / max(self.dc_bus_voltage, 1.0),
+            "battery_lvd_status": self.battery_lvd_status,
+            "solar_total_energy_lifetime": self.solar_total_energy_lifetime,
+            "solar_controller_fault_count": 1 if self.solar_controller_comm_fail else 0,
+            "solar_battery_charge_current": solar_battery_charge_current,
+            "solar_mppt_status": solar_mppt_status,
+            "solar_daily_peak_power": self.solar_daily_peak_power,
+            "solar_panel_string_alarm_bitmap": self.solar_panel_string_alarm_bitmap,
+            "rectifier1_output_current": per_rectifier_current if self.rectifier_comm_count >= 1 else 0.0,
+            "rectifier2_output_current": per_rectifier_current if self.rectifier_comm_count >= 2 else 0.0,
+            "rectifier3_output_current": per_rectifier_current if self.rectifier_comm_count >= 3 else 0.0,
+            "rectifier4_output_current": per_rectifier_current if self.rectifier_comm_count >= 4 else 0.0,
+            "ext_main_l1_voltage": self.line_a_voltage,
+            "ext_main_l2_voltage": self.line_b_voltage if self.phase_count == 3 else 0.0,
+            "ext_main_l3_voltage": self.line_c_voltage if self.phase_count == 3 else 0.0,
+            "ext_main_l1_current": self.line_a_current,
+            "ext_main_l2_current": self.line_b_current if self.phase_count == 3 else 0.0,
+            "ext_main_l3_current": self.line_c_current if self.phase_count == 3 else 0.0,
+            "ext_main_frequency": self.ac_frequency,
+            "ext_main_total_power": self.rectifier_total_dc_power / 0.95 if (self.mains_available or self.genset_running) else 0.0,
+            "ext_main_total_energy": self.total_ac_energy,
+            "ext_genset_l1_voltage": self.genset_voltage_l1,
+            "ext_genset_l2_voltage": self.genset_voltage_l2,
+            "ext_genset_l3_voltage": self.genset_voltage_l3,
+            "ext_genset_l1_current": self.genset_current_l1,
+            "ext_genset_l2_current": self.genset_current_l2,
+            "ext_genset_l3_current": self.genset_current_l3,
+            "ext_genset_frequency": self.genset_frequency,
+            "ext_genset_total_power": self.genset_power,
+            "ext_genset_total_energy": self.ext_genset_total_energy,
 
             "tenant1_load": self.tenant1_load,
             "tenant1_current": self.tenant1_load / max(self.dc_bus_voltage, 1.0),
@@ -773,13 +1053,13 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
                 continue
             alarms_for_packet.append((code, level))
             used_alarm_codes.add(code)
-    alarms_for_packet = alarms_for_packet[:3]
+    alarms_for_packet = alarms_for_packet[:6]
 
     now = int(time.time())
 
     write_u32(buf, 0x00, now)
     write_u32(buf, 0x04, now)
-    write_u8(buf, 0x08, 0x01)
+    write_u8(buf, 0x08, 0x03)
     write_u8(buf, 0x09, 0x01)
     write_u8(buf, 0x0A, state.manufacturer)
     write_u8(buf, 0x0B, state.model)
@@ -926,15 +1206,160 @@ def encode_packet(state: TelecomRmsState) -> Tuple[bytes, Dict[str, Any]]:
     write_u32(buf, 0xB6, int(round(values["tenant4_load"])))
     write_i16(buf, 0xBA, scaled_i16(values["tenant4_current"], 10))
 
+    write_u32(buf, 0xBC, int(round(values["device_uptime"])))
+    write_i16(buf, 0xC0, int(round(values["signal_strength"])))
+    write_u8(buf, 0xC2, values["network_type"])
+    write_u8(buf, 0xC3, values["sim_status"])
+    write_u32(buf, 0xC4, values["data_validity_bitmap"])
+    write_u16(buf, 0xC8, values["last_successful_poll_age"])
+    write_u8(buf, 0xCA, int(round(values["gateway_cpu_usage"])))
+    write_u8(buf, 0xCB, int(round(values["gateway_ram_usage"])))
+    write_i16(buf, 0xCC, scaled_i16(values["gateway_temperature"], 10))
+    write_u8(buf, 0xCE, values["active_power_source"])
+    write_u16(buf, 0xCF, values["power_source_priority"])
+    write_u8(buf, 0xD1, values["hybrid_mode_enabled"])
+
+    if state.genset_available:
+        write_u16(buf, 0xD2, scaled_u16(values["genset_voltage_l1"], 10))
+        write_u16(buf, 0xD4, scaled_u16(values["genset_voltage_l2"], 10))
+        write_u16(buf, 0xD6, scaled_u16(values["genset_voltage_l3"], 10))
+        write_i16(buf, 0xD8, scaled_i16(values["genset_current_l1"], 10))
+        write_i16(buf, 0xDA, scaled_i16(values["genset_current_l2"], 10))
+        write_i16(buf, 0xDC, scaled_i16(values["genset_current_l3"], 10))
+        write_u16(buf, 0xDE, scaled_u16(values["genset_frequency"], 10))
+        write_u16(buf, 0xE0, scaled_u16(values["genset_battery_voltage"], 10))
+        write_u16(buf, 0xE2, scaled_u16(values["genset_fuel_consumption_rate"], 10))
+        write_u16(buf, 0xE4, values["genset_next_service_hours"])
+    else:
+        for offset in (0xD2, 0xD4, 0xD6, 0xDE, 0xE0, 0xE2, 0xE4):
+            write_invalid_u16(buf, offset)
+        for offset in (0xD8, 0xDA, 0xDC):
+            write_invalid_i16(buf, offset)
+
+    if ENABLE_FUEL:
+        write_u16(buf, 0xE6, values["fuel_tank_capacity"])
+        write_u8(buf, 0xE8, values["fuel_sensor_status"])
+        write_u16(buf, 0xE9, scaled_u16(values["fuel_consumption_rate"], 10))
+        write_u16(buf, 0xEB, values["fuel_runtime_remaining"])
+    else:
+        write_invalid_u16(buf, 0xE6)
+        write_invalid_u8(buf, 0xE8)
+        write_invalid_u16(buf, 0xE9)
+        write_invalid_u16(buf, 0xEB)
+
+    write_u8(buf, 0xED, int(round(values["battery_soc"])))
+    write_u16(buf, 0xEE, values["battery_cycle_count"])
+    write_u16(buf, 0xF0, values["battery_total_discharge_times"])
+    write_u32(buf, 0xF2, int(round(values["battery_total_discharge_energy"])))
+    write_u16(buf, 0xF6, values["battery_max_cell_voltage"])
+    write_u16(buf, 0xF8, values["battery_min_cell_voltage"])
+    write_i16(buf, 0xFA, scaled_i16(values["battery_max_cell_temp"], 10))
+    write_u16(buf, 0xFC, values["battery_status_extended"])
+    write_u8(buf, 0xFE, values["battery_contactor_status"])
+
+    write_u8(buf, 0xFF, values["rectifier_fault_count"])
+    write_u32(buf, 0x100, values["rectifier_capacity_total"])
+    write_u16(buf, 0x104, scaled_u16(values["rectifier_capacity_used_percent"], 10))
+    write_u16(buf, 0x106, scaled_u16(values["rectifier_efficiency"], 10))
+    write_u8(buf, 0x108, values["rectifier_redundancy_status"])
+    write_u16(buf, 0x109, scaled_u16(values["rectifier_highest_load_module_percent"], 10))
+
+    write_u8(buf, 0x10B, values["dc_lvd1_status"])
+    write_u8(buf, 0x10C, values["dc_lvd2_status"])
+    write_u32(buf, 0x10D, values["dc_fuse_alarm_bitmap"])
+    write_u32(buf, 0x111, values["dc_branch_alarm_bitmap"])
+    write_i16(buf, 0x115, scaled_i16(values["dc_critical_load_current"], 10))
+    write_i16(buf, 0x117, scaled_i16(values["dc_noncritical_load_current"], 10))
+    write_u8(buf, 0x119, values["battery_lvd_status"])
+
+    if state.solar_available:
+        write_u32(buf, 0x11A, int(round(values["solar_total_energy_lifetime"])))
+        write_u8(buf, 0x11E, values["solar_controller_fault_count"])
+        write_i16(buf, 0x11F, scaled_i16(values["solar_battery_charge_current"], 10))
+        write_u8(buf, 0x121, values["solar_mppt_status"])
+        write_u32(buf, 0x122, int(round(values["solar_daily_peak_power"])))
+        write_u32(buf, 0x126, values["solar_panel_string_alarm_bitmap"])
+    else:
+        write_invalid_u32(buf, 0x11A)
+        write_invalid_u8(buf, 0x11E)
+        write_invalid_i16(buf, 0x11F)
+        write_invalid_u8(buf, 0x121)
+        write_invalid_u32(buf, 0x122)
+        write_invalid_u32(buf, 0x126)
+
+    write_u16(buf, 0x12A, scaled_u16(values["rectifier1_output_current"], 10))
+    write_u16(buf, 0x12C, scaled_u16(values["rectifier2_output_current"], 10))
+    write_u16(buf, 0x12E, scaled_u16(values["rectifier3_output_current"], 10))
+    write_u16(buf, 0x130, scaled_u16(values["rectifier4_output_current"], 10))
+
+    extra_alarm_offsets = [(0x132, 0x134), (0x135, 0x137), (0x138, 0x13A)]
+    for i, (code_offset, level_offset) in enumerate(extra_alarm_offsets, start=3):
+        if i < len(alarms_for_packet):
+            code, level = alarms_for_packet[i]
+        else:
+            code, level = 0, 0
+        write_u16(buf, code_offset, normalize_alarm_code(code))
+        write_u8(buf, level_offset, level)
+
+    write_u16(buf, 0x13B, scaled_u16(values["ext_main_l1_voltage"], 10))
+    if state.phase_count == 3:
+        write_u16(buf, 0x13D, scaled_u16(values["ext_main_l2_voltage"], 10))
+        write_u16(buf, 0x13F, scaled_u16(values["ext_main_l3_voltage"], 10))
+        write_i16(buf, 0x143, scaled_i16(values["ext_main_l2_current"], 10))
+        write_i16(buf, 0x145, scaled_i16(values["ext_main_l3_current"], 10))
+    else:
+        write_invalid_u16(buf, 0x13D)
+        write_invalid_u16(buf, 0x13F)
+        write_invalid_i16(buf, 0x143)
+        write_invalid_i16(buf, 0x145)
+    write_i16(buf, 0x141, scaled_i16(values["ext_main_l1_current"], 10))
+    write_u16(buf, 0x147, scaled_u16(values["ext_main_frequency"], 10))
+    write_u32(buf, 0x149, int(round(values["ext_main_total_power"])))
+    write_u32(buf, 0x14D, int(round(values["ext_main_total_energy"])))
+
+    if state.genset_available:
+        write_u16(buf, 0x151, scaled_u16(values["ext_genset_l1_voltage"], 10))
+        write_u16(buf, 0x153, scaled_u16(values["ext_genset_l2_voltage"], 10))
+        write_u16(buf, 0x155, scaled_u16(values["ext_genset_l3_voltage"], 10))
+        write_i16(buf, 0x157, scaled_i16(values["ext_genset_l1_current"], 10))
+        write_i16(buf, 0x159, scaled_i16(values["ext_genset_l2_current"], 10))
+        write_i16(buf, 0x15B, scaled_i16(values["ext_genset_l3_current"], 10))
+        write_u16(buf, 0x15D, scaled_u16(values["ext_genset_frequency"], 10))
+        write_u32(buf, 0x15F, int(round(values["ext_genset_total_power"])))
+        write_u32(buf, 0x163, int(round(values["ext_genset_total_energy"])))
+    else:
+        for offset in (0x151, 0x153, 0x155, 0x15D):
+            write_invalid_u16(buf, offset)
+        for offset in (0x157, 0x159, 0x15B):
+            write_invalid_i16(buf, offset)
+        write_invalid_u32(buf, 0x15F)
+        write_invalid_u32(buf, 0x163)
+
+    for i in range(FUTURE_RESERVED_LENGTH):
+        buf[FUTURE_RESERVED_OFFSET + i] = 0x00
+
+    if CRC_TYPE.lower() == "ccitt":
+        extension_crc = crc16_ccitt_false(bytes(buf[EXTENSION_CRC_START:EXTENSION_CRC_OFFSET]))
+    else:
+        extension_crc = crc16_modbus(bytes(buf[EXTENSION_CRC_START:EXTENSION_CRC_OFFSET]))
+    write_u16(buf, EXTENSION_CRC_OFFSET, extension_crc)
+
     values["active_alarm_count"] = len(alarms_for_packet)
     values["alarm_1_code"], values["alarm_1_level"] = alarms_for_packet[0] if len(alarms_for_packet) > 0 else (0, 0)
     values["alarm_2_code"], values["alarm_2_level"] = alarms_for_packet[1] if len(alarms_for_packet) > 1 else (0, 0)
     values["alarm_3_code"], values["alarm_3_level"] = alarms_for_packet[2] if len(alarms_for_packet) > 2 else (0, 0)
+    values["alarm_4_code"], values["alarm_4_level"] = alarms_for_packet[3] if len(alarms_for_packet) > 3 else (0, 0)
+    values["alarm_5_code"], values["alarm_5_level"] = alarms_for_packet[4] if len(alarms_for_packet) > 4 else (0, 0)
+    values["alarm_6_code"], values["alarm_6_level"] = alarms_for_packet[5] if len(alarms_for_packet) > 5 else (0, 0)
     values["alarm_1_code"] = normalize_alarm_code(values["alarm_1_code"])
     values["alarm_2_code"] = normalize_alarm_code(values["alarm_2_code"])
     values["alarm_3_code"] = normalize_alarm_code(values["alarm_3_code"])
+    values["alarm_4_code"] = normalize_alarm_code(values["alarm_4_code"])
+    values["alarm_5_code"] = normalize_alarm_code(values["alarm_5_code"])
+    values["alarm_6_code"] = normalize_alarm_code(values["alarm_6_code"])
 
     values["crc16"] = crc
+    values["extension_crc16"] = extension_crc
     values["hex_payload"] = bytes(buf).hex(" ").upper()
 
     return bytes(buf), values

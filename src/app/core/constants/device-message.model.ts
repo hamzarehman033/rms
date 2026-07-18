@@ -13,6 +13,7 @@ export interface RawDecodedPayload {
   deviceType: number;
   manufacturer: number;
   model: number;
+  siteIdHash?: number;
   deviceIdHash: number;
   packetSequence: number;
   systemStatus: number;
@@ -95,7 +96,92 @@ export interface RawDecodedPayload {
   tenant3Current: number;
   tenant4LoadW: number;
   tenant4Current: number;
+  deviceUptime?: number;
+  signalStrength?: number;
+  networkType?: number;
+  simStatus?: number;
+  dataValidityBitmap?: number;
+  lastSuccessfulPollAge?: number;
+  gatewayCpuUsage?: number;
+  gatewayRamUsage?: number;
+  gatewayTemperature?: number;
+  activePowerSource?: number;
+  powerSourcePriority?: number;
+  hybridModeEnabled?: boolean;
+  gensetVoltageL1?: number;
+  gensetVoltageL2?: number;
+  gensetVoltageL3?: number;
+  gensetCurrentL1?: number;
+  gensetCurrentL2?: number;
+  gensetCurrentL3?: number;
+  gensetFrequency?: number;
+  gensetBatteryVoltage?: number;
+  gensetFuelConsumptionRate?: number;
+  gensetNextServiceHours?: number;
+  fuelTankCapacity?: number;
+  fuelSensorStatus?: number;
+  fuelConsumptionRate?: number;
+  fuelRuntimeRemaining?: number;
+  batterySoc?: number;
+  batteryCycleCount?: number;
+  batteryTotalDischargeTimes?: number;
+  batteryTotalDischargeEnergyWh?: number;
+  batteryMaxCellVoltageMv?: number;
+  batteryMinCellVoltageMv?: number;
+  batteryMaxCellTemp?: number;
+  batteryStatusExtended?: number;
+  batteryContactorStatus?: number;
+  rectifierFaultCount?: number;
+  rectifierCapacityTotalW?: number;
+  rectifierCapacityUsedPercent?: number;
+  rectifierEfficiency?: number;
+  rectifierRedundancyStatus?: number;
+  rectifierHighestLoadModulePercent?: number;
+  dcLvd1Status?: number;
+  dcLvd2Status?: number;
+  dcFuseAlarmBitmap?: number;
+  dcBranchAlarmBitmap?: number;
+  dcCriticalLoadCurrent?: number;
+  dcNoncriticalLoadCurrent?: number;
+  batteryLvdStatus?: number;
+  solarTotalEnergyLifetimeWh?: number;
+  solarControllerFaultCount?: number;
+  solarBatteryChargeCurrent?: number;
+  solarMpptStatus?: number;
+  solarDailyPeakPowerW?: number;
+  solarPanelStringAlarmBitmap?: number;
+  rectifier1OutputCurrent?: number;
+  rectifier2OutputCurrent?: number;
+  rectifier3OutputCurrent?: number;
+  rectifier4OutputCurrent?: number;
+  alarm4Code?: number;
+  alarm4Level?: number | null;
+  alarm5Code?: number;
+  alarm5Level?: number | null;
+  alarm6Code?: number;
+  alarm6Level?: number | null;
+  extMainL1Voltage?: number;
+  extMainL2Voltage?: number;
+  extMainL3Voltage?: number;
+  extMainL1Current?: number;
+  extMainL2Current?: number;
+  extMainL3Current?: number;
+  extMainFrequency?: number;
+  extMainTotalPowerW?: number;
+  extMainTotalEnergyWh?: number;
+  extGensetL1Voltage?: number;
+  extGensetL2Voltage?: number;
+  extGensetL3Voltage?: number;
+  extGensetL1Current?: number;
+  extGensetL2Current?: number;
+  extGensetL3Current?: number;
+  extGensetFrequency?: number;
+  extGensetTotalPowerW?: number;
+  extGensetTotalEnergyWh?: number;
+  futureReservedBuffer?: string;
+  extensionCrc16?: number;
   isCrcValid: boolean;
+  isExtensionCrcValid?: boolean;
   receivedAtUtc: string;
   error: string | null;
   regionId: number;
@@ -117,6 +203,7 @@ export interface DecodedPayload {
   deviceType: string;
   manufacturer: string;
   model: string;
+  siteIdHash?: number;
   deviceIdHash: number;
   packetSequence: number;
   systemStatus: number;
@@ -199,7 +286,92 @@ export interface DecodedPayload {
   tenant3Current: number;
   tenant4LoadW: number;
   tenant4Current: number;
+  deviceUptime?: number;
+  signalStrength?: number;
+  networkType?: string;
+  simStatus?: string;
+  dataValidityBitmap?: number;
+  lastSuccessfulPollAge?: number;
+  gatewayCpuUsage?: number;
+  gatewayRamUsage?: number;
+  gatewayTemperature?: number;
+  activePowerSource?: string;
+  powerSourcePriority?: number;
+  hybridModeEnabled?: boolean;
+  gensetVoltageL1?: number;
+  gensetVoltageL2?: number;
+  gensetVoltageL3?: number;
+  gensetCurrentL1?: number;
+  gensetCurrentL2?: number;
+  gensetCurrentL3?: number;
+  gensetFrequency?: number;
+  gensetBatteryVoltage?: number;
+  gensetFuelConsumptionRate?: number;
+  gensetNextServiceHours?: number;
+  fuelTankCapacity?: number;
+  fuelSensorStatus?: string;
+  fuelConsumptionRate?: number;
+  fuelRuntimeRemaining?: number;
+  batterySoc?: number;
+  batteryCycleCount?: number;
+  batteryTotalDischargeTimes?: number;
+  batteryTotalDischargeEnergyWh?: number;
+  batteryMaxCellVoltageMv?: number;
+  batteryMinCellVoltageMv?: number;
+  batteryMaxCellTemp?: number;
+  batteryStatusExtended?: number;
+  batteryContactorStatus?: string;
+  rectifierFaultCount?: number;
+  rectifierCapacityTotalW?: number;
+  rectifierCapacityUsedPercent?: number;
+  rectifierEfficiency?: number;
+  rectifierRedundancyStatus?: string;
+  rectifierHighestLoadModulePercent?: number;
+  dcLvd1Status?: string;
+  dcLvd2Status?: string;
+  dcFuseAlarmBitmap?: number;
+  dcBranchAlarmBitmap?: number;
+  dcCriticalLoadCurrent?: number;
+  dcNoncriticalLoadCurrent?: number;
+  batteryLvdStatus?: string;
+  solarTotalEnergyLifetimeWh?: number;
+  solarControllerFaultCount?: number;
+  solarBatteryChargeCurrent?: number;
+  solarMpptStatus?: string;
+  solarDailyPeakPowerW?: number;
+  solarPanelStringAlarmBitmap?: number;
+  rectifier1OutputCurrent?: number;
+  rectifier2OutputCurrent?: number;
+  rectifier3OutputCurrent?: number;
+  rectifier4OutputCurrent?: number;
+  alarm4Code?: string;
+  alarm4Level?: string;
+  alarm5Code?: string;
+  alarm5Level?: string;
+  alarm6Code?: string;
+  alarm6Level?: string;
+  extMainL1Voltage?: number;
+  extMainL2Voltage?: number;
+  extMainL3Voltage?: number;
+  extMainL1Current?: number;
+  extMainL2Current?: number;
+  extMainL3Current?: number;
+  extMainFrequency?: number;
+  extMainTotalPowerW?: number;
+  extMainTotalEnergyWh?: number;
+  extGensetL1Voltage?: number;
+  extGensetL2Voltage?: number;
+  extGensetL3Voltage?: number;
+  extGensetL1Current?: number;
+  extGensetL2Current?: number;
+  extGensetL3Current?: number;
+  extGensetFrequency?: number;
+  extGensetTotalPowerW?: number;
+  extGensetTotalEnergyWh?: number;
+  futureReservedBuffer?: string;
+  extensionCrc16?: number;
   isCrcValid: boolean;
+  isExtensionCrcValid?: boolean;
   receivedAtUtc: string;
   error: string | null;
   regionId: number;
@@ -262,6 +434,72 @@ export const GENSET_CONTROL_MODE_LABELS: Record<number, string> = {
   1: 'Auto',
   2: 'Manual',
   3: 'Disabled'
+};
+
+export const NETWORK_TYPE_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Ethernet',
+  2: '2G',
+  3: '3G',
+  4: '4G',
+  5: '5G',
+  6: 'Wi-Fi'
+};
+
+export const SIM_STATUS_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Missing',
+  2: 'Registered',
+  3: 'Roaming',
+  4: 'No Service',
+  5: 'PIN Locked'
+};
+
+export const ACTIVE_POWER_SOURCE_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Mains',
+  2: 'Generator',
+  3: 'Solar',
+  4: 'Battery',
+  5: 'Hybrid'
+};
+
+export const FUEL_SENSOR_STATUS_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Normal',
+  2: 'Disconnected',
+  3: 'Invalid',
+  4: 'Stuck'
+};
+
+export const BATTERY_CONTACTOR_STATUS_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Open/Disconnected',
+  2: 'Closed/Connected',
+  3: 'Fault'
+};
+
+export const RECTIFIER_REDUNDANCY_STATUS_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'N+1 Available',
+  2: 'No Redundancy',
+  3: 'Overloaded',
+  4: 'Fault'
+};
+
+export const DISCONNECT_STATUS_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Connected',
+  2: 'Disconnected',
+  3: 'Fault'
+};
+
+export const SOLAR_MPPT_STATUS_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Normal',
+  2: 'Fault',
+  3: 'Limited',
+  4: 'Offline'
 };
 
 export const ALARM_LEVEL_LABELS: Record<number, string> = {
@@ -348,6 +586,30 @@ export const SYSTEM_STATUS_ENUM: Record<number, string> = {
 };
 
 
+function enumLabel(labels: Record<number, string>, value: number | null | undefined): string | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  return labels[value] ?? `Unknown (${value})`;
+}
+
+function alarmCodeLabel(value: number | null | undefined): string | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  return ALARM_CODE_LABELS[value] ?? `Unknown (${value})`;
+}
+
+function alarmLevelLabel(value: number | null | undefined): string | undefined {
+  if (value === null || value === undefined) {
+    return 'None';
+  }
+
+  return ALARM_LEVEL_LABELS[value] ?? `Unknown (${value})`;
+}
+
 
 export function mapDecodedPayload(raw:RawDecodedPayload): DecodedPayload {
   return {
@@ -358,12 +620,28 @@ export function mapDecodedPayload(raw:RawDecodedPayload): DecodedPayload {
     systemStatus: raw.systemStatus,
     batteryStatus: BATTERY_STATUS_LABELS[raw.batteryStatus] ?? `Unknown (${raw.batteryStatus})`,
     gensetControlMode: GENSET_CONTROL_MODE_LABELS[raw.gensetControlMode] ?? `Unknown (${raw.gensetControlMode})`,
-    alarm1Code: ALARM_CODE_LABELS[raw.alarm1Code] ?? `Unknown (${raw.alarm1Code})`,
-    alarm2Code: ALARM_CODE_LABELS[raw.alarm2Code] ?? `Unknown (${raw.alarm2Code})`,
-    alarm3Code: ALARM_CODE_LABELS[raw.alarm3Code] ?? `Unknown (${raw.alarm3Code})`,
-    alarm1Level: raw.alarm1Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm1Level] ?? `Unknown (${raw.alarm1Level})`,
-    alarm2Level: raw.alarm2Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm2Level] ?? `Unknown (${raw.alarm2Level})`,
-    alarm3Level: raw.alarm3Level == null ? 'None' : ALARM_LEVEL_LABELS[raw.alarm3Level] ?? `Unknown (${raw.alarm3Level})`,
+    networkType: enumLabel(NETWORK_TYPE_LABELS, raw.networkType),
+    simStatus: enumLabel(SIM_STATUS_LABELS, raw.simStatus),
+    activePowerSource: enumLabel(ACTIVE_POWER_SOURCE_LABELS, raw.activePowerSource),
+    fuelSensorStatus: enumLabel(FUEL_SENSOR_STATUS_LABELS, raw.fuelSensorStatus),
+    batteryContactorStatus: enumLabel(BATTERY_CONTACTOR_STATUS_LABELS, raw.batteryContactorStatus),
+    rectifierRedundancyStatus: enumLabel(RECTIFIER_REDUNDANCY_STATUS_LABELS, raw.rectifierRedundancyStatus),
+    dcLvd1Status: enumLabel(DISCONNECT_STATUS_LABELS, raw.dcLvd1Status),
+    dcLvd2Status: enumLabel(DISCONNECT_STATUS_LABELS, raw.dcLvd2Status),
+    batteryLvdStatus: enumLabel(DISCONNECT_STATUS_LABELS, raw.batteryLvdStatus),
+    solarMpptStatus: enumLabel(SOLAR_MPPT_STATUS_LABELS, raw.solarMpptStatus),
+    alarm1Code: alarmCodeLabel(raw.alarm1Code) ?? 'No alarm in this slot',
+    alarm2Code: alarmCodeLabel(raw.alarm2Code) ?? 'No alarm in this slot',
+    alarm3Code: alarmCodeLabel(raw.alarm3Code) ?? 'No alarm in this slot',
+    alarm4Code: alarmCodeLabel(raw.alarm4Code),
+    alarm5Code: alarmCodeLabel(raw.alarm5Code),
+    alarm6Code: alarmCodeLabel(raw.alarm6Code),
+    alarm1Level: alarmLevelLabel(raw.alarm1Level) ?? 'None',
+    alarm2Level: alarmLevelLabel(raw.alarm2Level) ?? 'None',
+    alarm3Level: alarmLevelLabel(raw.alarm3Level) ?? 'None',
+    alarm4Level: alarmLevelLabel(raw.alarm4Level),
+    alarm5Level: alarmLevelLabel(raw.alarm5Level),
+    alarm6Level: alarmLevelLabel(raw.alarm6Level),
     mainsAvailable: raw.mainsAvailable ? 'Available' : 'Not Available',
     mainsFailure: raw.mainsFailure ? 'Failure' : 'Normal',
     rectifierAcFail: raw.rectifierAcFail ? 'AC Fail' : 'Normal',

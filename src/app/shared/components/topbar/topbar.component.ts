@@ -119,30 +119,26 @@ export class TopbarComponent implements OnInit {
       return;
       
     }
-    if(event.decodedPayload.alarm1Code) {
-      this.notifications.push({
-        id: event.decodedPayload.alarm1Code,
-        message: event.decodedPayload.alarm1Code,
-        severity: event.decodedPayload.alarm1Level,
-        device: event.decodedPayload.deviceId,
+    const payload = event.decodedPayload;
+    const alarmSlots = [
+      { code: payload.alarm1Code, level: payload.alarm1Level },
+      { code: payload.alarm2Code, level: payload.alarm2Level },
+      { code: payload.alarm3Code, level: payload.alarm3Level },
+      { code: payload.alarm4Code, level: payload.alarm4Level },
+      { code: payload.alarm5Code, level: payload.alarm5Level },
+      { code: payload.alarm6Code, level: payload.alarm6Level },
+    ];
+
+    alarmSlots
+      .filter(slot => !!slot.code && slot.level !== 'None' && slot.code !== 'No alarm in this slot')
+      .forEach((slot, index) => {
+        this.notifications.push({
+          id: `${payload.deviceId}-${index + 1}-${slot.code}`,
+          message: slot.code,
+          severity: slot.level,
+          device: payload.deviceId,
+        });
       });
-    }
-    if(event.decodedPayload.alarm2Code) {
-      this.notifications.push({
-        id: event.decodedPayload.alarm2Code,
-        message: event.decodedPayload.alarm2Code,
-        severity: event.decodedPayload.alarm2Level,
-        device: event.decodedPayload.deviceId,
-      });
-    }
-    if(event.decodedPayload.alarm3Code) {
-      this.notifications.push({
-        id: event.decodedPayload.alarm3Code,
-        message: event.decodedPayload.alarm3Code,
-        severity: event.decodedPayload.alarm3Level,
-        device: event.decodedPayload.deviceId,
-      });
-    }
 
   }
 

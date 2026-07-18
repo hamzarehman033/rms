@@ -243,21 +243,12 @@ export class EventLogComponent implements OnInit, OnChanges, OnDestroy {
     );
     const timestamp = String(payload.portalReceiveTime ?? event.receivedAt ?? new Date().toISOString());
     const alarmSlots = [
-      {
-        code: this.resolveAlarm1Code(payload.alarm1Code),
-        description: String(payload.alarm1Code ?? 'Unknown alarm'),
-        severity: this.normalizeSeverity(payload.alarm1Level),
-      },
-      {
-        code: Number(payload.alarm2Code),
-        description: ALARM_CODE_LABELS[Number(payload.alarm2Code)] ?? `Unknown (${payload.alarm2Code})`,
-        severity: this.normalizeSeverity(payload.alarm2Level),
-      },
-      {
-        code: Number(payload.alarm3Code),
-        description: ALARM_CODE_LABELS[Number(payload.alarm3Code)] ?? `Unknown (${payload.alarm3Code})`,
-        severity: this.normalizeSeverity(payload.alarm3Level),
-      },
+      this.createAlarmSlot(payload.alarm1Code, payload.alarm1Level),
+      this.createAlarmSlot(payload.alarm2Code, payload.alarm2Level),
+      this.createAlarmSlot(payload.alarm3Code, payload.alarm3Level),
+      this.createAlarmSlot(payload.alarm4Code, payload.alarm4Level),
+      this.createAlarmSlot(payload.alarm5Code, payload.alarm5Level),
+      this.createAlarmSlot(payload.alarm6Code, payload.alarm6Level),
     ];
 
     let critical = 0;
@@ -299,7 +290,21 @@ export class EventLogComponent implements OnInit, OnChanges, OnDestroy {
     this.alarmRows = [...rows, ...this.alarmRows].slice(0, 100);
   }
 
-  private resolveAlarm1Code(description: string): number | null {
+  private createAlarmSlot(description: string | undefined, level: string | null | undefined): {
+    code: number | null;
+    description: string;
+    severity: AlarmSeverity;
+  } {
+    const normalizedDescription = String(description ?? 'No alarm in this slot');
+
+    return {
+      code: this.resolveAlarmCode(normalizedDescription),
+      description: normalizedDescription,
+      severity: this.normalizeSeverity(level),
+    };
+  }
+
+  private resolveAlarmCode(description: string): number | null {
     const entries = Object.entries(ALARM_CODE_LABELS);
     for (const [codeText, label] of entries) {
       if (label === description) {

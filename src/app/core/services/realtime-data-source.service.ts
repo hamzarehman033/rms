@@ -234,24 +234,27 @@ export class RealtimeDataSourceService {
       return 'Unknown';
     }
 
-    return SYSTEM_STATUS_ENUM[statusCode] ?? `Unknown (${statusCode})`;
+    const labels: string[] = [];
+    if (statusCode & (1 << 2)) labels.push('Critical Alarm');
+    if (statusCode & (1 << 1)) labels.push('Major Alarm');
+    if (statusCode & (1 << 3)) labels.push('Warning');
+    if (statusCode & (1 << 4)) labels.push('Comms Issue');
+    if (!labels.length && (statusCode & (1 << 0))) labels.push('Normal');
+
+    return labels.length ? labels.join(', ') : SYSTEM_STATUS_ENUM[statusCode] ?? `Unknown (${statusCode})`;
   }
 
   private resolveStatusCategory(statusCode: number | null): DeviceStatusCategory {
-    switch (statusCode) {
-      case 0:
-        return 'normal';
-      case 1:
-        return 'major';
-      case 2:
-        return 'critical';
-      case 3:
-        return 'warning';
-      case 4:
-        return 'warning';
-      default:
-        return 'unknown';
+    if (statusCode === null) {
+      return 'unknown';
     }
+
+    if (statusCode & (1 << 2)) return 'critical';
+    if (statusCode & (1 << 1)) return 'major';
+    if (statusCode & (1 << 3)) return 'warning';
+    if (statusCode & (1 << 4)) return 'comms';
+    if (statusCode & (1 << 0)) return 'normal';
+    return 'unknown';
   }
 
   private resolveDeviceId(event: DeviceDataEvent, payload: DecodedPayload): number | null {
@@ -312,9 +315,13 @@ export class RealtimeDataSourceService {
   }
 
   private resolveAlarmSeverity(statusCode: number | null): AlarmSeverity | null {
-    if (statusCode === 1) return 'major';
-    if (statusCode === 2) return 'critical';
-    if (statusCode === 3) return 'minor';
+    if (statusCode === null) {
+      return null;
+    }
+
+    if (statusCode & (1 << 2)) return 'critical';
+    if (statusCode & (1 << 1)) return 'major';
+    if (statusCode & (1 << 3)) return 'minor';
     return null;
   }
 

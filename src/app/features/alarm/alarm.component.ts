@@ -214,6 +214,18 @@ export class AlarmComponent implements OnInit {
       {
         message: String(payload.alarm3Code ?? 'No alarm in this slot'),
         severityText: String(payload.alarm3Level ?? 'None')
+      },
+      {
+        message: String(payload.alarm4Code ?? 'No alarm in this slot'),
+        severityText: String(payload.alarm4Level ?? 'None')
+      },
+      {
+        message: String(payload.alarm5Code ?? 'No alarm in this slot'),
+        severityText: String(payload.alarm5Level ?? 'None')
+      },
+      {
+        message: String(payload.alarm6Code ?? 'No alarm in this slot'),
+        severityText: String(payload.alarm6Level ?? 'None')
       }
     ];
 

@@ -1,6 +1,16 @@
 # MQTT Decoded Payload Reference
 
-This document captures the full decoded payload dictionary for `DeviceDataReceived` and the value semantics to use for binding and display.
+This document captures the decoded payload dictionary for `DeviceDataReceived` and the value semantics to use for binding and display.
+
+## Packet Version
+
+- Current packet: v1.2
+- `packetVersion`: `3` (`0x03`)
+- Payload length: `425` bytes (`0x1A9`)
+- Compatibility: bytes `0x00` through `0xBB` preserve the v1.1 layout. New v1.2 fields start at `0xBC`.
+- Legacy compatibility: older devices may still send v1.1 packets with `packetVersion = 2` and `188` bytes.
+- Base CRC: `crc16` at `0x9E`, computed over bytes `0x00..0x9D`.
+- Extension CRC: `extensionCrc16` at `0x1A7`, computed over bytes `0xA0..0x1A6`.
 
 ## Canonical Payload Sample
 
@@ -12,96 +22,182 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
   "tenantNumber": 0,
   "siteNumber": 0,
   "deviceNumber": 7,
-  "epochTime": "2026-07-03T07:47:17+00:00",
-  "portalReceiveTime": "2026-07-03T07:47:17+00:00",
-  "packetVersion": 1,
+  "epochTime": "2026-07-18T08:41:17+00:00",
+  "portalReceiveTime": "2026-07-18T08:41:17+00:00",
+  "packetVersion": 3,
   "deviceType": 1,
   "manufacturer": 1,
   "model": 2,
-  "deviceIdHash": 1002289381,
+  "siteIdHash": 16113112,
+  "deviceIdHash": 794748950,
   "packetSequence": 74,
   "systemStatus": 1,
-  "activeAlarmCount": 0,
-  "lineAVoltage": 225.9,
-  "lineBVoltage": 224.9,
-  "lineCVoltage": 211.8,
-  "lineACurrent": 11.3,
-  "lineBCurrent": 12.1,
-  "lineCCurrent": 12.3,
+  "activeAlarmCount": 3,
+  "lineAVoltage": 221.3,
+  "lineBVoltage": 220.8,
+  "lineCVoltage": 222,
+  "lineACurrent": 37.8,
+  "lineBCurrent": 36.5,
+  "lineCCurrent": 35.9,
   "acFrequency": 50,
-  "totalAcInputPowerW": 7909,
+  "totalAcInputPowerW": 8225,
   "totalAcEnergyWh": 251602,
   "mainsAvailable": true,
   "mainsFailure": false,
-  "dcBusVoltage": 53.2,
-  "dcLoadCurrent": 123.5,
-  "dcLoadPowerW": 6571,
-  "dcLoadPercent": 77.2,
+  "dcBusVoltage": 54.5,
+  "dcLoadCurrent": 131.1,
+  "dcLoadPowerW": 7117,
+  "dcLoadPercent": 85,
   "totalDcEnergyWh": 181392,
-  "rectifierInstalledCount": 4,
-  "rectifierCommCount": 4,
-  "rectifierTotalCurrent": 140.8,
-  "rectifierTotalDcPowerW": 7514,
+  "rectifierInstalledCount": 3,
+  "rectifierCommCount": 3,
+  "rectifierTotalCurrent": 142.6,
+  "rectifierTotalDcPowerW": 7817,
   "rectifierAcFail": false,
-  "rectifierMissing": false,
+  "rectifierMissing": true,
   "rectifierMaxTemperature": 30.6,
   "batteryStatus": 1,
-  "batteryVoltage": 54.4,
-  "batteryCurrent": 17.3,
+  "batteryVoltage": 54.5,
+  "batteryCurrent": 11,
   "batteryRemainingPercent": 99,
   "batteryTotalCapacityAh": 500,
-  "batteryRemainingCapacityAh": 494.6,
-  "batteryBackupTimeMin": 240,
-  "batteryTemperature": 24.8,
-  "batterySoh": 80,
+  "batteryRemainingCapacityAh": 495,
+  "batteryBackupTimeMin": 216,
+  "batteryTemperature": 21.8,
+  "batterySoh": 90,
   "bmuOnlineCount": 5,
-  "batteryChargeDischargeKw": 0.94,
+  "batteryChargeDischargeKw": 0.6,
   "solarAvailable": true,
-  "solarVoltage": 59.7,
-  "solarCurrent": 4,
-  "solarPowerW": 236,
-  "solarEnergyTodayWh": 5041,
+  "solarVoltage": 56,
+  "solarCurrent": 15,
+  "solarPowerW": 840,
+  "solarEnergyTodayWh": 5000,
   "solarControllerCount": 2,
-  "solarControllerCommFail": 0,
-  "solarChargingHours": 4,
+  "solarControllerCommFail": true,
+  "solarChargingHours": 6,
   "gensetAvailable": true,
-  "gensetRunning": false,
+  "gensetRunning": true,
   "gensetStartFailure": false,
   "gensetControlMode": 1,
   "gensetRunHours": 320,
   "gensetStartCount": 45,
-  "fuelLevelPercent": 70,
-  "fuelVolumeL": 350,
+  "fuelLevelPercent": 18,
+  "fuelVolumeL": 90,
   "fuelTheftAlarm": false,
-  "fuelLowAlarm": false,
+  "fuelLowAlarm": true,
   "ambientTemperature1": 31.3,
   "ambientTemperature2": 30.5,
   "humidity": 47.8,
-  "doorOpenAlarm": false,
+  "doorOpenAlarm": true,
   "smokeAlarm": false,
   "waterLeakAlarm": false,
   "motionAlarm": false,
-  "digitalInputBitmap": 0,
-  "relayOutputBitmap": 0,
-  "alarm1Code": 0,
-  "alarm1Level": null,
-  "alarm2Code": 0,
-  "alarm2Level": null,
-  "alarm3Code": 0,
-  "alarm3Level": null,
-  "alarmBitmap1": 0,
-  "crc16": 59182,
-  "gensetPowerW": 0,
-  "tenant1LoadW": 2500,
-  "tenant1Current": 45.9,
-  "tenant2LoadW": 2000,
-  "tenant2Current": 36.7,
-  "tenant3LoadW": 1500,
-  "tenant3Current": 27.5,
-  "tenant4LoadW": 1117,
-  "tenant4Current": 20.5,
-  "isCrcValid": false,
-  "receivedAtUtc": "2026-07-03T07:47:17.6140498Z",
+  "digitalInputBitmap": 17,
+  "relayOutputBitmap": 1,
+  "alarm1Code": 11,
+  "alarm1Level": 2,
+  "alarm2Code": 50,
+  "alarm2Level": 3,
+  "alarm3Code": 73,
+  "alarm3Level": 4,
+  "alarmBitmap1": 730,
+  "crc16": 7604,
+  "gensetPowerW": 5000,
+  "tenant1LoadW": 3200,
+  "tenant1Current": 58.7,
+  "tenant2LoadW": 1800,
+  "tenant2Current": 33,
+  "tenant3LoadW": 1300,
+  "tenant3Current": 23.9,
+  "tenant4LoadW": 817,
+  "tenant4Current": 15,
+  "deviceUptime": 987654,
+  "signalStrength": -72,
+  "networkType": 4,
+  "simStatus": 2,
+  "dataValidityBitmap": 63,
+  "lastSuccessfulPollAge": 5,
+  "gatewayCpuUsage": 23,
+  "gatewayRamUsage": 48,
+  "gatewayTemperature": 42.5,
+  "activePowerSource": 5,
+  "powerSourcePriority": 4614,
+  "hybridModeEnabled": true,
+  "gensetVoltageL1": 221,
+  "gensetVoltageL2": 220,
+  "gensetVoltageL3": 222,
+  "gensetCurrentL1": 12.6,
+  "gensetCurrentL2": 12.4,
+  "gensetCurrentL3": 12.7,
+  "gensetFrequency": 50,
+  "gensetBatteryVoltage": 12.6,
+  "gensetFuelConsumptionRate": 2.4,
+  "gensetNextServiceHours": 120,
+  "fuelTankCapacity": 500,
+  "fuelSensorStatus": 1,
+  "fuelConsumptionRate": 2.4,
+  "fuelRuntimeRemaining": 2250,
+  "batterySoc": 99,
+  "batteryCycleCount": 24,
+  "batteryTotalDischargeTimes": 18,
+  "batteryTotalDischargeEnergyWh": 125000,
+  "batteryMaxCellVoltageMv": 3650,
+  "batteryMinCellVoltageMv": 3625,
+  "batteryMaxCellTemp": 30,
+  "batteryStatusExtended": 0,
+  "batteryContactorStatus": 2,
+  "rectifierFaultCount": 0,
+  "rectifierCapacityTotalW": 12000,
+  "rectifierCapacityUsedPercent": 65.1,
+  "rectifierEfficiency": 95,
+  "rectifierRedundancyStatus": 1,
+  "rectifierHighestLoadModulePercent": 21.7,
+  "dcLvd1Status": 1,
+  "dcLvd2Status": 1,
+  "dcFuseAlarmBitmap": 0,
+  "dcBranchAlarmBitmap": 0,
+  "dcCriticalLoadCurrent": 58.7,
+  "dcNoncriticalLoadCurrent": 71.9,
+  "batteryLvdStatus": 1,
+  "solarTotalEnergyLifetimeWh": 500000,
+  "solarControllerFaultCount": 1,
+  "solarBatteryChargeCurrent": 5,
+  "solarMpptStatus": 1,
+  "solarDailyPeakPowerW": 1100,
+  "solarPanelStringAlarmBitmap": 0,
+  "rectifier1OutputCurrent": 35.6,
+  "rectifier2OutputCurrent": 35.6,
+  "rectifier3OutputCurrent": 35.6,
+  "rectifier4OutputCurrent": 35.6,
+  "alarm4Code": 70,
+  "alarm4Level": 3,
+  "alarm5Code": 90,
+  "alarm5Level": 3,
+  "alarm6Code": 61,
+  "alarm6Level": 3,
+  "extMainL1Voltage": 221.3,
+  "extMainL2Voltage": 220.8,
+  "extMainL3Voltage": 222,
+  "extMainL1Current": 37.8,
+  "extMainL2Current": 36.5,
+  "extMainL3Current": 35.9,
+  "extMainFrequency": 50,
+  "extMainTotalPowerW": 8225,
+  "extMainTotalEnergyWh": 251602,
+  "extGensetL1Voltage": 221,
+  "extGensetL2Voltage": 220,
+  "extGensetL3Voltage": 222,
+  "extGensetL1Current": 12.6,
+  "extGensetL2Current": 12.4,
+  "extGensetL3Current": 12.7,
+  "extGensetFrequency": 50,
+  "extGensetTotalPowerW": 5000,
+  "extGensetTotalEnergyWh": 15000,
+  "futureReservedBuffer": "00 00 ...",
+  "extensionCrc16": 39450,
+  "isCrcValid": true,
+  "isExtensionCrcValid": true,
+  "receivedAtUtc": "2026-07-18T08:41:17.6140498Z",
   "error": null,
   "regionId": 0,
   "subRegionId": 0,
@@ -168,13 +264,63 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
 - `fuelTheftAlarm`, `fuelLowAlarm`, `doorOpenAlarm`, `smokeAlarm`, `waterLeakAlarm`, `motionAlarm`
   - `false`: normal
   - `true`: alarm active
-- `alarm1Level`, `alarm2Level`, `alarm3Level`
+- `networkType`
+  - `0`: unknown
+  - `1`: Ethernet
+  - `2`: 2G
+  - `3`: 3G
+  - `4`: 4G
+  - `5`: 5G
+  - `6`: Wi-Fi
+- `simStatus`
+  - `0`: unknown
+  - `1`: missing
+  - `2`: registered
+  - `3`: roaming
+  - `4`: no service
+  - `5`: PIN locked
+- `activePowerSource`
+  - `0`: unknown
+  - `1`: mains
+  - `2`: generator
+  - `3`: solar
+  - `4`: battery
+  - `5`: hybrid
+- `fuelSensorStatus`
+  - `0`: unknown
+  - `1`: normal
+  - `2`: disconnected
+  - `3`: invalid
+  - `4`: stuck
+- `batteryContactorStatus`
+  - `0`: unknown
+  - `1`: open/disconnected
+  - `2`: closed/connected
+  - `3`: fault
+- `rectifierRedundancyStatus`
+  - `0`: unknown
+  - `1`: N+1 available
+  - `2`: no redundancy
+  - `3`: overloaded
+  - `4`: fault
+- `dcLvd1Status`, `dcLvd2Status`, `batteryLvdStatus`
+  - `0`: unknown
+  - `1`: connected
+  - `2`: disconnected
+  - `3`: fault
+- `solarMpptStatus`
+  - `0`: unknown
+  - `1`: normal
+  - `2`: fault
+  - `3`: limited
+  - `4`: offline
+- `alarm1Level` through `alarm6Level`
   - `1`: critical
   - `2`: major
   - `3`: minor
   - `4`: warning
   - `null`: no alarm level
-- `alarm1Code`, `alarm2Code`, `alarm3Code` (alarm type/title map)
+- `alarm1Code` through `alarm6Code` (alarm type/title map)
   - `0`: mains failure / utility power not available
   - `1`: AC phase failure / one input phase missing
   - `2`: AC input under-voltage
@@ -252,10 +398,11 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
 | deviceNumber | Numeric device index in packet. |
 | epochTime | Device event time (ISO timestamp). |
 | portalReceiveTime | Platform receive timestamp (ISO). |
-| packetVersion | Packet schema version. |
+| packetVersion | Packet schema version. v1.2 uses `3`. |
 | deviceType | Device type enum (see value maps). |
 | manufacturer | Manufacturer enum (see value maps). |
 | model | Model enum (see value maps). |
+| siteIdHash | CRC32/hash of site code. |
 | deviceIdHash | CRC32/hash of device serial/ID. |
 | packetSequence | Incrementing packet counter from device. |
 | systemStatus | Overall status bitmask (see value maps). |
@@ -338,7 +485,92 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
 | tenant3Current | Tenant 3 DC load current. |
 | tenant4LoadW | Tenant 4 DC load power for shared sites. |
 | tenant4Current | Tenant 4 DC load current. |
+| deviceUptime | Gateway/controller uptime in seconds. |
+| signalStrength | Cellular signal strength in dBm. |
+| networkType | Network type enum (see value maps). |
+| simStatus | SIM status enum (see value maps). |
+| dataValidityBitmap | Bitmask of valid telemetry sections (AC, DC, battery, fuel, solar, generator, etc.). |
+| lastSuccessfulPollAge | Age in seconds of the last successful device poll. |
+| gatewayCpuUsage | Gateway CPU usage percent. |
+| gatewayRamUsage | Gateway RAM usage percent. |
+| gatewayTemperature | Gateway/internal temperature. |
+| activePowerSource | Active power source enum (see value maps). |
+| powerSourcePriority | Encoded configured power-source priority. |
+| hybridModeEnabled | Hybrid mode enabled flag. |
+| gensetVoltageL1 | Generator L1 voltage. |
+| gensetVoltageL2 | Generator L2 voltage. |
+| gensetVoltageL3 | Generator L3 voltage. |
+| gensetCurrentL1 | Generator L1 current. |
+| gensetCurrentL2 | Generator L2 current. |
+| gensetCurrentL3 | Generator L3 current. |
+| gensetFrequency | Generator output frequency. |
+| gensetBatteryVoltage | Generator starter battery voltage. |
+| gensetFuelConsumptionRate | Generator fuel consumption rate in L/h. |
+| gensetNextServiceHours | Remaining generator run hours until next service. |
+| fuelTankCapacity | Fuel tank capacity in liters. |
+| fuelSensorStatus | Fuel sensor status enum (see value maps). |
+| fuelConsumptionRate | Fuel consumption rate in L/h. |
+| fuelRuntimeRemaining | Estimated runtime remaining in minutes. |
+| batterySoc | Battery state of charge percentage. |
+| batteryCycleCount | Battery cycle count. |
+| batteryTotalDischargeTimes | Total discharge event count. |
+| batteryTotalDischargeEnergyWh | Total battery discharge energy. |
+| batteryMaxCellVoltageMv | Maximum lithium cell voltage in mV. |
+| batteryMinCellVoltageMv | Minimum lithium cell voltage in mV. |
+| batteryMaxCellTemp | Maximum battery cell temperature. |
+| batteryStatusExtended | Extended BMS status bitmask. |
+| batteryContactorStatus | Battery contactor status enum (see value maps). |
+| rectifierFaultCount | Number of faulty rectifier modules. |
+| rectifierCapacityTotalW | Total installed rectifier capacity. |
+| rectifierCapacityUsedPercent | Used rectifier capacity percentage. |
+| rectifierEfficiency | Rectifier efficiency percentage. |
+| rectifierRedundancyStatus | Rectifier redundancy enum (see value maps). |
+| rectifierHighestLoadModulePercent | Highest loaded rectifier module percentage. |
+| dcLvd1Status | DC LVD1 status enum (see value maps). |
+| dcLvd2Status | DC LVD2 status enum (see value maps). |
+| dcFuseAlarmBitmap | DC fuse/MCB alarm bitmask. |
+| dcBranchAlarmBitmap | DC branch alarm bitmask. |
+| dcCriticalLoadCurrent | Critical DC load branch current. |
+| dcNoncriticalLoadCurrent | Non-critical DC load branch current. |
+| batteryLvdStatus | Battery LVD status enum (see value maps). |
+| solarTotalEnergyLifetimeWh | Lifetime solar energy generation. |
+| solarControllerFaultCount | Number of faulty solar controllers. |
+| solarBatteryChargeCurrent | Solar contribution to battery charge current. |
+| solarMpptStatus | Solar MPPT status enum (see value maps). |
+| solarDailyPeakPowerW | Daily peak solar power. |
+| solarPanelStringAlarmBitmap | PV string alarm bitmask. |
+| rectifier1OutputCurrent | Rectifier module 1 output current. |
+| rectifier2OutputCurrent | Rectifier module 2 output current. |
+| rectifier3OutputCurrent | Rectifier module 3 output current. |
+| rectifier4OutputCurrent | Rectifier module 4 output current. |
+| alarm4Code | Fourth active alarm code/index. |
+| alarm4Level | Fourth active alarm severity level enum. |
+| alarm5Code | Fifth active alarm code/index. |
+| alarm5Level | Fifth active alarm severity level enum. |
+| alarm6Code | Sixth active alarm code/index. |
+| alarm6Level | Sixth active alarm severity level enum. |
+| extMainL1Voltage | External main AC meter L1 voltage. |
+| extMainL2Voltage | External main AC meter L2 voltage. |
+| extMainL3Voltage | External main AC meter L3 voltage. |
+| extMainL1Current | External main AC meter L1 current. |
+| extMainL2Current | External main AC meter L2 current. |
+| extMainL3Current | External main AC meter L3 current. |
+| extMainFrequency | External main AC meter frequency. |
+| extMainTotalPowerW | External main AC meter total power. |
+| extMainTotalEnergyWh | External main AC meter cumulative energy. |
+| extGensetL1Voltage | External generator AC meter L1 voltage. |
+| extGensetL2Voltage | External generator AC meter L2 voltage. |
+| extGensetL3Voltage | External generator AC meter L3 voltage. |
+| extGensetL1Current | External generator AC meter L1 current. |
+| extGensetL2Current | External generator AC meter L2 current. |
+| extGensetL3Current | External generator AC meter L3 current. |
+| extGensetFrequency | External generator AC meter frequency. |
+| extGensetTotalPowerW | External generator AC meter total power. |
+| extGensetTotalEnergyWh | External generator AC meter cumulative energy. |
+| futureReservedBuffer | Reserved bytes for future fields. Fill/expect `0x00` until assigned. |
+| extensionCrc16 | CRC16 for extension bytes `0xA0..0x1A6`. |
 | isCrcValid | CRC validation result. |
+| isExtensionCrcValid | Extension CRC validation result when backend exposes it. |
 | receivedAtUtc | Backend receive/insert timestamp in UTC. |
 | error | Parse/decode error text, null when no error. |
 | regionId | Region identifier. |
@@ -347,8 +579,9 @@ This document captures the full decoded payload dictionary for `DeviceDataReceiv
 
 ## Notes
 
-- `site_id_hash` was provided in protocol notes as CRC32/hash of site code (for example `ISB0167`), but it is not currently present in the decoded payload sample above.
-- Base payload bytes `0x00` through `0x9F` remain unchanged. Extended fields are appended from `0xA0` onward.
+- `siteIdHash` is CRC32/hash of site code, for example `ISB0167`.
+- Base payload bytes `0x00` through `0xBB` remain compatible with v1.1. v1.2 fields are appended from `0xBC` onward.
 - CRC at `0x9E` is still computed over base bytes `0x00` through `0x9D` for backward compatibility.
+- Extension CRC at `0x1A7` is computed over extension bytes `0xA0` through `0x1A6`.
 - Backend currently sends camelCase fields in `decodedPayload`, so Angular model uses camelCase naming.
 - Where protocol docs mention `0/1`, backend may already normalize into boolean values for alarm/availability flags.
