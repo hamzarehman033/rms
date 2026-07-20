@@ -59,14 +59,14 @@
     </div>
     <div class="tile p-4 rounded-lg"
       style="background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(56,189,248,.02))">
-      <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Cabinet Temp</div>
-      <div class="text-lg font-semibold">{{ packetDeviceInfo.temperature || '-' }}</div>
-      <div class="text-xs text-muted-foreground mt-1.5">Humidity: {{ packetDeviceInfo.humidity || '-' }}</div>
+      <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Grid Voltage</div>
+      <div class="text-lg font-semibold">{{ liveData.grid.voltage || '-' }}</div>
+      <div class="text-xs text-muted-foreground mt-1.5">Status: {{ liveData.grid.status || '-' }}</div>
     </div>
     <div class="tile p-4 rounded-lg"
       style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02))">
-      <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Uptime</div>
-      <div class="text-lg font-semibold" [ngClass]="isOperational ? 'text-success' : 'text-warning'">{{ isOperational ? 'Online' : 'Offline' }}</div>
+      <div class="text-xs text-muted-foreground uppercase tracking-wider mb-2">Battery Remaining</div>
+      <div class="text-lg font-semibold">{{ liveData.battery.soc || '-' }}</div>
       <div class="text-xs text-muted-foreground mt-1.5">{{ lastPacketAt ? ('Last packet: ' + (lastPacketAt | date:'yyyy-MM-dd HH:mm')) : 'No packet yet' }}</div>
     </div>
     <div class="tile p-4 rounded-lg" style="background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.02))">
@@ -112,7 +112,6 @@
       <div class="detail-row detail-row-compare"><span class="detail-label">Current L3</span><span class="detail-value">{{ detailCards.generator.currentL3.grid }}</span><span class="detail-value">{{ detailCards.generator.currentL3.acMeter }}</span></div>
       <div class="detail-row detail-row-compare"><span class="detail-label">Frequency</span><span class="detail-value">{{ detailCards.generator.frequency.grid }}</span><span class="detail-value">{{ detailCards.generator.frequency.acMeter }}</span></div>
       <div class="detail-row detail-row-compare"><span class="detail-label">Power</span><span class="detail-value">{{ detailCards.generator.power.grid }}</span><span class="detail-value">{{ detailCards.generator.power.acMeter }}</span></div>
-      <div class="detail-row detail-row-compare"><span class="detail-label">Energy</span><span class="detail-value">{{ detailCards.generator.energy.grid }}</span><span class="detail-value">{{ detailCards.generator.energy.acMeter }}</span></div>
     </div>
 
     <div class="card detail-card detail-card-rectifier">
@@ -123,17 +122,19 @@
       <div class="detail-row"><span class="detail-label">Output Power</span><span class="detail-value">{{ detailCards.rectifier.outputPower }}</span></div>
       <div class="detail-row"><span class="detail-label">Efficiency</span><span class="detail-value">{{ detailCards.rectifier.efficiency }}</span></div>
       <div class="detail-row"><span class="detail-label">DC Bus</span><span class="detail-value">{{ detailCards.rectifier.dcBus }}</span></div>
+      <div class="detail-row"><span class="detail-label">Rectifier Installed Count</span><span class="detail-value">{{ detailCards.rectifier.installedCount }}</span></div>
     </div>
 
     <div class="card detail-card detail-card-battery">
-      <div class="detail-row"><span class="detail-label">BLVD Status</span><span class="detail-value">{{ detailCards.batteryBank.blvdStatus }}</span></div>
       <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-box"></i></span><span>Battery Bank</span></div>
+      <div class="detail-row"><span class="detail-label">BLVD Status</span><span class="detail-value">{{ detailCards.batteryBank.blvdStatus }}</span></div>
       <div class="detail-row"><span class="detail-label">State of Charge</span><span class="detail-value">{{ detailCards.batteryBank.stateOfCharge }}</span></div>
       <div class="detail-row"><span class="detail-label">Voltage</span><span class="detail-value">{{ detailCards.batteryBank.voltage }}</span></div>
       <div class="detail-row"><span class="detail-label">Current</span><span class="detail-value">{{ detailCards.batteryBank.current }}</span></div>
       <div class="detail-row"><span class="detail-label">Capacity</span><span class="detail-value">{{ detailCards.batteryBank.capacity }}</span></div>
       <div class="detail-row"><span class="detail-label">Backup Time</span><span class="detail-value">{{ detailCards.batteryBank.backupTime }}</span></div>
       <div class="detail-row"><span class="detail-label">Temp</span><span class="detail-value">{{ detailCards.batteryBank.temp }}</span></div>
+      <div class="detail-row"><span class="detail-label">BMU Online Count</span><span class="detail-value">{{ detailCards.batteryBank.bmuOnlineCount }}</span></div>
     </div>
 
     <div class="card detail-card detail-card-solar">
@@ -141,7 +142,8 @@
       <div class="detail-row"><span class="detail-label">DC Voltage</span><span class="detail-value">{{ detailCards.solarPv.dcVoltage }}</span></div>
       <div class="detail-row"><span class="detail-label">DC Current</span><span class="detail-value">{{ detailCards.solarPv.dcCurrent }}</span></div>
       <div class="detail-row"><span class="detail-label">Power Output</span><span class="detail-value">{{ detailCards.solarPv.powerOutput }}</span></div>
-      <div class="detail-row"><span class="detail-label">Irradiance</span><span class="detail-value">{{ detailCards.solarPv.irradiance }}</span></div>
+      <div class="detail-row"><span class="detail-label">Solar Energy Today</span><span class="detail-value">{{ detailCards.solarPv.energyToday }}</span></div>
+      <div class="detail-row"><span class="detail-label">Solar Controller Count</span><span class="detail-value">{{ detailCards.solarPv.controllerCount }}</span></div>
     </div>
 
     <div class="card detail-card detail-card-alarm">

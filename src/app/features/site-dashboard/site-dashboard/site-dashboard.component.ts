@@ -68,6 +68,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       efficiency: '-',
       dcBus: '-',
       lvd1Status: '-',
+      installedCount: '-',
     },
     batteryBank: {
       stateOfCharge: '-',
@@ -77,12 +78,14 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       backupTime: '-',
       temp: '-',
       blvdStatus: '-',
+      bmuOnlineCount: '-',
     },
     solarPv: {
       dcVoltage: '-',
       dcCurrent: '-',
       powerOutput: '-',
-      irradiance: '-',
+      energyToday: '-',
+      controllerCount: '-',
     },
     generator: {
       voltageL1: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
@@ -184,6 +187,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         efficiency: '-',
         dcBus: '-',
         lvd1Status: '-',
+        installedCount: '-',
       },
       batteryBank: {
         stateOfCharge: '-',
@@ -193,12 +197,14 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         backupTime: '-',
         temp: '-',
         blvdStatus: '-',
+        bmuOnlineCount: '-',
       },
       solarPv: {
         dcVoltage: '-',
         dcCurrent: '-',
         powerOutput: '-',
-        irradiance: '-',
+        energyToday: '-',
+        controllerCount: '-',
       },
       generator: {
         voltageL1: { grid: '-', acMeter: '-' },
@@ -344,6 +350,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         efficiency: this.calculateEfficiency(payload.rectifierTotalDcPowerW, payload.totalAcInputPowerW),
         dcBus: this.formatMetric(payload.dcBusVoltage, 'V', 1),
         lvd1Status: payload.dcLvd1Status ? String(payload.dcLvd1Status) : '-',
+        installedCount: payload.rectifierInstalledCount != null ? String(payload.rectifierInstalledCount) : '-',
       },
       batteryBank: {
         stateOfCharge: this.formatMetric(payload.batteryRemainingPercent, '%', 0),
@@ -353,12 +360,14 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         backupTime: this.formatMinutesAsDuration(payload.batteryBackupTimeMin ?? null),
         temp: this.formatMetric(payload.batteryTemperature, '°C', 1),
         blvdStatus: payload.batteryLvdStatus ? String(payload.batteryLvdStatus) : '-',
+        bmuOnlineCount: payload.bmuOnlineCount != null ? String(payload.bmuOnlineCount) : '-',
       },
       solarPv: {
         dcVoltage: this.formatMetric(payload.solarVoltage, 'V', 1),
         dcCurrent: this.formatMetric(payload.solarCurrent, 'A', 1),
         powerOutput: this.formatMetric(payload.solarPowerW, 'kW', 2, [], 1000),
-        irradiance: '-',
+        energyToday: this.formatMetric(payload.solarEnergyTodayWh, 'kWh', 2, [], 1000),
+        controllerCount: payload.solarControllerCount != null ? String(payload.solarControllerCount) : '-',
       },
       generator: {
         voltageL1: this.gridCpValue(payload.gensetVoltageL1, payload.extGensetL1Voltage, 'V', 1, [65535]),
