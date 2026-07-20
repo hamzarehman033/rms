@@ -147,6 +147,7 @@ export class AlarmComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event: DeviceDataEvent | null) => {
         if (!event?.decodedPayload) {
+          this.resetAlarmState();
           return;
         }
 
@@ -156,6 +157,7 @@ export class AlarmComponent implements OnInit {
 
   private loadDeviceContext(): void {
     this.isLoading = true;
+    this.resetAlarmState();
     this.devicesService.getDevices()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -292,6 +294,14 @@ export class AlarmComponent implements OnInit {
 
   private refreshRows(): void {
     this.alarmRows = Array.from(this.alarmBySignature.values()).sort((a, b) => b.occurredAtMs - a.occurredAtMs);
+  }
+
+  private resetAlarmState(): void {
+    this.deviceLabelById.clear();
+    this.activeSignatureBySlot.clear();
+    this.alarmBySignature.clear();
+    this.alarmRows = [];
+    this.nextAlarmId = 100;
   }
 
   private extractDeviceList(response: unknown): Record<string, unknown>[] {

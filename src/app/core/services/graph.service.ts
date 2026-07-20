@@ -20,6 +20,10 @@ export class GraphService {
 
   constructor(private readonly http: HttpClient) {}
 
+  clearCache(): void {
+    this.cache.clear();
+  }
+
   getSiteTotalLoad(payload: GraphRequestPayload, options?: GraphFetchOptions): Observable<GraphResponse> {
     return this.postGraph('/site-total-load', payload, options);
   }

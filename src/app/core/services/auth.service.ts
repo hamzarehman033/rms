@@ -1,10 +1,15 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CustomerService } from './customer.service';
 import { AppRole } from '../constants/roles';
+import { SignalrService } from './signalr.service';
+import { RealtimeDataSourceService } from './realtime-data-source.service';
+import { GraphService } from './graph.service';
+import { SitesStreamStateService } from './sites-stream-state.service';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +32,12 @@ export class AuthService {
   constructor(
     private router: Router,
     private http: HttpClient,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private signalrService: SignalrService,
+    private realtimeDataSourceService: RealtimeDataSourceService,
+    private graphService: GraphService,
+    private sitesStreamStateService: SitesStreamStateService,
+    private toastService: ToastService
   ) {
     this.updateAuthState(this.hasToken());
   }
@@ -99,9 +109,15 @@ export class AuthService {
   }
 
   logout(): void {
+    this.realtimeDataSourceService.clear();
+    this.graphService.clearCache();
+    this.sitesStreamStateService.clear();
+    this.toastService.clear();
+    void this.signalrService.stop();
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.USER_MODULES_KEY);
     this.customerService.clear();
     this.currentUserSubject.next(null);
     this.updateAuthState(false);

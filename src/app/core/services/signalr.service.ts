@@ -121,6 +121,8 @@ export class SignalrService {
     await this.hubConnection.stop();
     this.connected$.next(false);
     this.subscribedDeviceIds.clear();
+    this.deviceData$.next(null);
+    this.hubConnection = undefined;
     console.log('[SignalR] Hub connection stopped');
   }
 

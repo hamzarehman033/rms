@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DevicesService, RealtimeDataSourceService, SignalrService, Site, ToastService } from '@app/core';
+import { DevicesService, RealtimeDataSourceService, SignalrService, Site, SitesStreamStateService, ToastService } from '@app/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { SitesStreamStateService } from './sites-stream-state.service';
 
 type SiteFilterTab = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 

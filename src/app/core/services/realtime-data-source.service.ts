@@ -100,6 +100,12 @@ export class RealtimeDataSourceService {
     );
   }
 
+  clear(): void {
+    this.packetTimestampsMs.length = 0;
+    this.devicesState$.next({});
+    this.fleetMetricsState$.next(this.emptyFleetMetrics());
+  }
+
   private handleIncomingPacket(event: DeviceDataEvent): void {
     const packet = event.decodedPayload as DecodedPayload;
     const deviceId = this.resolveDeviceId(event, packet);
