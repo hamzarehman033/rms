@@ -81,16 +81,37 @@
   <div class="detail-cards-grid mb-6">
     <div class="card detail-card detail-card-grid">
       <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-bolt"></i></span><span>Grid / CP</span></div>
-      <div class="detail-row"><span class="detail-label">Voltage L1</span><span class="detail-value">{{ detailCards.gridCp.voltageL1 }}</span></div>
-      <div class="detail-row"><span class="detail-label">Voltage L2</span><span class="detail-value">{{ detailCards.gridCp.voltageL2 }}</span></div>
-      <div class="detail-row"><span class="detail-label">Voltage L3</span><span class="detail-value">{{ detailCards.gridCp.voltageL3 }}</span></div>
-      <div class="detail-row"><span class="detail-label">Frequency</span><span class="detail-value">{{ detailCards.gridCp.frequency }}</span></div>
-      <div class="detail-row"><span class="detail-label">Current Draw</span><span class="detail-value">{{ detailCards.gridCp.currentDraw }}</span></div>
-      <div class="detail-row"><span class="detail-label">Power</span><span class="detail-value">{{ detailCards.gridCp.power }}</span></div>
+      <div class="detail-row detail-row-compare detail-row-compare-head">
+        <span class="detail-label">Label</span>
+        <span class="detail-value">Grid</span>
+        <span class="detail-value">AC Meter</span>
+      </div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Voltage L1</span><span class="detail-value">{{ detailCards.gridCp.voltageL1.grid }}</span><span class="detail-value">{{ detailCards.gridCp.voltageL1.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Voltage L2</span><span class="detail-value">{{ detailCards.gridCp.voltageL2.grid }}</span><span class="detail-value">{{ detailCards.gridCp.voltageL2.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Voltage L3</span><span class="detail-value">{{ detailCards.gridCp.voltageL3.grid }}</span><span class="detail-value">{{ detailCards.gridCp.voltageL3.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Frequency</span><span class="detail-value">{{ detailCards.gridCp.frequency.grid }}</span><span class="detail-value">{{ detailCards.gridCp.frequency.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Power</span><span class="detail-value">{{ detailCards.gridCp.power.grid }}</span><span class="detail-value">{{ detailCards.gridCp.power.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Energy</span><span class="detail-value">{{ detailCards.gridCp.energy.grid }}</span><span class="detail-value">{{ detailCards.gridCp.energy.acMeter }}</span></div>
+    </div>
+
+    <div class="card detail-card detail-card-generator">
+      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-cog"></i></span><span>Generator</span></div>
+      <div class="detail-row detail-row-compare detail-row-compare-head">
+        <span class="detail-label">Label</span>
+        <span class="detail-value">Generator</span>
+        <span class="detail-value">AC Meter</span>
+      </div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Voltage L1</span><span class="detail-value">{{ detailCards.generator.voltageL1.grid }}</span><span class="detail-value">{{ detailCards.generator.voltageL1.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Voltage L2</span><span class="detail-value">{{ detailCards.generator.voltageL2.grid }}</span><span class="detail-value">{{ detailCards.generator.voltageL2.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Voltage L3</span><span class="detail-value">{{ detailCards.generator.voltageL3.grid }}</span><span class="detail-value">{{ detailCards.generator.voltageL3.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Frequency</span><span class="detail-value">{{ detailCards.generator.frequency.grid }}</span><span class="detail-value">{{ detailCards.generator.frequency.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Power</span><span class="detail-value">{{ detailCards.generator.power.grid }}</span><span class="detail-value">{{ detailCards.generator.power.acMeter }}</span></div>
+      <div class="detail-row detail-row-compare"><span class="detail-label">Energy</span><span class="detail-value">{{ detailCards.generator.energy.grid }}</span><span class="detail-value">{{ detailCards.generator.energy.acMeter }}</span></div>
     </div>
 
     <div class="card detail-card detail-card-rectifier">
       <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-bolt"></i></span><span>Rectifier</span></div>
+      <div class="detail-row"><span class="detail-label">LLVD Status</span><span class="detail-value">{{ detailCards.rectifier.lvd1Status }}</span></div>
       <div class="detail-row"><span class="detail-label">Output Voltage</span><span class="detail-value">{{ detailCards.rectifier.outputVoltage }}</span></div>
       <div class="detail-row"><span class="detail-label">Output Current</span><span class="detail-value">{{ detailCards.rectifier.outputCurrent }}</span></div>
       <div class="detail-row"><span class="detail-label">Output Power</span><span class="detail-value">{{ detailCards.rectifier.outputPower }}</span></div>
@@ -99,6 +120,7 @@
     </div>
 
     <div class="card detail-card detail-card-battery">
+      <div class="detail-row"><span class="detail-label">BLVD Status</span><span class="detail-value">{{ detailCards.batteryBank.blvdStatus }}</span></div>
       <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-box"></i></span><span>Battery Bank</span></div>
       <div class="detail-row"><span class="detail-label">State of Charge</span><span class="detail-value">{{ detailCards.batteryBank.stateOfCharge }}</span></div>
       <div class="detail-row"><span class="detail-label">Voltage</span><span class="detail-value">{{ detailCards.batteryBank.voltage }}</span></div>
@@ -114,15 +136,6 @@
       <div class="detail-row"><span class="detail-label">DC Current</span><span class="detail-value">{{ detailCards.solarPv.dcCurrent }}</span></div>
       <div class="detail-row"><span class="detail-label">Power Output</span><span class="detail-value">{{ detailCards.solarPv.powerOutput }}</span></div>
       <div class="detail-row"><span class="detail-label">Irradiance</span><span class="detail-value">{{ detailCards.solarPv.irradiance }}</span></div>
-    </div>
-
-    <div class="card detail-card detail-card-generator">
-      <div class="detail-card-head"><span class="detail-card-icon"><i class="pi pi-cog"></i></span><span>Generator</span></div>
-      <div class="detail-row"><span class="detail-label">Model</span><span class="detail-value">{{ detailCards.generator.model }}</span></div>
-      <div class="detail-row"><span class="detail-label">Fuel Level</span><span class="detail-value">{{ detailCards.generator.fuelLevel }}</span></div>
-      <div class="detail-row"><span class="detail-label">Run Hours</span><span class="detail-value">{{ detailCards.generator.runHours }}</span></div>
-      <div class="detail-row"><span class="detail-label">Oil Pressure</span><span class="detail-value">{{ detailCards.generator.oilPressure }}</span></div>
-      <div class="detail-row"><span class="detail-label">Coolant Temp</span><span class="detail-value">{{ detailCards.generator.coolantTemp }}</span></div>
     </div>
 
     <div class="card detail-card detail-card-alarm">

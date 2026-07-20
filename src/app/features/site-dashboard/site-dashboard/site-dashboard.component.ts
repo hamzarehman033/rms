@@ -18,6 +18,11 @@ interface TenantCard {
   allocation: number;
 }
 
+interface GridCpComparisonValue {
+  grid: string;
+  acMeter: string;
+}
+
 @Component({
   selector: 'app-site-dashboard',
   standalone: false,
@@ -46,12 +51,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
 
   detailCards = {
     gridCp: {
-      voltageL1: '-',
-      voltageL2: '-',
-      voltageL3: '-',
-      frequency: '-',
-      currentDraw: '-',
-      power: '-',
+      voltageL1: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      voltageL2: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      voltageL3: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      frequency: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      power: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      energy: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
     },
     rectifier: {
       outputVoltage: '-',
@@ -59,6 +64,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       outputPower: '-',
       efficiency: '-',
       dcBus: '-',
+      lvd1Status: '-',
     },
     batteryBank: {
       stateOfCharge: '-',
@@ -67,6 +73,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       capacity: '-',
       backupTime: '-',
       temp: '-',
+      blvdStatus: '-',
     },
     solarPv: {
       dcVoltage: '-',
@@ -75,11 +82,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       irradiance: '-',
     },
     generator: {
-      model: '-',
-      fuelLevel: '-',
-      runHours: '-',
-      oilPressure: '-',
-      coolantTemp: '-',
+      voltageL1: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      voltageL2: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      voltageL3: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      frequency: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      power: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
+      energy: { grid: '-', acMeter: '-' } as GridCpComparisonValue,
     },
     activeAlarms: {
       title: '-',
@@ -153,12 +161,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
     };
     this.detailCards = {
       gridCp: {
-        voltageL1: '-',
-        voltageL2: '-',
-        voltageL3: '-',
-        frequency: '-',
-        currentDraw: '-',
-        power: '-',
+        voltageL1: { grid: '-', acMeter: '-' },
+        voltageL2: { grid: '-', acMeter: '-' },
+        voltageL3: { grid: '-', acMeter: '-' },
+        frequency: { grid: '-', acMeter: '-' },
+        power: { grid: '-', acMeter: '-' },
+        energy: { grid: '-', acMeter: '-' },
       },
       rectifier: {
         outputVoltage: '-',
@@ -166,6 +174,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         outputPower: '-',
         efficiency: '-',
         dcBus: '-',
+        lvd1Status: '-',
       },
       batteryBank: {
         stateOfCharge: '-',
@@ -174,6 +183,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         capacity: '-',
         backupTime: '-',
         temp: '-',
+        blvdStatus: '-',
       },
       solarPv: {
         dcVoltage: '-',
@@ -182,11 +192,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         irradiance: '-',
       },
       generator: {
-        model: '-',
-        fuelLevel: '-',
-        runHours: '-',
-        oilPressure: '-',
-        coolantTemp: '-',
+        voltageL1: { grid: '-', acMeter: '-' },
+        voltageL2: { grid: '-', acMeter: '-' },
+        voltageL3: { grid: '-', acMeter: '-' },
+        frequency: { grid: '-', acMeter: '-' },
+        power: { grid: '-', acMeter: '-' },
+        energy: { grid: '-', acMeter: '-' },
       },
       activeAlarms: {
         title: '-',
@@ -304,12 +315,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
 
     this.detailCards = {
       gridCp: {
-        voltageL1: this.formatMetric(payload.lineAVoltage, 'V', 1),
-        voltageL2: this.formatMetric(payload.lineBVoltage, 'V', 1, [65535]),
-        voltageL3: this.formatMetric(payload.lineCVoltage, 'V', 1, [65535]),
-        frequency: this.formatMetric(payload.acFrequency, 'Hz', 1),
-        currentDraw: this.formatMetric(payload.dcLoadCurrent, 'A', 1, [32767]),
-        power: this.formatMetric(payload.totalAcInputPowerW, 'kW', 2, [], 1000),
+        voltageL1: this.gridCpValue(payload.lineAVoltage, payload.extMainL1Voltage, 'V', 1, [65535]),
+        voltageL2: this.gridCpValue(payload.lineBVoltage, payload.extMainL2Voltage, 'V', 1, [65535]),
+        voltageL3: this.gridCpValue(payload.lineCVoltage, payload.extMainL3Voltage, 'V', 1, [65535]),
+        frequency: this.gridCpValue(payload.acFrequency, payload.extMainFrequency, 'Hz', 1),
+        power: this.gridCpValue(payload.totalAcInputPowerW, payload.extMainTotalPowerW, 'kW', 2, [], 1000),
+        energy: this.gridCpValue(payload.totalAcEnergyWh, payload.extMainTotalEnergyWh, 'kWh', 2, [], 1000),
       },
       rectifier: {
         outputVoltage: this.formatMetric(payload.dcBusVoltage, 'V', 1),
@@ -317,6 +328,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         outputPower: this.formatMetric(payload.rectifierTotalDcPowerW, 'kW', 2, [], 1000),
         efficiency: this.calculateEfficiency(payload.rectifierTotalDcPowerW, payload.totalAcInputPowerW),
         dcBus: this.formatMetric(payload.dcBusVoltage, 'V', 1),
+        lvd1Status: payload.dcLvd1Status ? String(payload.dcLvd1Status) : '-',
       },
       batteryBank: {
         stateOfCharge: this.formatMetric(payload.batteryRemainingPercent, '%', 0),
@@ -325,6 +337,7 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         capacity: this.formatMetric(payload.batteryRemainingCapacityAh, 'Ah', 1),
         backupTime: this.formatMinutesAsDuration(payload.batteryBackupTimeMin ?? null),
         temp: this.formatMetric(payload.batteryTemperature, '°C', 1),
+        blvdStatus: payload.batteryLvdStatus ? String(payload.batteryLvdStatus) : '-',
       },
       solarPv: {
         dcVoltage: this.formatMetric(payload.solarVoltage, 'V', 1),
@@ -333,11 +346,12 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
         irradiance: '-',
       },
       generator: {
-        model: this.selectedDeviceDetails?.model || this.packetDeviceInfo.model || '-',
-        fuelLevel: this.formatMetric(payload.fuelLevelPercent, '%', 0),
-        runHours: this.formatMetric(payload.gensetRunHours, 'h', 0),
-        oilPressure: '-',
-        coolantTemp: this.formatMetric(payload.ambientTemperature2, '°C', 1),
+        voltageL1: this.gridCpValue(payload.gensetVoltageL1, payload.extGensetL1Voltage, 'V', 1, [65535]),
+        voltageL2: this.gridCpValue(payload.gensetVoltageL2, payload.extGensetL2Voltage, 'V', 1, [65535]),
+        voltageL3: this.gridCpValue(payload.gensetVoltageL3, payload.extGensetL3Voltage, 'V', 1, [65535]),
+        frequency: this.gridCpValue(payload.gensetFrequency, payload.extGensetFrequency, 'Hz', 1),
+        power: this.gridCpValue(payload.gensetPowerW, payload.extGensetTotalPowerW, 'kW', 2, [0xFFFFFFFF], 1000),
+        energy: this.gridCpValue(null, payload.extGensetTotalEnergyWh, 'kWh', 2, [0xFFFFFFFF], 1000),
       },
       activeAlarms: {
         title: alarmTitle,
@@ -439,6 +453,20 @@ export class SiteDashboardComponent implements OnInit, OnChanges, OnDestroy {
       return null;
     }
     return value;
+  }
+
+  private gridCpValue(
+    gridValue: number | null | undefined,
+    acMeterValue: number | null | undefined,
+    unit: string,
+    decimals = 1,
+    invalidValues: number[] = [],
+    scale = 1,
+  ): GridCpComparisonValue {
+    return {
+      grid: this.formatMetric(gridValue, unit, decimals, invalidValues, scale),
+      acMeter: this.formatMetric(acMeterValue, unit, decimals, invalidValues, scale),
+    };
   }
 
   private formatMetric(

@@ -147,6 +147,25 @@
   text-align: right;
   white-space: nowrap;
 }
+.detail-row-compare {
+  display: grid;
+  grid-template-columns: minmax(92px, 1.25fr) repeat(2, minmax(72px, 1fr));
+  align-items: center;
+}
+.detail-row-compare .detail-value {
+  text-align: right;
+}
+.detail-row-compare-head {
+  background: color-mix(in srgb, var(--detail-accent) 8%, transparent);
+}
+.detail-row-compare-head .detail-label,
+.detail-row-compare-head .detail-value {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
 .detail-card-grid {
   --detail-accent: #38bdf8;
 }
