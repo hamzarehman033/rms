@@ -67,8 +67,9 @@ export class AuthService {
 
   refreshToken(): Observable<any> {
     const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    const payload = { refreshToken };
-    return this.http.post(this.baseUrl + this.url + '/refresh', payload);
+    return this.http.get(this.baseUrl + this.url + '/refresh', {
+      params: { refreshToken: refreshToken ?? '' },
+    });
   }
 
   createAdminUser(payload: any): Observable<any> {
