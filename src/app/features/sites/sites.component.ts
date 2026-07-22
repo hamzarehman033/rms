@@ -33,7 +33,7 @@ export class SitesComponent implements OnInit, OnDestroy {
     dcBusVoltage: number | null;
     gridVoltage: number | null;
     activeAlarmCount: number;
-    alarmSeverity: string | null;
+    systemStatusCode: number | null;
   }>();
   private readonly activeStreamingDeviceIds: Set<number>;
   private readonly streamActionInProgressIds: Set<number>;
@@ -122,15 +122,15 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   getCriticalCount(): number {
-    return this.allSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'critical').length;
+    return this.allSites.filter(site => this.getRealtimeMetric(site)?.systemStatusCode === 2).length;
   }
 
   getMajorCount(): number {
-    return this.allSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'major').length;
+    return this.allSites.filter(site => this.getRealtimeMetric(site)?.systemStatusCode === 1).length;
   }
 
   getMinorCount(): number {
-    return this.allSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'minor').length;
+    return this.allSites.filter(site => this.getRealtimeMetric(site)?.systemStatusCode === 3).length;
   }
 
   getWarningCount(): number {
@@ -259,15 +259,15 @@ export class SitesComponent implements OnInit, OnDestroy {
     }
 
     if (this.selectedTab === 5) {
-      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'critical');
+      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.systemStatusCode === 2);
     }
 
     if (this.selectedTab === 6) {
-      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'major');
+      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.systemStatusCode === 1);
     }
 
     if (this.selectedTab === 7) {
-      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.alarmSeverity === 'minor');
+      filteredSites = filteredSites.filter(site => this.getRealtimeMetric(site)?.systemStatusCode === 3);
     }
 
     if (this.selectedPowerSourceFilter === 'generator') {
@@ -297,7 +297,7 @@ export class SitesComponent implements OnInit, OnDestroy {
 
   private isHealthySite(site: Site): boolean {
     const metric = this.getRealtimeMetric(site);
-    return !!metric && metric.activeAlarmCount === 0;
+    return !!metric && metric.systemStatusCode === 0;
   }
 
   private isOutageSite(site: Site): boolean {
@@ -470,7 +470,7 @@ export class SitesComponent implements OnInit, OnDestroy {
             dcBusVoltage: device.dcBusVoltage,
             gridVoltage: device.lineAVoltage,
             activeAlarmCount: device.activeAlarmCount,
-            alarmSeverity: device.alarmSeverity
+            systemStatusCode: device.systemStatusCode
           });
         });
 

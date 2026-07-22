@@ -1203,7 +1203,7 @@ export class DashboardComponent implements OnInit {
   }
 
   getHealthySitesCount(): number {
-    return this.realtimeDevices.filter(device => device.activeAlarmCount === 0).length;
+    return this.realtimeDevices.filter(device => device.systemStatusCode === 0).length;
   }
 
   getPacketsPerMinute(): number {
@@ -1226,15 +1226,15 @@ export class DashboardComponent implements OnInit {
   }
 
   getCriticalAlarmCount(): number | string {
-    return this.realtimeDevices.filter(device => device.alarmSeverity === 'critical').length;
+    return this.realtimeDevices.filter(device => device.systemStatusCode === 2).length;
   }
 
   getMajorAlarmCount(): number | string {
-    return this.realtimeDevices.filter(device => device.alarmSeverity === 'major').length;
+    return this.realtimeDevices.filter(device => device.systemStatusCode === 1).length;
   }
 
   getMinorAlarmCount(): number | string {
-    return this.realtimeDevices.filter(device => device.alarmSeverity === 'minor').length;
+    return this.realtimeDevices.filter(device => device.systemStatusCode === 3).length;
   }
 
   private getRealtimeGeneratorDevices(): DeviceRealtimeData[] {
@@ -1256,7 +1256,7 @@ export class DashboardComponent implements OnInit {
 
   getDgHealthySitesCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    return generatorDevices.filter(device => device.activeAlarmCount === 0).length;
+    return generatorDevices.filter(device => device.systemStatusCode === 0).length;
   }
 
   getDgPowerOutageSitesCount(): number {
@@ -1269,17 +1269,17 @@ export class DashboardComponent implements OnInit {
 
   getDgCriticalAlarmCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    return generatorDevices.filter(device => device.alarmSeverity === 'critical').length;
+    return generatorDevices.filter(device => device.systemStatusCode === 2).length;
   }
 
   getDgMajorAlarmCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    return generatorDevices.filter(device => device.alarmSeverity === 'major').length;
+    return generatorDevices.filter(device => device.systemStatusCode === 1).length;
   }
 
   getDgMinorAlarmCount(): number {
     const generatorDevices = this.getRealtimeGeneratorDevices();
-    return generatorDevices.filter(device => device.alarmSeverity === 'minor').length;
+    return generatorDevices.filter(device => device.systemStatusCode === 3).length;
   }
 
   getDgFleetPercentageText(count: number): string {
