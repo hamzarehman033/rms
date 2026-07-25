@@ -398,58 +398,58 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   async toggleDeviceStream(device: Site): Promise<void> {
-    const deviceId = this.toDeviceNumericId(device);
-    if (deviceId === null) {
-      this.toastService.showError('Invalid device id');
-      return;
-    }
+    // const deviceId = this.toDeviceNumericId(device);
+    // if (deviceId === null) {
+    //   this.toastService.showError('Invalid device id');
+    //   return;
+    // }
 
-    if (this.streamActionInProgressIds.has(deviceId)) {
-      return;
-    }
+    // if (this.streamActionInProgressIds.has(deviceId)) {
+    //   return;
+    // }
 
-    const isActive = this.activeStreamingDeviceIds.has(deviceId);
-    this.streamActionInProgressIds.add(deviceId);
+    // const isActive = this.activeStreamingDeviceIds.has(deviceId);
+    // this.streamActionInProgressIds.add(deviceId);
 
-    if (!isActive) {
-      this.devicesService.startDeviceListening(deviceId).subscribe({
-        next: async (response: any) => {
-          try {
-            await this.signalrService.start();
-            await this.signalrService.subscribeToDevice(deviceId);
-            this.activeStreamingDeviceIds.add(deviceId);
-            this.toastService.showSuccess(response.message || 'Stream started');
-          } catch (error) {
-            this.toastService.showError('Failed to open socket subscription');
-          } finally {
-            this.streamActionInProgressIds.delete(deviceId);
-          }
-        },
-        error: (error: any) => {
-          this.streamActionInProgressIds.delete(deviceId);
-          this.toastService.showError(error?.error?.message || 'Failed to start MQTT listener');
-        }
-      });
-      return;
-    }
+    // if (!isActive) {
+    //   this.devicesService.startDeviceListening(deviceId).subscribe({
+    //     next: async (response: any) => {
+    //       try {
+    //         await this.signalrService.start();
+    //         await this.signalrService.subscribeToDevice(deviceId);
+    //         this.activeStreamingDeviceIds.add(deviceId);
+    //         this.toastService.showSuccess(response.message || 'Stream started');
+    //       } catch (error) {
+    //         this.toastService.showError('Failed to open socket subscription');
+    //       } finally {
+    //         this.streamActionInProgressIds.delete(deviceId);
+    //       }
+    //     },
+    //     error: (error: any) => {
+    //       this.streamActionInProgressIds.delete(deviceId);
+    //       this.toastService.showError(error?.error?.message || 'Failed to start MQTT listener');
+    //     }
+    //   });
+    //   return;
+    // }
 
-    this.devicesService.stopDeviceListening(deviceId).subscribe({
-      next: async (response: any) => {
-        try {
-          await this.signalrService.unsubscribeFromDevice(deviceId);
-          this.activeStreamingDeviceIds.delete(deviceId);
-          this.toastService.showSuccess(response.message || 'Stream stopped');
-        } catch (error) {
-          this.toastService.showError('Failed to close socket subscription');
-        } finally {
-          this.streamActionInProgressIds.delete(deviceId);
-        }
-      },
-      error: (error: any) => {
-        this.streamActionInProgressIds.delete(deviceId);
-        this.toastService.showError(error?.error?.message || 'Failed to stop MQTT listener');
-      }
-    });
+    // this.devicesService.stopDeviceListening(deviceId).subscribe({
+    //   next: async (response: any) => {
+    //     try {
+    //       await this.signalrService.unsubscribeFromDevice(deviceId);
+    //       this.activeStreamingDeviceIds.delete(deviceId);
+    //       this.toastService.showSuccess(response.message || 'Stream stopped');
+    //     } catch (error) {
+    //       this.toastService.showError('Failed to close socket subscription');
+    //     } finally {
+    //       this.streamActionInProgressIds.delete(deviceId);
+    //     }
+    //   },
+    //   error: (error: any) => {
+    //     this.streamActionInProgressIds.delete(deviceId);
+    //     this.toastService.showError(error?.error?.message || 'Failed to stop MQTT listener');
+    //   }
+    // });
   }
 
   onSiteConfigured() {
