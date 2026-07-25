@@ -26,14 +26,13 @@ export class AddUserComponent implements OnInit, OnChanges {
   modules = [
     { id: Menu.Overview, label: 'Overview', value: 'dashboard', icon: 'pi pi-chart-bar', selected: false },
     { id: Menu.Sites, label: 'Sites', value: 'devices', icon: 'pi pi-server', selected: false },
-    // { id: Menu.Telemetry, label: 'Telemetry', value: 'telemetry', icon: 'pi pi-chart-line', selected: false },
     { id: Menu.Alarms, label: 'Alarms', value: 'alarms', icon: 'pi pi-bell', selected: false },
     { id: Menu.Reports, label: 'Reports', value: 'reports', icon: 'pi pi-file-pdf', selected: false },
     { id: Menu.Locations, label: 'Locations', value: 'locations', icon: 'pi pi-map-marker', selected: false },
     { id: Menu.Tenants, label: 'Tenant', value: 'tenant', icon: 'pi pi-building', selected: false },
     { id: Menu.Users, label: 'Users', value: 'users', icon: 'pi pi-users', selected: false },
-    { id: Menu.Customers, label: 'Customers', value: 'customers', icon: 'pi pi-building', selected: false },
-    { id: Menu.Settings, label: 'Settings', value: 'settings', icon: 'pi pi-cog', selected: false }
+    // { id: Menu.Customers, label: 'Customers', value: 'customers', icon: 'pi pi-building', selected: false },
+    // { id: Menu.Settings, label: 'Settings', value: 'settings', icon: 'pi pi-cog', selected: false }
   ];
 
   constructor(

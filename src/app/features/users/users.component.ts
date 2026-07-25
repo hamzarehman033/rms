@@ -124,6 +124,10 @@ export class UsersComponent {
     return this.users.filter(u => this.getPrimaryRole(u) === AppRole.Admin).length;
   }
 
+  get managerUsers(): number {
+    return this.users.filter(u => this.getPrimaryRole(u) === AppRole.Manager).length;
+  }
+
   get userUsers(): number {
     return this.users.filter(u => this.getPrimaryRole(u) === AppRole.User).length;
   }
@@ -140,12 +144,14 @@ export class UsersComponent {
     let filtered = this.users;
 
     if (this.selectedTab === 1) {
-      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Admin);
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Manager);
     } else if (this.selectedTab === 2) {
-      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.User);
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Admin);
     } else if (this.selectedTab === 3) {
-      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Technician);
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.User);
     } else if (this.selectedTab === 4) {
+      filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Technician);
+    } else if (this.selectedTab === 5) {
       filtered = filtered.filter(u => this.getPrimaryRole(u) === AppRole.Viewer);
     }
 
@@ -170,6 +176,7 @@ export class UsersComponent {
 
     const roleMap: Record<string, AppRole> = {
       admin: AppRole.Admin,
+      manager: AppRole.Manager,
       user: AppRole.User,
       technician: AppRole.Technician,
       viewer: AppRole.Viewer,

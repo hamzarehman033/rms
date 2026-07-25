@@ -56,7 +56,7 @@ export class LoginComponent implements OnInit {
       tap((response: any) => {
         this.authService.handleLoginSuccess(response);
       }),
-      switchMap(() => this.initializeCustomerFlow()),
+      switchMap(() => this.customerService.initializeCustomerFlow()),
       finalize(() => {
         this.isLoading = false;
       })
@@ -79,17 +79,4 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  private initializeCustomerFlow() {
-    return this.customerService.getCustomers().pipe(
-      tap((response: any) => {
-        this.customerService.initializeFromApiResponse(response);
-      }),
-      map(() => void 0),
-      catchError((error) => {
-        console.error('Failed to initialize customers:', error);
-        this.customerService.clear();
-        return of(void 0);
-      })
-    );
-  }
 }

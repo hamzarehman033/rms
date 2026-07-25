@@ -9,10 +9,11 @@
   <div class="hstack justify-between flex-wrap gap-3">
     <div class="tabs">
       <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalUsers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Admins <span class="muted">{{ adminUsers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Users <span class="muted">{{ userUsers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Technicians <span class="muted">{{ technicianUsers }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">Viewers <span class="muted">{{ viewerUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Managers <span class="muted">{{ managerUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Admins <span class="muted">{{ adminUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Users <span class="muted">{{ userUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="selectedTab = 4">Technicians <span class="muted">{{ technicianUsers }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 5 }" (click)="selectedTab = 5">Viewers <span class="muted">{{ viewerUsers }}</span></button>
     </div>
     <div class="hstack">
       <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID, name, or email..." (input)="searchTerm = $any($event).target.value"></div>

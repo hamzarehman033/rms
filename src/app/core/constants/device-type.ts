@@ -1,7 +1,7 @@
 export enum DeviceType {
   Normal = 'Normal',
   VIP = 'VIP',
-  Platinium = 'Platinium',
+  Platinum = 'Platinum',
 }
 
 export interface DeviceTypeOption {
@@ -12,5 +12,5 @@ export interface DeviceTypeOption {
 export const DEVICE_TYPE_OPTIONS: DeviceTypeOption[] = [
   { label: 'Normal', value: DeviceType.Normal },
   { label: 'VIP', value: DeviceType.VIP },
-  { label: 'Platinium', value: DeviceType.Platinium },
+  { label: 'Platinum', value: DeviceType.Platinum },
 ];

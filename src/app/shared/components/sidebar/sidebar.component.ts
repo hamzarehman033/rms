@@ -5,6 +5,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Menu } from '../../../core/constants/sideMenu';
 import { AuthService } from '../../../core/services/auth.service';
+import { AppRole } from '../../../core/constants/roles';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,6 +20,7 @@ export class SidebarComponent implements OnInit {
 
   Menu = Menu;
   userModules: number[] = [];
+  isSysAdmin = false;
 
   constructor(private customerService: CustomerService, private authService: AuthService) {}
 
@@ -29,10 +31,11 @@ export class SidebarComponent implements OnInit {
       .subscribe(activeCustomer => {
         this.hasActiveCustomer = !!activeCustomer?.id;
       });
+    this.isSysAdmin = this.authService.hasRole(AppRole.SysAdmin);
   }
 
   userHasModule(moduleId: number): boolean {
-    return this.userModules.includes(moduleId);
+    return this.userModules.includes(moduleId) || this.isSysAdmin;
   }
 
 }

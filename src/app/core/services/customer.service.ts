@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface CustomerContextItem {
@@ -122,6 +122,20 @@ export class CustomerService {
       localStorage.removeItem(this.CUSTOMERS_CACHE_KEY);
       localStorage.removeItem(this.ACTIVE_CUSTOMER_ID_KEY);
     }
+  }
+
+  initializeCustomerFlow(): Observable<void> {
+    return this.getCustomers().pipe(
+      tap((response: any) => {
+        this.initializeFromApiResponse(response);
+      }),
+      map(() => void 0),
+      catchError((error) => {
+        console.error('Failed to initialize customers:', error);
+        this.clear();
+        return of(void 0);
+      })
+    );
   }
 
 }

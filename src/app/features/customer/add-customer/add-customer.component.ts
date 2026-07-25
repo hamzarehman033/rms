@@ -17,6 +17,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
   customerForm: FormGroup;
   isLoading = false;
   isEditMode = false;
+  hasActiveCustomer = false;
   customerTypes = [
     { label: 'Individual', value: 'individual' },
     { label: 'Business', value: 'business' },
@@ -54,6 +55,10 @@ export class AddCustomerComponent implements OnInit, OnChanges {
       this.isEditMode = true;
       this.fetchAndPopulateCustomerData();
     }
+    this.customerService.activeCustomer$
+      .subscribe(activeCustomer => {
+        this.hasActiveCustomer = !!activeCustomer;
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -142,6 +147,9 @@ export class AddCustomerComponent implements OnInit, OnChanges {
           this.toastService.showSuccess('Success', 'Customer created successfully.');
           this.customerAdded.emit(response);
           this.customerForm.reset();
+          if (!this.hasActiveCustomer) {
+            this.customerService.initializeCustomerFlow().subscribe();
+          }
         },
         error: (error: any) => {
           this.isLoading = false;
