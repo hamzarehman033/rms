@@ -26,7 +26,6 @@ export class SitesComponent implements OnInit, OnDestroy {
   sites: Site[] = [];
   allSites: Site[] = [];
   private readonly destroy$ = new Subject<void>();
-  private readonly powerSourceByDeviceId = new Map<number, string>();
   private readonly realtimeMetricsByDeviceId = new Map<number, {
     batteryPercent: number | null;
     loadKw: number | null;
@@ -58,7 +57,6 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.powerSourceByDeviceId.clear();
     this.realtimeMetricsByDeviceId.clear();
     this.destroy$.next();
     this.destroy$.complete();
@@ -70,12 +68,8 @@ export class SitesComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         const list = response?.data?.pageData || response?.data || response || [];
         const normalized = Array.isArray(list) ? list : [];
-        this.powerSourceByDeviceId.clear();
         for (const item of normalized) {
           const deviceId = this.toDeviceNumericIdFromAny(item);
-          if (deviceId !== null) {
-            this.powerSourceByDeviceId.set(deviceId, this.resolvePowerSourceLabel(item));
-          }
         }
         this.allSites = normalized.map((item: any) => this.mapApiSite(item));
         this.sites = this.getFilteredSites();
@@ -84,7 +78,6 @@ export class SitesComponent implements OnInit, OnDestroy {
       error: () => {
         this.allSites = [];
         this.sites = [];
-        this.powerSourceByDeviceId.clear();
         this.isLoading = false;
         this.toastService.showError('Failed to load sites');
       }
@@ -172,15 +165,6 @@ export class SitesComponent implements OnInit, OnDestroy {
       const normalized = String(site?.status ?? '').trim().toLowerCase();
       return normalized === 'warning' || normalized === 'offline' || normalized === 'down';
     }).length;
-  }
-
-  getPowerSource(site: Site): string {
-    const deviceId = this.toDeviceNumericId(site);
-    if (deviceId === null) {
-      return '-';
-    }
-
-    return this.powerSourceByDeviceId.get(deviceId) ?? '-';
   }
 
   getSiteStatus(site: Site): string {
@@ -350,8 +334,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   }
 
   private siteHasGenerator(site: Site): boolean {
-    const powerSource = this.getPowerSource(site).toLowerCase();
-    return powerSource.includes('generator') || powerSource.includes('gen');
+    return site.powerSources?.some(source => source.toLowerCase().includes('generator')) ?? false;
   }
 
   openAddSiteDialog() {
@@ -510,6 +493,7 @@ export class SitesComponent implements OnInit, OnDestroy {
       mqttPort: item.mqttPort,
       mqttClientId: item.mqttClientId,
       useTls: item.useTls,
+      powerSources: item.powerSources || [],
       keepAliveSeconds: item.keepAliveSeconds,
       rmsSubscribeTopic: item.rmsSubscribeTopic,
       aiSubscribeTopic: item.aiSubscribeTopic,
@@ -523,18 +507,6 @@ export class SitesComponent implements OnInit, OnDestroy {
       ...(item as any).alarmsCount !== undefined ? { alarmsCount: (item as any).alarmsCount } : {},
       ...(item as any).warningCount !== undefined ? { warningCount: (item as any).warningCount } : {}
     };
-  }
-
-  private resolvePowerSourceLabel(item: any): string {
-    const powerSources = item?.powerSources;
-    if (!Array.isArray(powerSources) || powerSources.length === 0) {
-      return '-';
-    }
-
-    return powerSources
-      .map(source => String(source ?? '').trim())
-      .filter(Boolean)
-      .join(', ');
   }
 
   private toDeviceNumericIdFromAny(item: any): number | null {

@@ -23,6 +23,7 @@ export interface Site {
   mqttHost?: string;
   mqttPort?: number;
   mqttClientId?: string;
+  powerSources?: string[];
   useTls?: boolean;
   keepAliveSeconds?: number;
   rmsSubscribeTopic?: string;

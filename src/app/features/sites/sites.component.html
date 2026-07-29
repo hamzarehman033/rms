@@ -109,7 +109,7 @@
           <td>{{ site.regionName || '-' }}</td>
           <td>{{ site.subRegionName || '-' }}</td>
           <td>{{ site.zoneName || '-' }}</td>
-          <td>{{ getPowerSource(site) }}</td>
+          <td>{{ site.powerSources?.join(', ') || '-' }}</td>
           <td class="mono">{{ getBatteryPercentage(site) }}</td>
           <!-- <td class="mono">{{ getLoadKw(site) }}</td> -->
           <td class="mono">{{ getRectDcVoltage(site) }}</td>
