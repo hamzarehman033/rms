@@ -9,7 +9,10 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 
-let isRefreshing = false;
+function isAuthEndpoint(url: string): boolean {
+  const normalized = url.toLowerCase();
+  return normalized.includes('/auth/token') || normalized.includes('/auth/refresh');
+}
 
 export const tokenRefreshInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
@@ -17,47 +20,29 @@ export const tokenRefreshInterceptor: HttpInterceptorFn = (
 ): Observable<any> => {
   const authService = inject(AuthService);
 
+  if (isAuthEndpoint(req.url)) {
+    return next(req);
+  }
+
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // If 401 and we have a refresh token, try to refresh
-      if (error.status === 401 && authService.getRefreshToken() && !isRefreshing) {
-        isRefreshing = true;
+      if (error.status !== 401 || !authService.getRefreshToken()) {
+        return throwError(() => error);
+      }
 
-        return authService.refreshToken().pipe(
-          switchMap((response: any) => {
-            isRefreshing = false;
-              
-            // Support both raw and wrapped response contracts.
-            const tokenData = response?.data ?? response;
-            if (tokenData?.accessToken) {
-              localStorage.setItem('access_token', tokenData.accessToken);
-            }
-            if (tokenData?.refreshToken) {
-              localStorage.setItem('refresh_token', tokenData.refreshToken);
-            }
-
-            // Retry original request with new token.
-            const token = tokenData?.accessToken;
-            req = req.clone({
-              setHeaders: token
-                ? {
-                    Authorization: `Bearer ${token}`
-                  }
-                : {}
-            });
-
-            return next(req);
-          }),
+      return authService.refreshToken().pipe(
+        switchMap((accessToken: string) =>
+          next(
+            req.clone({
+              setHeaders: { Authorization: `Bearer ${accessToken}` },
+            })
+          )
+        ),
           catchError((refreshError) => {
-            isRefreshing = false;
-            // Refresh failed, logout user.
             authService.logout();
             return throwError(() => refreshError);
           })
-        );
-      }
-
-      return throwError(() => error);
+      );
     })
   );
 };

@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { finalize, map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CustomerService } from './customer.service';
@@ -17,10 +18,12 @@ import { ToastService } from './toast.service';
 export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-  
+
   private currentUserSubject = new BehaviorSubject<any>(this.getUserFromToken());
   public currentUser$ = this.currentUserSubject.asObservable();
   
+  private refreshInFlight$: Observable<string> | null = null;
+
   baseUrl: string = environment.baseUrl;
   url: string = '/Auth';
 
@@ -39,7 +42,7 @@ export class AuthService {
     private sitesStreamStateService: SitesStreamStateService,
     private toastService: ToastService
   ) {
-    this.updateAuthState(this.hasToken());
+    this.updateAuthState(this.hasToken() || !!this.getRefreshToken());
   }
 
   login(payload: any): Observable<any> {
@@ -65,11 +68,47 @@ export class AuthService {
     this.updateAuthState(true);
   }
 
-  refreshToken(): Observable<any> {
-    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    return this.http.get(this.baseUrl + this.url + '/refresh', {
-      params: { refreshToken: refreshToken ?? '' },
-    });
+  /** Shared in-flight refresh; returns the new access token. */
+  refreshToken(): Observable<string> {
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token'));
+    }
+
+    this.refreshInFlight$ = this.http
+      .get(this.baseUrl + this.url + '/refresh', { params: { refreshToken } })
+      .pipe(
+        map((response: any) => {
+          const data = response?.data ?? response;
+          const accessToken = data?.token ?? data?.accessToken;
+          if (!accessToken) {
+            throw new Error('Refresh response missing access token');
+          }
+
+          localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
+          if (data.refreshToken) {
+            localStorage.setItem(this.REFRESH_TOKEN_KEY, data.refreshToken);
+          }
+
+          const user = this.extractUserFromToken(accessToken);
+          if (user) {
+            localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+            this.currentUserSubject.next(user);
+          }
+          this.updateAuthState(true);
+          return accessToken as string;
+        }),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+
+    return this.refreshInFlight$;
   }
 
   createAdminUser(payload: any): Observable<any> {
@@ -110,6 +149,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.refreshInFlight$ = null;
     this.realtimeDataSourceService.clear();
     this.graphService.clearCache();
     this.sitesStreamStateService.clear();
@@ -126,6 +166,9 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
+    if (this.getRefreshToken()) {
+      return true;
+    }
     return this.hasToken() && !this.isTokenExpired();
   }
 

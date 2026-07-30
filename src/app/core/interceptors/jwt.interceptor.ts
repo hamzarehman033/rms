@@ -18,12 +18,16 @@ export const jwtInterceptor: HttpInterceptorFn = (
   const activeCustomerId = customerService.getActiveCustomerId();
   const isAuthRequest = req.url.toLowerCase().includes('/auth/token');
 
+  if (isAuthRequest) {
+    return next(req);
+  }
+
   if (token) {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,
     };
 
-    if (activeCustomerId && !isAuthRequest) {
+    if (activeCustomerId) {
       const customerId = String(activeCustomerId).trim();
       if (customerId) {
         headers['X-Customer-Id'] = customerId;
