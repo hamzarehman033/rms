@@ -17,7 +17,7 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/rms",
-            "baseHref": "/demo/",
+            "baseHref": "/",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -32,10 +32,6 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              },
-              { "glob": "staticwebapp.config.json", 
-                "input": "src", 
-                "output": "/staticwebapp.config.json" 
               }
             ],
             "styles": [
