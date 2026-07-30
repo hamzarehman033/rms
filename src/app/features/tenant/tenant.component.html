@@ -86,8 +86,8 @@
 
 <!-- Add Tenant Dialog -->
 <app-modal-dialog [(visible)]="displayAddTenantDialog" header="Add New Tenant"
-  (onHide)="displayAddTenantDialog = false">
-  <app-add-tenant (tenantAdded)="onTenantAdded($event)"></app-add-tenant>
+  (onHide)="closeAddTenantDialog()">
+  <app-add-tenant (closeDialog)="closeAddTenantDialog()" (tenantAdded)="onTenantAdded($event)"></app-add-tenant>
 </app-modal-dialog>
 
 <!-- Edit Tenant Dialog -->
@@ -95,6 +95,7 @@
   (onHide)="selectedTenantForEdit = null">
   <app-add-tenant
     [tenantData]="selectedTenantForEdit"
+    (closeDialog)="closeEditTenantDialog()"
     (tenantUpdated)="onTenantUpdated($event)">
   </app-add-tenant>
 </app-modal-dialog>

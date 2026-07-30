@@ -15,7 +15,7 @@
             placeholder="Enter location code"
             class="w-full" />
         <small class="error" *ngIf="locationForm.get('code')?.invalid && locationForm.get('code')?.touched">
-            Code is required and must be at least 2 characters
+            Code is required, at least 2 characters, and may only contain letters and digits (no spaces)
         </small>
     </div>
 </form>

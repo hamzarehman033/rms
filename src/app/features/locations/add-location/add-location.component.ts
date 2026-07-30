@@ -26,7 +26,7 @@ export class AddLocationComponent implements OnInit, OnChanges {
   constructor(private fb: FormBuilder) {
     this.locationForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      code: ['', [Validators.required, Validators.minLength(2)]],
+      code: ['', [Validators.required, Validators.minLength(2), Validators.pattern('^[A-Za-z0-9]+$')]],
       parentId: [0, Validators.required],
       level: [1, Validators.required]
     });

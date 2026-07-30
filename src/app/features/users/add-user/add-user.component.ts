@@ -101,6 +101,7 @@ export class AddUserComponent implements OnInit, OnChanges {
           this.toastService.showSuccess('Success', 'User updated successfully.');
           this.userUpdated.emit(response);
           this.userForm.reset();
+          this.modules.forEach(_module => _module.selected = false);
           this.isEditMode = false;
         },
         error: (error: any) => {
@@ -118,6 +119,7 @@ export class AddUserComponent implements OnInit, OnChanges {
         this.isLoading = false;
         this.toastService.showSuccess('Success', 'User created successfully.');
         this.userAdded.emit(response);
+        this.modules.forEach(_module => _module.selected = false);
         this.userForm.reset();
       },
       error: (error: any) => {

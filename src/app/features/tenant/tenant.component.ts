@@ -66,6 +66,15 @@ export class TenantComponent {
     });
   }
 
+  closeAddTenantDialog(): void {
+    this.displayAddTenantDialog = false;
+  }
+
+  closeEditTenantDialog(): void {
+    this.displayEditTenantDialog = false;
+    this.selectedTenantForEdit = null;
+  }
+
   openEditTenantDialog(tenant: Tenant): void {
     this.selectedTenantForEdit = tenant;
     this.displayEditTenantDialog = true;

@@ -11,6 +11,7 @@ export class AddTenantComponent implements OnChanges {
   @Input() tenantData: any = null;
   @Output() tenantAdded = new EventEmitter<any>();
   @Output() tenantUpdated = new EventEmitter<any>();
+  @Output() closeDialog = new EventEmitter<any>();
 
   tenantForm: FormGroup;
   isEditMode = false;
@@ -55,6 +56,7 @@ export class AddTenantComponent implements OnChanges {
       } else {
         this.tenantAdded.emit(this.tenantForm.value);
       }
+      this.resetForm();
     }
   }
 
@@ -65,5 +67,6 @@ export class AddTenantComponent implements OnChanges {
       status: 'Active',
       description: ''
     });
+    this.closeDialog.emit();
   }
 }
