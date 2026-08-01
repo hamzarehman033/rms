@@ -1,1 +1,0 @@
-var a=(t=>(t[t.BatteryStatus=0]="BatteryStatus",t[t.SolarStatus=1]="SolarStatus",t[t.GridStatus=2]="GridStatus",t[t.AlarmStatus=3]="AlarmStatus",t[t.EnergyConsumption=4]="EnergyConsumption",t))(a||{});var n=[{label:"Excel",value:0},{label:"JSON",value:1},{label:"CSV",value:2},{label:"PDF",value:3}];export{a,n as b};
