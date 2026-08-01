@@ -19,6 +19,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "ehs",
+        loadChildren: () =>
+          import("./features/ehs/ehs.module").then((m) => m.EhsModule),
+      },
+      {
+        path: "security",
+        loadChildren: () =>
+          import("./features/security/security.module").then(
+            (m) => m.SecurityModule,
+          ),
+      },
+      {
         path: "alarm",
         loadChildren: () =>
           import("./features/alarm/alarm.module").then((m) => m.AlarmModule),
@@ -61,6 +73,20 @@ export const routes: Routes = [
         loadChildren: () =>
           import("./features/site-dashboard/site-dashboard.module").then(
             (m) => m.SiteDashboardModule,
+          ),
+      },
+      {
+        path: "ehs-details",
+        loadChildren: () =>
+          import("./features/ehs-details/ehs-details.module").then(
+            (m) => m.EhsDetailsModule,
+          ),
+      },
+      {
+        path: "security-details",
+        loadChildren: () =>
+          import("./features/security-details/security-details.module").then(
+            (m) => m.SecurityDetailsModule,
           ),
       },
       {

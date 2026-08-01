@@ -1,0 +1,12 @@
+<main class="content ehs-details-tabs-shell">
+  <p-tabs [(value)]="activeTab">
+    <p-tablist>
+      <p-tab value="details">Details</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="details">
+        <app-ehs-device-detail [deviceDetails]="deviceDetails"></app-ehs-device-detail>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</main>

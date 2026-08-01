@@ -23,6 +23,14 @@
             <i class="pi pi-home"></i>
             <span>Overview</span>
           </a></li>
+        <li *ngIf="userHasModule(Menu.EHS)"><a class="menu-btn" [routerLink]="'/ehs'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="pi pi-shield"></i>
+            <span>EHS</span>
+          </a></li>
+        <li *ngIf="userHasModule(Menu.Security)"><a class="menu-btn" [routerLink]="'/security'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="pi pi-lock"></i>
+            <span>Security</span>
+          </a></li>
         <li *ngIf="userHasModule(Menu.Sites)"><a class="menu-btn" [routerLink]="'/sites'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
             <i class="pi pi-building"></i>
             <span>Sites</span>

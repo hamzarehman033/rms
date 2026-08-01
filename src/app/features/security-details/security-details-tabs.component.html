@@ -1,0 +1,12 @@
+<main class="content security-details-tabs-shell">
+  <p-tabs [(value)]="activeTab">
+    <p-tablist>
+      <p-tab value="details">Details</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="details">
+        <app-security-device-detail [deviceDetails]="deviceDetails"></app-security-device-detail>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</main>

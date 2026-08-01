@@ -7,32 +7,41 @@
                 <input placeholder="Search filters…" />
             </div>
 
-            <div style="margin-top: 1rem;">
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Region</label>
+            <div style="margin-top: 0.5rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.2rem;">Site Type</label>
+                <select style="width: 100%; padding: 0.5rem; font-size: 13px;" [value]="selectedAiInstallFilter" (change)="onAiInstallFilterChange($any($event.target).value)">
+                    <option value="all">All</option>
+                    <option value="ehs">EHS Installed</option>
+                    <option value="security">Security Installed</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 0.5rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.2rem;">Region</label>
                 <select style="width: 100%; padding: 0.5rem; font-size: 13px;" [value]="selectedRegion" (change)="onRegionChange($any($event.target).value)">
                     <option value="">All Regions</option>
                     <option *ngFor="let region of regionOptions" [value]="region.name">{{ region.name  }}</option>
                 </select>
             </div>
 
-            <div style="margin-top: 1rem;">
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Sub Region</label>
+            <div style="margin-top: 0.5rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.2rem;">Sub Region</label>
                 <select style="width: 100%; padding: 0.5rem; font-size: 13px;" [value]="selectedSubRegion" (change)="onSubRegionChange($any($event.target).value)">
                     <option value="">All Sub Regions</option>
                     <option *ngFor="let subRegion of subRegionOptions" [value]="subRegion.name">{{ subRegion.name }}</option>
                 </select>
             </div>
 
-            <div style="margin-top: 1rem;">
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Zone</label>
+            <div style="margin-top: 0.5rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.2rem;">Zone</label>
                 <select style="width: 100%; padding: 0.5rem; font-size: 13px;" [value]="selectedZone" (change)="selectedZone = $any($event.target).value; onFilterChange()">
                     <option value="">All Zones</option>
                     <option *ngFor="let zone of zoneOptions" [value]="zone.name">{{ zone.name }}</option>
                 </select>
             </div>
 
-            <div style="margin-top: 1rem;">
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Device</label>
+            <div style="margin-top: 0.5rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.2rem;">Device</label>
                 <select style="width: 100%; padding: 0.5rem; font-size: 13px;" [value]="selectedDeviceId" (change)="selectedDeviceId = $any($event.target).value; onFilterChange()">
                     <option value="">All Devices</option>
                     <option *ngFor="let device of deviceOptions" [value]="device.value">{{ device.label }}</option>
@@ -40,8 +49,8 @@
             </div>
 
             <!-- Battery Level Filter -->
-            <div style="margin-top: 1rem;">
-                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.5rem;">Battery Level: {{ selectedBatteryLevel }}%+</label>
+            <div style="margin-top: 0.5rem;">
+                <label style="font-size: 12px; font-weight: 500; display: block; margin-bottom: 0.2rem;">Battery Level: {{ selectedBatteryLevel }}%+</label>
                 <input type="range" min="0" max="100" [value]="selectedBatteryLevel" (input)="selectedBatteryLevel = +$any($event.target).value; onFilterChange()" style="width: 100%;">
             </div>
             

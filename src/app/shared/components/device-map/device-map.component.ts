@@ -20,6 +20,8 @@ export interface Device {
   regionName?: string;
   subRegionName?: string;
   zoneName?: string;
+  aiEhsInstalled?: boolean;
+  aiSecurityInstalled?: boolean;
 }
 
 @Component({
@@ -38,6 +40,7 @@ export class DeviceMapComponent implements OnInit, AfterViewInit {
   selectedSubRegion: any = null;
   selectedZone: any = null;
   selectedBatteryLevel = 0;
+  selectedAiInstallFilter = 'all';
   deviceOptions: Array<{ label: string; value: string }> = [];
   regionOptions: any[] = [];
   subRegionOptions: any[] = [];
@@ -102,10 +105,19 @@ export class DeviceMapComponent implements OnInit, AfterViewInit {
       const matchesZone = !this.selectedZone || device.zoneName === this.selectedZone;
       const matchesDevice = !this.selectedDeviceId || device.id === this.selectedDeviceId;
       const matchesBattery = !this.selectedBatteryLevel || Number(device.battery ?? 0) >= this.selectedBatteryLevel;
-      return matchesRegion && matchesSubRegion && matchesZone && matchesDevice && matchesBattery;
+      const matchesAiInstall =
+        this.selectedAiInstallFilter === 'all' ||
+        (this.selectedAiInstallFilter === 'ehs' && !!device.aiEhsInstalled) ||
+        (this.selectedAiInstallFilter === 'security' && !!device.aiSecurityInstalled);
+      return matchesRegion && matchesSubRegion && matchesZone && matchesDevice && matchesBattery && matchesAiInstall;
     });
 
     this.renderMarkers(fitBounds);
+  }
+
+  onAiInstallFilterChange(value: string): void {
+    this.selectedAiInstallFilter = value || 'all';
+    this.onFilterChange();
   }
 
   onRegionChange(region: any): void {
@@ -203,6 +215,8 @@ export class DeviceMapComponent implements OnInit, AfterViewInit {
       regionName: item?.regionName,
       subRegionName: item?.subRegionName,
       zoneName: item?.zoneName,
+      aiEhsInstalled: !!item?.aiEhsInstalled,
+      aiSecurityInstalled: !!item?.aiSecurityInstalled,
     };
   }
 

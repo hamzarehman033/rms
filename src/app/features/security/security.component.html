@@ -1,0 +1,222 @@
+<div class="main">
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1>{{ pageTitle }}</h1>
+        <p>Real-time fleet health, telemetry, and incidents at a glance.</p>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <select [ngModel]="selectedRegions" (ngModelChange)="setRegionFilter($event)">
+        <option value="">All Regions</option>
+        <option *ngFor="let option of regionOptions" [value]="option.id">{{ option.name }}</option>
+      </select>
+      <select [ngModel]="selectedSubRegions" (ngModelChange)="setSubRegionFilter($event)">
+        <option value="">All Sub-Regions</option>
+        <option *ngFor="let option of subRegionOptions" [value]="option.id">{{ option.name }}</option>
+      </select>
+      <select [ngModel]="selectedZones" (ngModelChange)="setZoneFilter($event)">
+        <option value="">All Zones</option>
+        <option *ngFor="let option of zoneOptions" [value]="option.id">{{ option.name }}</option>
+      </select>
+      <select [ngModel]="selectedDeviceType" (ngModelChange)="setDeviceTypeFilter($event)">
+        <option value="">All Device Types</option>
+        <option *ngFor="let option of deviceTypeOptions" [value]="option.value">{{ option.label }}</option>
+      </select>
+      <select>
+        <option>All Power Sources</option>
+        <option>CP Only</option>
+        <option>CP + Battery</option>
+        <option>CP + Bat + Solar</option>
+        <option>CP + Bat + Gen</option>
+        <option>CP + Bat + Gen + Solar</option>
+      </select>
+      <!-- <select [ngModel]="selectedStatuses" (ngModelChange)="setStatusFilter($event)">
+        <option value="">All Statuses</option>
+        <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+      </select> -->
+      <select [ngModel]="selectedTenant" (ngModelChange)="setTenantFilter($event)">
+        <option value="">All Tenants</option>
+        <option *ngFor="let option of tenantOptions" [value]="option.id">{{ option.name }}</option>
+      </select>
+      <!-- <div style="flex:1"></div> -->
+      <button class="apply" (click)="applyFilters()">Apply</button>
+    </div>
+
+    <!-- BODY LAYOUT: LEFT rows + RIGHT column -->
+    <div class="body-layout">
+
+      <!-- ══ LEFT COLUMN ══ -->
+      <div class="left-col">
+
+        <!-- ROW 1: ONLINE SITE STATUS -->
+        <div>
+          <div class="sec-title"><i class="pi pi-wifi"></i> Online Site Status</div>
+          <div class="status-row">
+            <a routerLink="/sites" [queryParams]="{ status: 'healthy' }" class="s-card online-card status-link">
+              <div class="s-card-bar" style="background:#3fb950"></div>
+              <div class="s-lbl">Healthy</div>
+              <div class="s-num" style="color:#3fb950">{{ getHealthySitesCount() }}</div>
+              <div class="s-sub">{{ getFleetPercentageText(getHealthySitesCount()) }} of fleet</div>
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'outage' }" class="s-card online-card status-link">
+              <div class="s-card-bar" style="background:#f85149"></div>
+              <div class="s-lbl">Power Outage</div>
+              <div class="s-num" style="color:#f85149">{{ getPowerOutageSitesCount() }}</div>
+              <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'critical' }" class="s-card online-card status-link">
+              <div class="s-card-bar" style="background:#ff7b72"></div>
+              <div class="s-lbl">Critical</div>
+              <div class="s-num" style="color:#ff7b72">{{ getCriticalAlarmCount() }}</div>
+              <div class="s-sub">Devices with critical alarm</div>
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'major' }" class="s-card online-card status-link">
+              <div class="s-card-bar" style="background:#d29922"></div>
+              <div class="s-lbl">Major Alarm</div>
+              <div class="s-num" style="color:#d29922">{{ getMajorAlarmCount() }}</div>
+              <div class="s-sub">Devices with major alarm</div>
+            </a>
+            <a routerLink="/sites" [queryParams]="{ status: 'minor' }" class="s-card online-card status-link">
+              <div class="s-card-bar" style="background:#6b7280"></div>
+              <div class="s-lbl">Minor Alarm</div>
+              <div class="s-num" style="color:#6b7280">{{ getMinorAlarmCount() }}</div>
+              <div class="s-sub">Devices with minor alarm</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- ROW 2: AI SECURITY DEVICES -->
+        <div>
+          <div class="sec-title"><i class="pi pi-lock"></i> AI Security Devices</div>
+          <div class="hstack justify-between flex-wrap gap-3 mb-3">
+            <div class="tabs">
+              <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="onTabChange(0)">All <span class="muted">{{ getAiAllCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="onTabChange(1)">Online <span class="muted">{{ getAiOnlineCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="onTabChange(2)">Offline <span class="muted">{{ getAiOfflineCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="onTabChange(3)">Healthy <span class="muted">{{ getAiHealthyCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="onTabChange(4)">Outage <span class="muted">{{ getAiOutageCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 5 }" (click)="onTabChange(5)">Critical <span class="muted">{{ getAiCriticalCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 6 }" (click)="onTabChange(6)">Major <span class="muted">{{ getAiMajorCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 7 }" (click)="onTabChange(7)">Minor <span class="muted">{{ getAiMinorCount() }}</span></button>
+            </div>
+          </div>
+          <div class="card p-0">
+            <p-table
+              [value]="aiDevices"
+              [loading]="isLoadingAiDevices"
+              styleClass="p-datatable-sm"
+              responsiveLayout="scroll"
+            >
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Device</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Region</th>
+                  <th>Sub Region</th>
+                  <th>Zone</th>
+                  <th>Power Source</th>
+                  <th>Cameras</th>
+                  <th>Actions</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-device>
+                <tr>
+                  <td>
+                    <a [routerLink]="['/security-details', device.id || device.deviceId || device.siteId]">
+                      <div class="font-medium text-blue-600">{{ device.name || device.siteName || '—' }}</div>
+                      <div class="muted mono text-xs">{{ device.code || device.siteCode || '—' }}</div>
+                    </a>
+                  </td>
+                  <td>{{ device.type || '—' }}</td>
+                  <td><span style="text-wrap-mode: nowrap;" [ngClass]="'badge ' + getAiDeviceStatus(device)">● {{ getAiDeviceStatus(device) | titlecase }}</span></td>
+                  <td>{{ device.regionName || '—' }}</td>
+                  <td>{{ device.subRegionName || '—' }}</td>
+                  <td>{{ device.zoneName || '—' }}</td>
+                  <td>{{ device.powerSources?.join(', ') || '—' }}</td>
+                  <td class="mono">{{ device.camerasInstalledCount ?? '—' }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      [routerLink]="['/security-details', device.id || device.deviceId || device.siteId]"
+                      title="Security Details"
+                      class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded"
+                    >
+                      <i class="pi pi-chart-bar text-base"></i>
+                    </button>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="9" class="text-center py-6 muted">No devices with AI Security installed</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- ══ RIGHT COLUMN — Device KPIs (vertical) ══ -->
+      <div class="right-col">
+        <div class="hstack justify-between items-center">
+          <div class="right-sec-title"><i class="pi pi-server" style="font-size:11px"></i> Device Status</div>
+        </div>
+        <button
+          [routerLink]="['/map-dashboard']"
+          [queryParams]="{ filter: 'security' }"
+          type="button"
+          class="justify-center btn primary"
+          pButton
+          label="Map View"
+          icon="pi pi-map"
+        >
+          Map View
+        </button>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#0ea5e9"></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Sites</div>
+            <div class="kpi-num" style="color:#0ea5e9">{{ getTotalSitesCount() }}</div>
+            <div class="kpi-sub">Total Devices Count</div>
+          </div>
+        </div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#3fb950"></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Online</div>
+            <div class="kpi-num" style="color:#3fb950">{{ getOnlineSitesCount() }}</div>
+            <div class="kpi-sub">Online Devices Count</div>
+          </div>
+        </div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#f85149"></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Offline</div>
+            <div class="kpi-num" style="color:#f85149">{{ getOfflineSitesCount() }}</div>
+            <div class="kpi-sub">Offline Devices Count</div>
+          </div>
+        </div>
+
+        <div class="kpi-vert">
+          <div class="kpi-stripe" style="background:#d29922"></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Active Alerts</div>
+            <div class="kpi-num" style="color:#d29922">{{ getActiveAlertsCount() }}</div>
+            <div class="kpi-sub">Devices with active alerts</div>
+          </div>
+        </div>
+
+      </div><!-- /right-col -->
+
+    </div><!-- /body-layout -->
+
+  </div><!-- /content -->
+</div>

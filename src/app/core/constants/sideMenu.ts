@@ -9,6 +9,8 @@ export enum Menu {
   Customers = 8,
   Users = 9,
   Settings = 10,
+  EHS = 11,
+  Security = 12,
 }
 
 
@@ -23,6 +25,8 @@ export const MenuOptions = [
   { id: Menu.Customers, label: 'Customers', icon: 'pi pi-user' },
   { id: Menu.Users, label: 'Users', icon: 'pi pi-users' },
   { id: Menu.Settings, label: 'Settings', icon: 'pi pi-cog' },
+  { id: Menu.EHS, label: 'EHS', icon: 'pi pi-shield' },
+  { id: Menu.Security, label: 'Security', icon: 'pi pi-lock' },
 ]
 
 
@@ -37,4 +41,6 @@ export const MenuMapper = {
   [Menu.Customers]: 'Customers',
   [Menu.Users]: 'Users',
   [Menu.Settings]: 'Settings',
+  [Menu.EHS]: 'EHS',
+  [Menu.Security]: 'Security',
 };
