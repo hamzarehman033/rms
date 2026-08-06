@@ -1,108 +1,94 @@
-<main class="content p-0">
-  <div class="details-grid">
-    <section class="details-card">
-      <header class="card-header">
-        <h2>Site Information</h2>
-        <p>Site Details</p>
-      </header>
-      <div class="site-info-grid">
-        <div class="info-item">
-          <div class="info-label">Site ID</div>
-          <div class="info-value">{{ selectedDeviceDetails?.siteId || selectedDeviceDetails?.siteCode || selectedDeviceDetails?.code || selectedDeviceDetails?.id || '-' }}</div>
+<main class="content">
+  <!-- Top status row -->
+  <div class="status-row status-row-wide">
+    <div class="s-card online-card">
+      <div class="s-card-bar" style="background:#3fb950"></div>
+      <div class="s-lbl">AI Device</div>
+      <div class="s-num" style="font-size:16px">
+        <span class="badge online">● Online</span>
+      </div>
+      <div class="s-sub">{{ selectedDeviceDetails?.name || selectedDeviceDetails?.code || 'Edge-AI-001' }} · Last sync —</div>
+    </div>
+
+    <div class="s-card online-card">
+      <div class="s-card-bar" style="background:#0ea5e9"></div>
+      <div class="s-lbl">Cameras Connected</div>
+      <div class="s-num" style="color:#0ea5e9">{{ cameras.length }} / {{ cameras.length }}</div>
+      <div class="s-sub">Shelter + Gate streams active</div>
+    </div>
+
+    <div class="s-card online-card" *ngFor="let feature of featureStatuses">
+      <div class="s-card-bar" [style.background]="feature.active ? '#3fb950' : '#6b7280'"></div>
+      <div class="s-lbl">{{ feature.label }}</div>
+      <div class="s-num" [style.color]="feature.active ? '#3fb950' : '#6b7280'" style="font-size:18px">
+        {{ feature.active ? 'Active' : 'Off' }}
+      </div>
+    </div>
+
+    <div class="s-card online-card">
+      <div class="s-card-bar" style="background:#3fb950"></div>
+      <div class="s-lbl">Stream Health</div>
+      <div class="s-num" style="font-size:16px">
+        <span class="badge online">● Stable</span>
+      </div>
+      <div class="s-sub">WebRTC preferred for low latency</div>
+    </div>
+
+    <div class="s-card online-card">
+      <div class="s-card-bar" style="background:#d29922"></div>
+      <div class="s-lbl">Last Event</div>
+      <div class="s-num" style="font-size:16px;color:#d29922">{{ lastEvent.title || '—' }}</div>
+      <div class="s-sub">{{ lastEvent.meta || 'No recent event' }}</div>
+    </div>
+  </div>
+
+  <!-- Body: cameras (left) + alerts (right) -->
+  <div class="body-layout">
+    <div class="left-col">
+      <div>
+        <div class="hstack justify-between items-center mb-2">
+          <div class="sec-title" style="flex:1;margin-bottom:0"><i class="pi pi-video"></i> Live Camera Monitoring</div>
         </div>
-        <div class="info-item">
-          <div class="info-label">Site Name</div>
-          <div class="info-value">{{ selectedDeviceDetails?.siteName || selectedDeviceDetails?.name || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Region</div>
-          <div class="info-value">{{ selectedDeviceDetails?.regionName || selectedDeviceDetails?.region || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Sub-Region</div>
-          <div class="info-value">{{ selectedDeviceDetails?.subRegionName || selectedDeviceDetails?.subRegion || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Site Type</div>
-          <div class="info-value">{{ selectedDeviceDetails?.siteType || selectedDeviceDetails?.type || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Coordinates</div>
-          <div class="info-value">{{ selectedDeviceDetails?.coordinates || ((selectedDeviceDetails?.latitude != null && selectedDeviceDetails?.longitude != null) ? (selectedDeviceDetails?.latitude + ', ' + selectedDeviceDetails?.longitude) : '-') }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Address</div>
-          <div class="info-value">{{ selectedDeviceDetails?.address || selectedDeviceDetails?.location || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Installation Date</div>
-          <div class="info-value">{{ selectedDeviceDetails?.deviceInstallationDate || selectedDeviceDetails?.installationDate || selectedDeviceDetails?.installedAt || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Power Source</div>
-          <div class="info-value">{{ selectedDeviceDetails?.powerSource || '-' }}</div>
-        </div>
-        <div class="info-item">
-          <div class="info-label">Grid Supply</div>
-          <div class="info-value">{{ selectedDeviceDetails?.gridSupply || selectedDeviceDetails?.mainsAvailable || '-' }}</div>
+        <div class="camera-grid">
+          <div class="card camera-card" *ngFor="let camera of cameras">
+            <div class="hstack justify-between items-start mb-2">
+              <div>
+                <div class="font-medium">{{ camera.name }}</div>
+                <div class="muted text-xs">{{ camera.features }}</div>
+              </div>
+              <span class="badge online">● {{ camera.status }}</span>
+            </div>
+            <div class="camera-viewport muted text-xs">
+              Camera feed placeholder
+            </div>
+            <div class="hstack justify-between items-center camera-footer">
+              <div class="muted text-xs">Last alert: {{ camera.lastAlert || '—' }}</div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="details-card">
-      <header class="card-header">
-        <h2>Installed Capacity</h2>
-        <p>Recent data for selected device</p>
-      </header>
+    <div class="right-col">
+      <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
+      <div class="card">
+        <div class="sub mb-3">Timestamp, violation details, snapshot, team</div>
 
-      <div class="live-grid">
-        <div class="live-metric" *ngFor="let item of installedCapacityItems">
-          <div class="metric-label">{{ item.label }}</div>
-          <div class="metric-value">{{ item.value }}</div>
-        </div>
+        <ng-container *ngIf="aiAlerts.length; else noAiAlerts">
+          <div class="alert-item" *ngFor="let alert of aiAlerts">
+            <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
+            <div class="flex-1">
+              <div class="font-medium text-sm">{{ alert.title }}</div>
+              <div class="meta">{{ alert.meta }}</div>
+            </div>
+            <div class="muted text-xs mono">{{ alert.time }}</div>
+          </div>
+        </ng-container>
+
+        <ng-template #noAiAlerts>
+          <div class="text-sm muted">No alerts</div>
+        </ng-template>
       </div>
-
-      <div class="last-packet" *ngIf="lastPacketAt">
-        Last packet: {{ lastPacketAt | date:'yyyy-MM-dd HH:mm:ss' }}
-      </div>
-    </section>
-
-    <section class="details-card">
-      <header class="card-header">
-        <h2>Device Details</h2>
-        <p>Operational metadata</p>
-      </header>
-
-      <div class="device-list">
-        <div class="device-row">
-          <span>Device Name</span>
-          <strong>{{ selectedDeviceDetails?.name || '-' }}</strong>
-        </div>
-        <div class="device-row">
-          <span>Device Code</span>
-          <strong>{{ selectedDeviceDetails?.code || '-' }}</strong>
-        </div>
-        <div class="device-row">
-          <span>Status</span>
-          <strong>{{ isOperational ? 'online' : 'offline' }}</strong>
-        </div>
-        <div class="device-row">
-          <span>Manufacturer</span>
-          <strong>{{ packetDeviceInfo.manufacturer || '-' }}</strong>
-        </div>
-        <div class="device-row">
-          <span>Model</span>
-          <strong>{{ packetDeviceInfo.model || '-' }}</strong>
-        </div>
-      </div>
-    </section>
-
-    <section class="details-card">
-      <header class="card-header">
-        <h2>Solar Output</h2>
-        <p>24-hour packet trend</p>
-      </header>
-      <app-line-chart [options]="chartOptions"></app-line-chart>
-    </section>
+    </div>
   </div>
 </main>
