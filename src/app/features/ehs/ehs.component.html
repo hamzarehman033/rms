@@ -57,33 +57,33 @@
           <div class="status-row">
             <a routerLink="/sites" [queryParams]="{ status: 'healthy' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#3fb950"></div>
-              <div class="s-lbl">Healthy</div>
+              <div class="s-lbl">Total AI Sites</div>
               <div class="s-num" style="color:#3fb950">{{ getHealthySitesCount() }}</div>
               <div class="s-sub">{{ getFleetPercentageText(getHealthySitesCount()) }} of fleet</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'outage' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#f85149"></div>
-              <div class="s-lbl">Power Outage</div>
+              <div class="s-lbl">Healthy</div>
               <div class="s-num" style="color:#f85149">{{ getPowerOutageSitesCount() }}</div>
               <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'critical' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#ff7b72"></div>
-              <div class="s-lbl">Critical</div>
+              <div class="s-lbl">PPE</div>
               <div class="s-num" style="color:#ff7b72">{{ getCriticalAlarmCount() }}</div>
-              <div class="s-sub">Devices with critical alarm</div>
+              <div class="s-sub">PPE violations</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'major' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#d29922"></div>
-              <div class="s-lbl">Major Alarm</div>
+              <div class="s-lbl">Restricted Zone</div>
               <div class="s-num" style="color:#d29922">{{ getMajorAlarmCount() }}</div>
-              <div class="s-sub">Devices with major alarm</div>
+              <div class="s-sub">Restricted zone violations</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'minor' }" class="s-card online-card status-link">
               <div class="s-card-bar" style="background:#6b7280"></div>
-              <div class="s-lbl">Minor Alarm</div>
+              <div class="s-lbl">Team Activities</div>
               <div class="s-num" style="color:#6b7280">{{ getMinorAlarmCount() }}</div>
-              <div class="s-sub">Devices with minor alarm</div>
+              <div class="s-sub">Team activity events</div>
             </a>
           </div>
         </div>
