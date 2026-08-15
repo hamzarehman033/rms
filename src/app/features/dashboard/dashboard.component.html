@@ -544,7 +544,12 @@
 
         <div class="pie-card">
           <div class="pie-card-title">Online / Offline Devices</div>
-          <app-pie-chart [options]="getDeviceOnlineStatusDonutOptions()"></app-pie-chart>
+          <ng-container *ngIf="hasDeviceOnlineStatusData(); else noDeviceOnlineStatusData">
+            <app-pie-chart [options]="getDeviceOnlineStatusDonutOptions()"></app-pie-chart>
+          </ng-container>
+          <ng-template #noDeviceOnlineStatusData>
+            <div class="text-sm text-muted-foreground">-</div>
+          </ng-template>
         </div>
 
       </div><!-- /right-col -->

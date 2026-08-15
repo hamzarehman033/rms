@@ -1339,20 +1339,21 @@ export class DashboardComponent implements OnInit {
     };
   }
 
+  hasDeviceOnlineStatusData(): boolean {
+    return this.getTotalSitesCount() > 0;
+  }
+
   getDeviceOnlineStatusDonutOptions(): any {
     const online = this.getOnlineSitesCount();
     const offline = this.getOfflineSitesCount();
-    const total = online + offline;
-    const data = total > 0
-      ? [
-          { name: 'Online', value: online, color: '#3fb950' },
-          { name: 'Offline', value: offline, color: '#f85149' }
-        ]
-      : [{ name: 'No Data', value: 0, color: '#cbd5e1' }];
+    const data = [
+      { name: 'Online', value: online, color: '#3fb950' },
+      { name: 'Offline', value: offline, color: '#f85149' }
+    ];
 
     return {
       donut: true,
-      showLegend: true,
+      showLegend: false,
       height: '200px',
       radius: ['45%', '68%'],
       center: ['50%', '42%'],
