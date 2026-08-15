@@ -72,8 +72,6 @@ export class SecurityDeviceDetailComponent implements OnInit, OnChanges, OnDestr
     { label: 'Confidence', value: '91%' },
     { label: 'Camera', value: 'Cam 1 - Shelter' },
     { label: 'Status', value: 'New / Unacknowledged' },
-    { label: 'Suggested Action', value: 'Notify security supervisor' },
-    { label: 'Controls', value: 'Ack · False Alarm · Close' },
   ];
 
   liveData = {

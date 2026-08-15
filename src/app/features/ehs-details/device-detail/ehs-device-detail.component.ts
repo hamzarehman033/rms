@@ -1,9 +1,9 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { SignalrService, ToastService } from '@app/core';
+import { SignalrService } from '@app/core';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
+import { VisionDecodedPayload } from '../../../core/constants/device-message.model';
 
 @Component({
   selector: 'app-ehs-device-detail',
@@ -12,13 +12,14 @@ import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-
   styleUrl: './ehs-device-detail.component.css'
 })
 export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() deviceDetails: any = null;
   isLoadingDevice = false;
   isOperational = false;
   selectedDeviceDetails: any = null;
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;
   selectedSection: string = 'live-data';
+  latestVisionPayload: VisionDecodedPayload | null = null;
+  private readonly destroy$ = new Subject<void>();
 
   // Alerts (legacy dock section)
   alerts = [
@@ -26,8 +27,18 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
     { id: 2, icon: 'pi pi-info-circle-fill', title: 'Firmware Update Available', device: 'DV-001', time: '5 hrs ago', severity: 'info' }
   ];
 
+  constructor(private signalrService: SignalrService) {}
+
   ngOnInit(): void {
-    
+    this.signalrService.onVisionDetection$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(payload => {
+        if (!payload || !this.isVisionPacketForCurrentDevice(payload)) {
+          return;
+        }
+
+        this.applyVisionPacket(payload);
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -35,9 +46,10 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
   // AI monitoring page structure (placeholder data)
   featureStatuses = [
-    { label: 'Helmet', active: true },
-    { label: 'Vest', active: true },
-    { label: 'Restricted Zone', active: true },
+    { label: 'Helmet', code: 1, count: 0 },
+    { label: 'Vest', code: 2, count: 0 },
+    { label: 'Restricted Zone', code: 4, count: 0 },
+    { label: 'Team Activity', code: 7, count: 0 },
   ];
 
   cameras = [
@@ -59,7 +71,6 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
     { title: 'PPE Violation - No Helmet', meta: 'Cam 1 · High confidence', time: '12:35', severity: 'critical' },
     { title: 'PPE Violation - No Vest', meta: 'Cam 1 · Medium confidence', time: '12:28', severity: 'major' },
     { title: 'Restricted Zone Entry', meta: 'Cam 2 · High confidence', time: '12:21', severity: 'critical' },
-    { title: 'Person Detected', meta: 'Cam 2 · Info', time: '12:10', severity: 'info' },
   ];
 
   lastEvent = {
@@ -77,14 +88,15 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
   };
 
   selectedEventDetails = [
-    { label: 'Event ID', value: 'AI-2026-000123' },
+    { label: 'Event ID Hash', value: '-' },
+    { label: 'Snapshot Reason', value: '-' },
+    { label: 'Confidence', value: '-' },
+    { label: 'Active Cameras', value: '-' },
+    { label: 'Configured Cameras', value: '-' },
     { label: 'Severity', value: 'Major', valueClass: 'text-warning' },
     { label: 'Violation Type', value: 'No Helmet' },
-    { label: 'Confidence', value: '91%' },
     { label: 'Camera', value: 'Cam 1 - Shelter' },
     { label: 'Status', value: 'New / Unacknowledged' },
-    { label: 'Suggested Action', value: 'Notify supervisor' },
-    { label: 'Controls', value: 'Ack · False Alarm · Close' },
   ];
 
 
@@ -100,6 +112,58 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
     return Number.isFinite(numeric) ? numeric : null;
   }
 
+  getActiveCameraCount(): number {
+    return this.latestVisionPayload?.activeCameraCount ?? this.cameras.length;
+  }
+
+  getConfiguredCameraCount(): number {
+    return this.latestVisionPayload?.configuredCameraCount ?? this.cameras.length;
+  }
+
+  private isVisionPacketForCurrentDevice(payload: VisionDecodedPayload): boolean {
+    const selectedDeviceId = this.toNumericId(this.selectedDeviceDetails?.id ?? this.selectedDeviceDetails?.deviceId);
+    const packetDeviceId = this.toNumericId(payload.deviceId);
+
+    return selectedDeviceId === null || packetDeviceId === null || selectedDeviceId === packetDeviceId;
+  }
+
+  private applyVisionPacket(payload: VisionDecodedPayload): void {
+    this.latestVisionPayload = payload;
+    this.featureStatuses = this.featureStatuses.map(feature => feature.code === payload.snapshotReasonCode
+      ? { ...feature, count: feature.count + 1 }
+      : feature
+    );
+    this.lastEvent = {
+      title: payload.snapshotReasonLabel,
+      meta: `Cam ${payload.cameraId} - ${this.formatPacketTime(payload.timestampUtcIso)}`,
+    };
+    this.selectedEvent = {
+      ...this.selectedEvent,
+      violationLabel: payload.eventTypeLabel,
+      cameraTime: `Cam ${payload.cameraId} - ${this.formatPacketTime(payload.timestampUtcIso)}`,
+      siteCode: payload.topicSiteId ?? this.selectedEvent.siteCode,
+      zone: payload.activityZoneLabel,
+      status: payload.messageTypeLabel,
+    };
+    this.selectedEventDetails = [
+      { label: 'Event ID', value: String(payload.eventIdHash) },
+      { label: 'Severity', value: payload.severityLabel, valueClass: payload.severity >= 2 ? 'text-warning' : '' },
+      { label: 'Violation Type', value: payload.eventTypeLabel },
+      { label: 'Confidence', value: payload.confidence.toString() },
+      { label: 'Camera', value: `Cam ${payload.cameraId}` },
+      { label: 'Status', value: payload.messageTypeLabel },
+    ];
+  }
+
+  private formatPacketTime(value: string): string {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return '-';
+    }
+
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
 
   initChart(): LineChartOptions {
     return {

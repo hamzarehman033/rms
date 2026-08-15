@@ -7,33 +7,22 @@
       <div class="s-num" style="font-size:16px">
         <span class="badge online">● Online</span>
       </div>
-      <div class="s-sub">{{ selectedDeviceDetails?.name || selectedDeviceDetails?.code || 'Edge-AI-001' }} · Last sync —</div>
     </div>
 
     <div class="s-card online-card">
       <div class="s-card-bar" style="background:#0ea5e9"></div>
       <div class="s-lbl">Cameras Connected</div>
-      <div class="s-num" style="color:#0ea5e9">{{ cameras.length }} / {{ cameras.length }}</div>
+      <div class="s-num" style="color:#0ea5e9">{{ getActiveCameraCount() }} / {{ getConfiguredCameraCount() }}</div>
       <div class="s-sub">Active streams</div>
     </div>
 
     <div class="s-card online-card" *ngFor="let feature of featureStatuses">
-      <div class="s-card-bar" [style.background]="feature.active ? '#3fb950' : '#6b7280'"></div>
+      <div class="s-card-bar" [style.background]="feature.count > 0 ? '#3fb950' : '#6b7280'"></div>
       <div class="s-lbl">{{ feature.label }}</div>
-      <div class="s-num" [style.color]="feature.active ? '#3fb950' : '#6b7280'" style="font-size:18px">
-        {{ feature.active ? 'Active' : 'Off' }}
+      <div class="s-num" [style.color]="feature.count > 0 ? '#3fb950' : '#6b7280'" style="font-size:18px">
+        {{ feature.count }}
       </div>
     </div>
-
-    <div class="s-card online-card">
-      <div class="s-card-bar" style="background:#3fb950"></div>
-      <div class="s-lbl">Stream Health</div>
-      <div class="s-num" style="font-size:16px">
-        <span class="badge online">● Stable</span>
-      </div>
-      <div class="s-sub">WebRTC / HLS</div>
-    </div>
-
     <div class="s-card online-card">
       <div class="s-card-bar" style="background:#d29922"></div>
       <div class="s-lbl">Last Event</div>
@@ -96,7 +85,7 @@
         <div class="hstack justify-between items-start mb-2">
           <div>
             <div class="sec-title" style="margin-bottom:4px"><i class="pi pi-image"></i> Violation Evidence Preview</div>
-            <p class="muted text-xs">Snapshot and optional 10-15 second clip attached with each event</p>
+            <p class="muted text-xs">Snapshot image attached with event</p>
           </div>
         </div>
 
@@ -107,7 +96,7 @@
           </div>
           <div class="muted text-xs evidence-placeholder">Evidence snapshot / clip placeholder</div>
           <div class="evidence-footer muted text-xs mono">
-            Evidence file: {{ selectedEvent.evidenceFile }} · Site {{ selectedEvent.siteCode }} · Zone: {{ selectedEvent.zone }} · Status: {{ selectedEvent.status }}
+            Evidence file: {{ selectedEvent.evidenceFile }}
           </div>
         </div>
       </div>

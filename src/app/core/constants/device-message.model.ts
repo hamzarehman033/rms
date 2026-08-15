@@ -420,7 +420,8 @@ export interface RawVisionDecodedPayload {
   cameraId: number;
   eventType: number;
   severity: number;
-  confidenceRaw: number;
+  confidence?: number;
+  confidenceRaw?: number;
   activityZone: number;
   objectCount: number;
   ehsCodeCount: number;
@@ -786,6 +787,26 @@ function onlineCamerasFromBitmap(bitmap: number): number[] {
   return cameras;
 }
 
+function normalizeVisionConfidence(raw: RawVisionDecodedPayload): number {
+  const packetConfidence = Number(raw.confidence);
+
+  if (Number.isFinite(packetConfidence)) {
+    if (packetConfidence > 100) {
+      return packetConfidence / 1000;
+    }
+
+    return packetConfidence > 1 ? packetConfidence / 100 : packetConfidence;
+  }
+
+  const rawConfidence = Number(raw.confidenceRaw);
+
+  if (Number.isFinite(rawConfidence)) {
+    return rawConfidence > 1 ? rawConfidence / 1000 : rawConfidence;
+  }
+
+  return 0;
+}
+
 export function mapVisionDecodedPayload(raw: RawVisionDecodedPayload): VisionDecodedPayload {
   const ehsCodes = (raw.ehsCodes ?? [])
     .slice(0, raw.ehsCodeCount)
@@ -799,7 +820,7 @@ export function mapVisionDecodedPayload(raw: RawVisionDecodedPayload): VisionDec
     messageTypeLabel: enumLabel(VISION_MESSAGE_TYPE_LABELS, raw.messageType) ?? `Unknown (${raw.messageType})`,
     eventTypeLabel: enumLabel(VISION_EVENT_TYPE_LABELS, raw.eventType) ?? `Unknown (${raw.eventType})`,
     severityLabel: enumLabel(VISION_SEVERITY_LABELS, raw.severity) ?? `Unknown (${raw.severity})`,
-    confidence: raw.confidenceRaw / 1000,
+    confidence: normalizeVisionConfidence(raw),
     activityZoneLabel: enumLabel(VISION_ACTIVITY_ZONE_LABELS, raw.activityZone) ?? `Unknown (${raw.activityZone})`,
     ehsCodeLabels: ehsCodes.map((code) => enumLabel(VISION_EHS_CODE_LABELS, code) ?? `Unknown (${code})`),
     snapshotReasonLabel: enumLabel(VISION_SNAPSHOT_REASON_LABELS, raw.snapshotReasonCode) ?? `Unknown (${raw.snapshotReasonCode})`,

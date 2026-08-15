@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
-import { DecodedPayload, DeviceDataEvent, mapDecodedPayload, mapVisionDecodedPayload, RawDeviceDataEvent, RawVisionDecodedPayload, VisionDecodedPayload
+import {
+  DecodedPayload,
+  DeviceDataEvent,
+  mapDecodedPayload,
+  mapVisionDecodedPayload,
+  RawDeviceDataEvent,
+  RawVisionDecodedPayload,
+  VisionDecodedPayload
 } from '../constants/device-message.model';
 import { environment } from '../../../environments/environment';
 
@@ -12,9 +19,11 @@ export class SignalrService {
   private startPromise?: Promise<void>;
   private connected$ = new BehaviorSubject<boolean>(false);
   private deviceData$ = new BehaviorSubject<DeviceDataEvent | null>(null);
+  private visionDetection$ = new BehaviorSubject<VisionDecodedPayload | null>(null);
 
   isConnected$ = this.connected$.asObservable();
   onDeviceData$ = this.deviceData$.asObservable();
+  onVisionDetection$ = this.visionDetection$.asObservable();
 
   constructor() {
     this.start();
@@ -70,6 +79,7 @@ export class SignalrService {
     this.hubConnection.on('VisionDetectionReceived', (data: RawVisionDecodedPayload) => {
       const visionPayload: VisionDecodedPayload = mapVisionDecodedPayload(data);
       console.log('VisionDetectionReceived', visionPayload);
+      this.visionDetection$.next(visionPayload);
     });
 
     this.startPromise = this.hubConnection.start()
