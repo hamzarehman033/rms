@@ -17,7 +17,7 @@ select:focus{outline:none;border-color:var(--primary)}
 .left-col{display:flex;flex-direction:column;gap:14px}
 
 /* SECTION LABEL */
-.sec-title{font-size:12px;font-weight:600;color:var(--muted-foreground);letter-spacing:.09em;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.sec-title{font-size:14px;font-weight:600;color:var(--muted-foreground);letter-spacing:.09em;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px}
 .sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
 .sec-title i{font-size:12px}
 
@@ -62,5 +62,5 @@ select:focus{outline:none;border-color:var(--primary)}
 .kpi-label i{font-size:14px}
 .kpi-num{font-size:30px;font-weight:700;line-height:1;margin-bottom:4px}
 .kpi-sub{font-size:10px;color:var(--muted-foreground)}
-.right-sec-title{font-size:10px;font-weight:600;color:var(--muted-foreground);letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.right-sec-title{font-size:14px;font-weight:600;color:var(--muted-foreground);letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .right-sec-title::after{content:'';flex:1;height:1px;background:var(--border)}

@@ -402,6 +402,76 @@ export interface RawDeviceDataEvent {
   normalizedHexPayload?: string;
 }
 
+export interface RawVisionDecodedPayload {
+  deviceId: number;
+  topic: string;
+  receivedAt: string;
+  packetSignature: number;
+  protocolVersion: number;
+  messageType: number;
+  headerLength: number;
+  flags: number;
+  packetSequence: number;
+  timestampUtc: number;
+  siteIdHash: number;
+  edgeDeviceIdHash: number;
+  messageIdHash: number;
+  eventIdHash: number;
+  cameraId: number;
+  eventType: number;
+  severity: number;
+  confidenceRaw: number;
+  activityZone: number;
+  objectCount: number;
+  ehsCodeCount: number;
+  ehsCodes: number[];
+  snapshotReasonCode: number;
+  activeCameraCount: number;
+  configuredCameraCount: number;
+  detectionEnabled: number;
+  systemStatus: number;
+  heartbeatIntervalSec: number;
+  edgeUptimeSec: number;
+  cpuUsagePercent: number;
+  ramUsagePercent: number;
+  diskFreePercent: number;
+  cameraStatusBitmap: number;
+  modelId: number;
+  imageFormat: number;
+  imageEncoding: number;
+  imageWidth: number;
+  imageHeight: number;
+  imageSizeBytes: number;
+  imageCrc32: number;
+  headerCrc16: number;
+  isHeaderCrcValid: boolean;
+  isImageCrcValid: boolean;
+  image: string | null;
+  [key: string]: unknown;
+}
+
+export interface VisionDecodedPayload extends RawVisionDecodedPayload {
+  packetSignatureHex: string;
+  timestampUtcIso: string;
+  topicTenantId?: string;
+  topicSiteId?: string;
+  topicEdgeDeviceId?: string;
+  messageTypeLabel: string;
+  eventTypeLabel: string;
+  severityLabel: string;
+  confidence: number;
+  activityZoneLabel: string;
+  ehsCodeLabels: string[];
+  snapshotReasonLabel: string;
+  detectionEnabledLabel: string;
+  systemStatusLabel: string;
+  cameraStatusBitmapHex: string;
+  onlineCameras: number[];
+  imageFormatLabel: string;
+  imageEncodingLabel: string;
+  hasImage: boolean;
+}
+
 export const DEVICE_TYPE_LABELS: Record<number, string> = {
   1: 'Telecom RMS Controller/Gateway'
 };
@@ -585,6 +655,86 @@ export const SYSTEM_STATUS_ENUM: Record<number, string> = {
   5: 'Comms Issue'
 };
 
+export const VISION_MESSAGE_TYPE_LABELS: Record<number, string> = {
+  1: 'Alert Snapshot',
+  2: 'Heartbeat'
+};
+
+export const VISION_EVENT_TYPE_LABELS: Record<number, string> = {
+  0: 'Helmet Violation',
+  1: 'Vest Violation',
+  2: 'Restricted Zone Violation',
+  3: 'Team Activity',
+  4: 'Intruder Detection',
+  5: 'Crowd On Site',
+  6: 'EHS Compliant',
+  7: 'EHS Violation',
+  8: 'Other Alert',
+  255: 'None'
+};
+
+export const VISION_SEVERITY_LABELS: Record<number, string> = {
+  0: 'Info',
+  1: 'Warning',
+  2: 'Major',
+  3: 'Critical'
+};
+
+export const VISION_ACTIVITY_ZONE_LABELS: Record<number, string> = {
+  0: 'Unknown',
+  1: 'Generator Zone',
+  2: 'Rectifier Zone',
+  3: 'CP Zone',
+  4: 'Tower Zone',
+  5: 'Main Gate',
+  6: 'Fuel Zone'
+};
+
+export const VISION_EHS_CODE_LABELS: Record<number, string> = {
+  0: 'Helmet Missing / Incorrect Helmet',
+  1: 'Vest Missing',
+  2: 'Harness Missing / Incorrect Harness',
+  3: 'Chin Strap Missing / Open',
+  4: 'Safety Shoes Missing',
+  5: 'Gloves Missing',
+  6: 'Y-Lanyard Missing / Not Connected',
+  7: 'Positioning Lanyard Missing / Not Connected',
+  8: 'Unsafe Height / Tower Position',
+  9: 'Inside Restricted Zone',
+  10: 'Other EHS Violation',
+  255: 'Unused'
+};
+
+export const VISION_SNAPSHOT_REASON_LABELS: Record<number, string> = {
+  0: 'None',
+  1: 'Helmet',
+  2: 'Vest',
+  3: 'Multiple EHS',
+  4: 'Restricted Zone',
+  5: 'Intruder',
+  6: 'Crowd',
+  7: 'Team Activity',
+  8: 'Compliant'
+};
+
+export const VISION_SYSTEM_STATUS_LABELS: Record<number, string> = {
+  0: 'Normal',
+  1: 'Degraded',
+  2: 'Camera Issue',
+  3: 'Detection Off',
+  4: 'Communication Issue'
+};
+
+export const VISION_IMAGE_FORMAT_LABELS: Record<number, string> = {
+  0: 'None',
+  1: 'JPEG'
+};
+
+export const VISION_IMAGE_ENCODING_LABELS: Record<number, string> = {
+  0: 'Raw Binary',
+  1: 'ASCII HEX Debug'
+};
+
 
 function enumLabel(labels: Record<number, string>, value: number | null | undefined): string | undefined {
   if (value === null || value === undefined) {
@@ -610,6 +760,58 @@ function alarmLevelLabel(value: number | null | undefined): string | undefined {
   return ALARM_LEVEL_LABELS[value] ?? `Unknown (${value})`;
 }
 
+function hexLabel(value: number, bytes: number): string {
+  return `0x${value.toString(16).toUpperCase().padStart(bytes * 2, '0')}`;
+}
+
+function parseVisionTopic(topic: string): Pick<VisionDecodedPayload, 'topicTenantId' | 'topicSiteId' | 'topicEdgeDeviceId'> {
+  const [, topicTenantId, topicSiteId, topicEdgeDeviceId] = topic.split('/');
+
+  return {
+    topicTenantId,
+    topicSiteId,
+    topicEdgeDeviceId
+  };
+}
+
+function onlineCamerasFromBitmap(bitmap: number): number[] {
+  const cameras: number[] = [];
+
+  for (let bit = 0; bit < 16; bit++) {
+    if ((bitmap & (1 << bit)) !== 0) {
+      cameras.push(bit + 1);
+    }
+  }
+
+  return cameras;
+}
+
+export function mapVisionDecodedPayload(raw: RawVisionDecodedPayload): VisionDecodedPayload {
+  const ehsCodes = (raw.ehsCodes ?? [])
+    .slice(0, raw.ehsCodeCount)
+    .filter((code) => code !== 255);
+
+  return {
+    ...raw,
+    ...parseVisionTopic(raw.topic),
+    packetSignatureHex: hexLabel(raw.packetSignature, 2),
+    timestampUtcIso: new Date(raw.timestampUtc * 1000).toISOString(),
+    messageTypeLabel: enumLabel(VISION_MESSAGE_TYPE_LABELS, raw.messageType) ?? `Unknown (${raw.messageType})`,
+    eventTypeLabel: enumLabel(VISION_EVENT_TYPE_LABELS, raw.eventType) ?? `Unknown (${raw.eventType})`,
+    severityLabel: enumLabel(VISION_SEVERITY_LABELS, raw.severity) ?? `Unknown (${raw.severity})`,
+    confidence: raw.confidenceRaw / 1000,
+    activityZoneLabel: enumLabel(VISION_ACTIVITY_ZONE_LABELS, raw.activityZone) ?? `Unknown (${raw.activityZone})`,
+    ehsCodeLabels: ehsCodes.map((code) => enumLabel(VISION_EHS_CODE_LABELS, code) ?? `Unknown (${code})`),
+    snapshotReasonLabel: enumLabel(VISION_SNAPSHOT_REASON_LABELS, raw.snapshotReasonCode) ?? `Unknown (${raw.snapshotReasonCode})`,
+    detectionEnabledLabel: raw.detectionEnabled === 1 ? 'On' : 'Off',
+    systemStatusLabel: enumLabel(VISION_SYSTEM_STATUS_LABELS, raw.systemStatus) ?? `Unknown (${raw.systemStatus})`,
+    cameraStatusBitmapHex: hexLabel(raw.cameraStatusBitmap, 2),
+    onlineCameras: onlineCamerasFromBitmap(raw.cameraStatusBitmap),
+    imageFormatLabel: enumLabel(VISION_IMAGE_FORMAT_LABELS, raw.imageFormat) ?? `Unknown (${raw.imageFormat})`,
+    imageEncodingLabel: enumLabel(VISION_IMAGE_ENCODING_LABELS, raw.imageEncoding) ?? `Unknown (${raw.imageEncoding})`,
+    hasImage: (raw.flags & 1) === 1 || raw.imageSizeBytes > 0 || raw.image !== null
+  };
+}
 
 export function mapDecodedPayload(raw:RawDecodedPayload): DecodedPayload {
   return {

@@ -22,7 +22,7 @@
 }
 
 .sec-title {
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: 600;
 	color: var(--muted-foreground);
 	letter-spacing: .09em;
@@ -113,7 +113,7 @@
 }
 
 .right-sec-title {
-	font-size: 10px;
+	font-size: 14px;
 	font-weight: 600;
 	color: var(--muted-foreground);
 	letter-spacing: .09em;

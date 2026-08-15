@@ -1339,6 +1339,32 @@ export class DashboardComponent implements OnInit {
     };
   }
 
+  getDeviceOnlineStatusDonutOptions(): any {
+    const online = this.getOnlineSitesCount();
+    const offline = this.getOfflineSitesCount();
+    const total = online + offline;
+    const data = total > 0
+      ? [
+          { name: 'Online', value: online, color: '#3fb950' },
+          { name: 'Offline', value: offline, color: '#f85149' }
+        ]
+      : [{ name: 'No Data', value: 0, color: '#cbd5e1' }];
+
+    return {
+      donut: true,
+      showLegend: true,
+      height: '200px',
+      radius: ['45%', '68%'],
+      center: ['50%', '42%'],
+      legendPosition: {
+        orient: 'horizontal',
+        left: 'center',
+        bottom: 0
+      },
+      data
+    };
+  }
+
   getFleetDistributionConfigCount(configKey: string): number | string {
     const total = this.fleetDistribution.totalDevices;
     if (total <= 0) {

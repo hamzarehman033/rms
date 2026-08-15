@@ -339,35 +339,35 @@
     <!-- FILTERS -->
     <div class="filter-bar">
       <select [ngModel]="selectedRegions" (ngModelChange)="setRegionFilter($event)">
-        <option value="">All Regions</option>
+        <option value="" disabled>Region</option>
         <option *ngFor="let option of regionOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <select [ngModel]="selectedSubRegions" (ngModelChange)="setSubRegionFilter($event)">
-        <option value="">All Sub-Regions</option>
+        <option value="" disabled>Sub-Region</option>
         <option *ngFor="let option of subRegionOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <select [ngModel]="selectedZones" (ngModelChange)="setZoneFilter($event)">
-        <option value="">All Zones</option>
+        <option value="" disabled>Zone</option>
         <option *ngFor="let option of zoneOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <select [ngModel]="selectedDeviceType" (ngModelChange)="setDeviceTypeFilter($event)">
-        <option value="">All Device Types</option>
+        <option value="" disabled>Site Category</option>
         <option *ngFor="let option of deviceTypeOptions" [value]="option.value">{{ option.label }}</option>
       </select>
       <select>
-        <option>All Power Sources</option>
-        <option>CP Only</option>
-        <option>CP + Battery</option>
-        <option>CP + Bat + Solar</option>
-        <option>CP + Bat + Gen</option>
-        <option>CP + Bat + Gen + Solar</option>
+        <option value="" disabled selected>Power Source</option>
+        <option value="cp">CP Only</option>
+        <option value="cp+battery">CP + Battery</option>
+        <option value="cp+battery+solar">CP + Bat + Solar</option>
+        <option value="cp+battery+gen">CP + Bat + Gen</option>
+        <option value="cp+battery+gen+solar">CP + Bat + Gen + Solar</option>
       </select>
       <select [ngModel]="selectedStatuses" (ngModelChange)="setStatusFilter($event)">
-        <option value="">All Statuses</option>
+        <option value="" disabled>Status</option>
         <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
       </select>
       <select [ngModel]="selectedTenant" (ngModelChange)="setTenantFilter($event)">
-        <option value="">All Tenants</option>
+        <option value="" disabled>Tenant</option>
         <option *ngFor="let option of tenantOptions" [value]="option.id">{{ option.name }}</option>
       </select>
       <!-- <div style="flex:1"></div> -->
@@ -540,6 +540,11 @@
             <div class="kpi-num" style="color:#d29922">{{ getActiveAlertsCount() }}</div>
             <div class="kpi-sub">Devices with active alerts</div>
           </div>
+        </div>
+
+        <div class="pie-card">
+          <div class="pie-card-title">Online / Offline Devices</div>
+          <app-pie-chart [options]="getDeviceOnlineStatusDonutOptions()"></app-pie-chart>
         </div>
 
       </div><!-- /right-col -->
