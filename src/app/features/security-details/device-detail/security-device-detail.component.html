@@ -65,7 +65,7 @@
       <div class="card">
         <div class="sub mb-3">Timestamp, violation details, snapshot, team</div>
 
-        <ng-container *ngIf="aiAlerts.length; else noAiAlerts">
+        <div *ngIf="aiAlerts.length; else noAiAlerts" style="max-height: 250px; overflow-y: auto;">
           <div class="alert-item" *ngFor="let alert of aiAlerts">
             <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
             <div class="flex-1">
@@ -74,7 +74,7 @@
             </div>
             <div class="muted text-xs mono">{{ alert.time }}</div>
           </div>
-        </ng-container>
+        </div>
 
         <ng-template #noAiAlerts>
           <div class="text-sm muted">No alerts</div>

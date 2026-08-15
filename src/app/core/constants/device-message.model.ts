@@ -447,7 +447,7 @@ export interface RawVisionDecodedPayload {
   headerCrc16: number;
   isHeaderCrcValid: boolean;
   isImageCrcValid: boolean;
-  image: string | null;
+  image?: unknown;
   [key: string]: unknown;
 }
 
@@ -830,7 +830,7 @@ export function mapVisionDecodedPayload(raw: RawVisionDecodedPayload): VisionDec
     onlineCameras: onlineCamerasFromBitmap(raw.cameraStatusBitmap),
     imageFormatLabel: enumLabel(VISION_IMAGE_FORMAT_LABELS, raw.imageFormat) ?? `Unknown (${raw.imageFormat})`,
     imageEncodingLabel: enumLabel(VISION_IMAGE_ENCODING_LABELS, raw.imageEncoding) ?? `Unknown (${raw.imageEncoding})`,
-    hasImage: (raw.flags & 1) === 1 || raw.imageSizeBytes > 0 || raw.image !== null
+    hasImage: (raw.flags & 1) === 1 || raw.imageSizeBytes > 0 || raw.image !== null && raw.image !== undefined
   };
 }
 

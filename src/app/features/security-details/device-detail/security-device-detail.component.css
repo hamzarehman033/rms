@@ -165,8 +165,8 @@
 
 .evidence-viewport {
 	position: relative;
-	aspect-ratio: 16 / 9;
 	border-radius: 8px;
+	min-height: 300px;
 	border: 1px solid var(--border);
 	background: var(--surface-1);
 	display: flex;

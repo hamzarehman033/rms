@@ -19,6 +19,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
   peakSolarPowerKw = 0;
   selectedSection: string = 'live-data';
   latestVisionPayload: VisionDecodedPayload | null = null;
+  evidenceImageSrc: string | null = null;
   private readonly destroy$ = new Subject<void>();
 
   // Alerts (legacy dock section)
@@ -67,11 +68,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
     },
   ];
 
-  aiAlerts = [
-    { title: 'PPE Violation - No Helmet', meta: 'Cam 1 · High confidence', time: '12:35', severity: 'critical' },
-    { title: 'PPE Violation - No Vest', meta: 'Cam 1 · Medium confidence', time: '12:28', severity: 'major' },
-    { title: 'Restricted Zone Entry', meta: 'Cam 2 · High confidence', time: '12:21', severity: 'critical' },
-  ];
+  aiAlerts: Array<{ title: string; meta: string; time: string; severity: string }> = [];
 
   lastEvent = {
     title: 'No Helmet',
@@ -79,12 +76,12 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
   };
 
   selectedEvent = {
-    violationLabel: 'PPE VIOLATION',
-    cameraTime: 'Cam 1 - 12:35:20 PM',
-    evidenceFile: 'AI-2026-000123.jpg',
-    siteCode: 'RMS-AI-102',
-    zone: 'Shelter Area',
-    status: 'New',
+    violationLabel: '',
+    cameraTime: '',
+    evidenceFile: '',
+    siteCode: '',
+    zone: '',
+    status: '',
   };
 
   selectedEventDetails = [
@@ -128,19 +125,47 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private applyVisionPacket(payload: VisionDecodedPayload): void {
+    const packetTime = this.formatPacketTime(payload.timestampUtcIso);
+    const alertTitle = payload.snapshotReasonLabel !== 'None' ? payload.snapshotReasonLabel : payload.eventTypeLabel;
+
     this.latestVisionPayload = payload;
+    this.evidenceImageSrc = this.getEvidenceImageSrc(
+      payload.image
+        ?? payload['imageData']
+        ?? payload['imageBytes']
+        ?? payload['imageBase64']
+        ?? payload['imageHex']
+        ?? payload['imageUrl']
+        ?? payload['snapshotUrl']
+    );
     this.featureStatuses = this.featureStatuses.map(feature => feature.code === payload.snapshotReasonCode
       ? { ...feature, count: feature.count + 1 }
       : feature
     );
+    if (payload.messageType === 1 && payload.snapshotReasonCode !== 0) {
+      this.aiAlerts = [
+        {
+          title: alertTitle,
+          meta: `Cam ${payload.cameraId || '-'} · Confidence ${this.formatConfidence(payload.confidence)}`,
+          time: packetTime,
+          severity: this.getSeverityClass(payload.severity),
+        },
+        ...this.aiAlerts
+      ];
+    }
     this.lastEvent = {
       title: payload.snapshotReasonLabel,
-      meta: `Cam ${payload.cameraId} - ${this.formatPacketTime(payload.timestampUtcIso)}`,
+      meta: `Cam ${payload.cameraId} - ${packetTime}`,
     };
+    const evidenceFile = this.evidenceImageSrc
+      ? `AI-${payload.messageIdHash || payload.eventIdHash}.jpg`
+      : this.selectedEvent.evidenceFile;
+
     this.selectedEvent = {
       ...this.selectedEvent,
       violationLabel: payload.eventTypeLabel,
-      cameraTime: `Cam ${payload.cameraId} - ${this.formatPacketTime(payload.timestampUtcIso)}`,
+      cameraTime: `Cam ${payload.cameraId} - ${packetTime}`,
+      evidenceFile,
       siteCode: payload.topicSiteId ?? this.selectedEvent.siteCode,
       zone: payload.activityZoneLabel,
       status: payload.messageTypeLabel,
@@ -153,6 +178,75 @@ export class EhsDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
       { label: 'Camera', value: `Cam ${payload.cameraId}` },
       { label: 'Status', value: payload.messageTypeLabel },
     ];
+  }
+
+  private getEvidenceImageSrc(image: unknown): string | null {
+    if (Array.isArray(image)) {
+      return `data:image/jpeg;base64,${this.bytesToBase64(image)}`;
+    }
+
+    if (image && typeof image === 'object') {
+      const imageRecord = image as Record<string, unknown>;
+
+      // SignalR sends { data: "<base64>" }; also accept byte arrays / alternate keys.
+      return this.getEvidenceImageSrc(
+        imageRecord['data']
+          ?? imageRecord['url']
+          ?? imageRecord['src']
+          ?? imageRecord['dataUrl']
+          ?? imageRecord['base64']
+          ?? imageRecord['hex']
+          ?? imageRecord['bytes']
+      );
+    }
+
+    const value = String(image ?? '').trim();
+
+    if (!value) {
+      return null;
+    }
+
+    if (value.startsWith('data:image') || value.startsWith('http://') || value.startsWith('https://') || value.startsWith('blob:')) {
+      return value;
+    }
+
+    const compactHex = value.replace(/^0x/i, '').replace(/[\s:-]/g, '');
+    if (compactHex.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(compactHex) && compactHex.toUpperCase().startsWith('FFD8')) {
+      return `data:image/jpeg;base64,${this.hexToBase64(compactHex)}`;
+    }
+
+    return `data:image/jpeg;base64,${value}`;
+  }
+
+  private hexToBase64(hex: string): string {
+    const bytes: number[] = [];
+
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes.push(parseInt(hex.slice(i, i + 2), 16));
+    }
+
+    return this.bytesToBase64(bytes);
+  }
+
+  private bytesToBase64(bytes: number[]): string {
+    let binary = '';
+
+    for (const byte of bytes) {
+      binary += String.fromCharCode(byte);
+    }
+
+    return btoa(binary);
+  }
+
+  private formatConfidence(value: number): string {
+    return `${Math.round(value * 100)}%`;
+  }
+
+  private getSeverityClass(severity: number): string {
+    if (severity >= 3) return 'critical';
+    if (severity === 2) return 'major';
+    if (severity === 1) return 'warning';
+    return 'info';
   }
 
   private formatPacketTime(value: string): string {
