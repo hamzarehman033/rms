@@ -3,7 +3,7 @@ import { SignalrService, ToastService } from '@app/core';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
+import { VisionDecodedPayload } from '../../../core/constants/device-message.model';
 
 @Component({
   selector: 'app-security-device-detail',
@@ -12,19 +12,20 @@ import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-
   styleUrl: './security-device-detail.component.css'
 })
 export class SecurityDeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() deviceDetails: any = null;
   isLoadingDevice = false;
   isOperational = false;
   selectedDeviceDetails: any = null;
   lastPacketAt: string | null = null;
   peakSolarPowerKw = 0;
   selectedSection: string = 'live-data';
+  latestVisionPayload: VisionDecodedPayload | null = null;
 
 
   featureStatuses = [
-    { label: 'Fence/Boundary Violations', active: true },
-    { label: 'Head Count', active: true },
-    { label: 'Guard Appearance', active: true },
+    { label: 'Fence/Boundary Violations', code: 4, count: 0 },
+    { label: 'Crowd Alerts', code: 6, count: 0 },
+    { label: 'Guard Appearance', code: 7, count: 0 },
+    { label: 'Stream Health', code: null, count: 0 },
   ];
 
   cameras = [
@@ -48,7 +49,6 @@ export class SecurityDeviceDetailComponent implements OnInit, OnChanges, OnDestr
     { title: 'Geofence Violation', meta: 'Shelter Camera · Confidence 91%', time: '12:35', severity: 'critical' },
     { title: 'Fence / Boundary Cross', meta: 'Gate Camera · Confidence 88%', time: '12:28', severity: 'major' },
     { title: 'Guard Appearance Alert', meta: 'Cam 2 · Confidence 84%', time: '12:21', severity: 'major' },
-    { title: 'Head Count Change', meta: 'Cam 1 · Info', time: '12:10', severity: 'info' },
   ];
 
   lastEvent = {
@@ -128,6 +128,22 @@ export class SecurityDeviceDetailComponent implements OnInit, OnChanges, OnDestr
   }
 
   ngOnInit(): void {
+    this.signalrService.onVisionDetection$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(payload => {
+        if (!payload) {
+          return;
+        }
+
+        this.latestVisionPayload = payload;
+        this.featureStatuses = this.featureStatuses.map(feature =>
+          feature.code === null
+            ? { ...feature, count: payload.activeCameraCount }
+            : feature.code === payload.snapshotReasonCode
+              ? { ...feature, count: feature.count + 1 }
+              : feature
+        );
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {

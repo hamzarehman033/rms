@@ -18,20 +18,11 @@
     </div>
 
     <div class="s-card online-card" *ngFor="let feature of featureStatuses">
-      <div class="s-card-bar" [style.background]="feature.active ? '#3fb950' : '#6b7280'"></div>
+      <div class="s-card-bar" [style.background]="feature.count > 0 ? '#3fb950' : '#6b7280'"></div>
       <div class="s-lbl">{{ feature.label }}</div>
-      <div class="s-num" [style.color]="feature.active ? '#3fb950' : '#6b7280'" style="font-size:18px">
-        {{ feature.active ? 'Active' : 'Off' }}
+      <div class="s-num" [style.color]="feature.count > 0 ? '#3fb950' : '#6b7280'" style="font-size:18px">
+        {{ feature.count }}
       </div>
-    </div>
-
-    <div class="s-card online-card">
-      <div class="s-card-bar" style="background:#3fb950"></div>
-      <div class="s-lbl">Stream Health</div>
-      <div class="s-num" style="font-size:16px">
-        <span class="badge online">● Stable</span>
-      </div>
-      <div class="s-sub">WebRTC preferred for low latency</div>
     </div>
 
     <div class="s-card online-card">
