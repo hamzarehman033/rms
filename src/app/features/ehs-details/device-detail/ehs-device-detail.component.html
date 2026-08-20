@@ -58,10 +58,15 @@
     <div class="right-col">
       <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
       <div class="card">
-        <div class="sub mb-3">Timestamp, violation details, snapshot, team</div>
+        <div class="hstack justify-between items-center mb-3">
+          <div class="sub">Timestamp, violation details, snapshot, team</div>
+          <select class="timespan-select" [value]="selectedTimeSpan" (change)="onTimeSpanChange($event)">
+            <option *ngFor="let option of timeSpanOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
 
         <div *ngIf="aiAlerts.length; else noAiAlerts" style="max-height: 250px; overflow-y: auto;">
-          <div class="alert-item" *ngFor="let alert of aiAlerts">
+          <div class="alert-item" *ngFor="let alert of aiAlerts" (click)="onAlertClick(alert)" [class.alert-item-selected]="selectedAlertId === alert.id">
             <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
             <div class="flex-1">
               <div class="font-medium text-sm">{{ alert.title }}</div>

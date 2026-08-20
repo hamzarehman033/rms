@@ -62,7 +62,7 @@ MQTT_TLS = True                # True for TLS, or use mqtts:// in MQTT_BROKER
 
 TENANT_ID = "mobiserve"
 SITE_ID = "ISB"
-EDGE_DEVICE_ID = "MOCK-001"
+EDGE_DEVICE_ID = "MOCK-005"
 
 
 MQTT_TOPIC = f"telecom/{TENANT_ID}/{SITE_ID}/{EDGE_DEVICE_ID}/ai"
