@@ -32,6 +32,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   selectedAlertId: number | null = null;
+  private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
 
   constructor(private visionService: VisionService, private route: ActivatedRoute) {}
 
@@ -120,14 +121,6 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private toNumericId(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') {
-      return null;
-    }
-    const numeric = Number(value);
-    return Number.isFinite(numeric) ? numeric : null;
-  }
-
   getActiveCameraCount(): number {
     return this.latestVisionPayload?.activeCameraCount ?? this.cameras.length;
   }
@@ -138,18 +131,25 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
 
   onAlertClick(alert: { id: number }): void {
     this.selectedAlertId = alert.id;
-    this.visionService.getVisionPacketDetails(alert.id).pipe(takeUntil(this.destroy$)).subscribe((packet) => {
-      if (!packet) {
+
+    const cachedPayload = this.historyPayloads.get(alert.id);
+    if (cachedPayload) {
+      this.applySelectedEventDetails(cachedPayload);
+    }
+
+    this.visionService.getVisionPacketDetails(alert.id).pipe(takeUntil(this.destroy$)).subscribe((imageBase64) => {
+      if (this.selectedAlertId !== alert.id) {
         return;
       }
 
-      const mappedPacket = this.mapApiPacketToVisionPayload(packet);
+      this.evidenceImageSrc = this.getEvidenceImageSrc(imageBase64);
 
-      if (!mappedPacket) {
-        return;
+      if (this.evidenceImageSrc && this.latestVisionPayload) {
+        this.selectedEvent = {
+          ...this.selectedEvent,
+          evidenceFile: `AI-${this.latestVisionPayload.messageIdHash || this.latestVisionPayload.eventIdHash}.jpg`,
+        };
       }
-
-      this.applySelectedEventDetails(mappedPacket);
     });
   }
 
@@ -161,6 +161,11 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
       }))
       .filter((entry): entry is { id: number; payload: VisionDecodedPayload } => !!entry.payload)
       .sort((a, b) => b.payload.timestampUtc - a.payload.timestampUtc);
+
+    this.historyPayloads.clear();
+    for (const entry of mappedHistory) {
+      this.historyPayloads.set(entry.id, entry.payload);
+    }
 
     const reasonCounts = mappedHistory.reduce<Record<number, number>>((accumulator, entry) => {
       const reasonCode = entry.payload.snapshotReasonCode;
@@ -210,6 +215,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     this.selectedAlertId = null;
     this.latestVisionPayload = null;
     this.evidenceImageSrc = null;
+    this.historyPayloads.clear();
   }
 
   private applySelectedEventDetails(payload: VisionDecodedPayload): void {
@@ -283,7 +289,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     const activeCameras = packet.activeCameraCount ?? this.countActiveCameras(packet.cameraStatusBitmap);
 
     return {
-      deviceId: this.toNumericId(packet.deviceNumber) ?? this.deviceId,
+      deviceId: this.deviceId,
       topic: String(packet.topic ?? ''),
       receivedAt: packet.receivedAtUtc ?? new Date(timestampUtc * 1000).toISOString(),
       packetSignature: Number(packet.packetSignature ?? 0),

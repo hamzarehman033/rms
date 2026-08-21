@@ -87,10 +87,9 @@ export class VisionService {
       );
   }
 
-  getVisionPacketDetails(id: number): Observable<AiVisionPacketApiModel | null> {
+  getVisionPacketDetails(id: number): Observable<any> {
     return this.http
-      .get<ApiEnvelope<AiVisionPacketApiModel>>(`${this.baseUrl}${this.url}/packet/${id}/vision-packet-details`)
-      .pipe(map((response) => this.unwrapRecord(response)));
+      .get(`${this.baseUrl}${this.url}/packet/${id}/vision-packet-details`)
   }
 
   private unwrapArray(payload: ApiEnvelope<AiVisionPacketApiModel[]>): AiVisionPacketApiModel[] {
@@ -111,27 +110,5 @@ export class VisionService {
     }
 
     return [];
-  }
-
-  private unwrapRecord(payload: ApiEnvelope<AiVisionPacketApiModel>): AiVisionPacketApiModel | null {
-    if (!payload || typeof payload !== 'object') {
-      return null;
-    }
-
-    if ('id' in payload) {
-      return payload as AiVisionPacketApiModel;
-    }
-
-    const response = payload as { data?: unknown; items?: unknown };
-
-    if (response.data && typeof response.data === 'object') {
-      return response.data as AiVisionPacketApiModel;
-    }
-
-    if (response.items && typeof response.items === 'object' && !Array.isArray(response.items)) {
-      return response.items as AiVisionPacketApiModel;
-    }
-
-    return null;
   }
 }
