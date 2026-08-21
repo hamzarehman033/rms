@@ -7,14 +7,13 @@
       <div class="s-num" style="font-size:16px">
         <span class="badge online">● Online</span>
       </div>
-      <div class="s-sub">{{ selectedDeviceDetails?.name || selectedDeviceDetails?.code || 'Edge-AI-001' }} · Last sync —</div>
     </div>
 
     <div class="s-card online-card">
       <div class="s-card-bar" style="background:#0ea5e9"></div>
       <div class="s-lbl">Cameras Connected</div>
-      <div class="s-num" style="color:#0ea5e9">{{ cameras.length }} / {{ cameras.length }}</div>
-      <div class="s-sub">Shelter + Gate streams active</div>
+      <div class="s-num" style="color:#0ea5e9">{{ getActiveCameraCount() }} / {{ getConfiguredCameraCount() }}</div>
+      <div class="s-sub">Active streams</div>
     </div>
 
     <div class="s-card online-card" *ngFor="let feature of featureStatuses">
@@ -63,10 +62,15 @@
     <div class="right-col">
       <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
       <div class="card">
-        <div class="sub mb-3">Timestamp, violation details, snapshot, team</div>
+        <div class="hstack justify-between items-center mb-3">
+          <div class="sub">Timestamp, violation details, snapshot, team</div>
+          <select class="timespan-select" [value]="selectedTimeSpan" (change)="onTimeSpanChange($event)">
+            <option *ngFor="let option of timeSpanOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
 
         <div *ngIf="aiAlerts.length; else noAiAlerts" style="max-height: 250px; overflow-y: auto;">
-          <div class="alert-item" *ngFor="let alert of aiAlerts">
+          <div class="alert-item" *ngFor="let alert of aiAlerts" (click)="onAlertClick(alert)" [class.alert-item-selected]="selectedAlertId === alert.id">
             <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
             <div class="flex-1">
               <div class="font-medium text-sm">{{ alert.title }}</div>
@@ -79,6 +83,41 @@
         <ng-template #noAiAlerts>
           <div class="text-sm muted">No alerts</div>
         </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evidence preview + selected event details -->
+  <div class="body-layout">
+    <div class="left-col">
+      <div class="card">
+        <div class="hstack justify-between items-start mb-2">
+          <div>
+            <div class="sec-title" style="margin-bottom:4px"><i class="pi pi-image"></i> Violation Evidence Preview</div>
+            <p class="muted text-xs">Snapshot image attached with event</p>
+          </div>
+        </div>
+
+        <div class="evidence-viewport">
+          <div class="hstack justify-between evidence-overlays">
+            <span class="badge critical">{{ selectedEvent.violationLabel }}</span>
+            <span class="badge info">{{ selectedEvent.cameraTime }}</span>
+          </div>
+          <img *ngIf="evidenceImageSrc; else noEvidenceImage" class="evidence-image" [src]="evidenceImageSrc" alt="Violation evidence snapshot">
+          <ng-template #noEvidenceImage>
+            <div class="muted text-xs evidence-placeholder">No evidence image</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="right-sec-title"><i class="pi pi-info-circle" style="font-size:11px"></i> Event Details</div>
+      <div class="event-details-grid">
+        <div class="card event-detail-item" *ngFor="let item of selectedEventDetails">
+          <div class="info-label">{{ item.label }}</div>
+          <div class="info-value" [ngClass]="item.valueClass">{{ item.value }}</div>
+        </div>
       </div>
     </div>
   </div>

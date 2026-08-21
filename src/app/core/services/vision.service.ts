@@ -87,9 +87,24 @@ export class VisionService {
       );
   }
 
-  getVisionPacketDetails(id: number): Observable<any> {
+  getVisionPacketDetails(id: number): Observable<string | null> {
     return this.http
-      .get(`${this.baseUrl}${this.url}/packet/${id}/vision-packet-details`)
+      .get<{ data?: unknown }>(`${this.baseUrl}${this.url}/packet/${id}/vision-packet-details`)
+      .pipe(map((response) => this.unwrapImage(response)));
+  }
+
+  private unwrapImage(payload: { data?: unknown } | string | null | undefined): string | null {
+    if (typeof payload === 'string') {
+      const value = payload.trim();
+      return value || null;
+    }
+
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+
+    const data = payload.data;
+    return typeof data === 'string' && data.trim() ? data.trim() : null;
   }
 
   private unwrapArray(payload: ApiEnvelope<AiVisionPacketApiModel[]>): AiVisionPacketApiModel[] {
