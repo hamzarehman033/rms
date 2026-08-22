@@ -1,4 +1,3 @@
-import { inject } from '@angular/core';
 import {
   HttpInterceptorFn,
   HttpRequest,
@@ -7,23 +6,21 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ToastService } from '../services/toast.service';
+import { toast } from '../../utils/global-toast';
 
 export const errorInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
   next: HttpHandlerFn
 ): Observable<any> => {
-  const toastService = inject(ToastService);
-
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      handleError(error, toastService);
+      handleError(error);
       return throwError(() => error);
     })
   );
 };
 
-function handleError(error: HttpErrorResponse, toastService: ToastService): void {
+function handleError(error: HttpErrorResponse): void {
   let errorMessage = 'An unexpected error occurred';
   let errorSummary = 'Error';
 
@@ -60,5 +57,5 @@ function handleError(error: HttpErrorResponse, toastService: ToastService): void
     }
   }
 
-  toastService.showError(errorSummary, errorMessage);
+  toast.error(errorSummary, errorMessage);
 }

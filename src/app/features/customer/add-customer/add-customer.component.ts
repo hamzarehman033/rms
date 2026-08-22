@@ -1,7 +1,7 @@
 import { Component, Output, EventEmitter, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CustomerService } from '../../../core/services/customer.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { toast } from '../../../utils/global-toast';
 
 @Component({
   selector: 'app-add-customer',
@@ -37,8 +37,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private customerService: CustomerService,
-    private toastService: ToastService
+    private customerService: CustomerService
   ) {
     this.customerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -88,7 +87,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
       error: (error: any) => {
         this.isLoading = false;
         console.error('Error fetching customer details:', error);
-        this.toastService.showError('Error', 'Failed to load customer details. Please try again.');
+        toast.error('Error', 'Failed to load customer details. Please try again.');
       }
     });
   }
@@ -109,7 +108,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
 
   onSubmit() {
     if (this.customerForm.invalid) {
-      this.toastService.showError('Validation Error', 'Please fill in all required fields correctly.');
+      toast.error('Validation Error', 'Please fill in all required fields correctly.');
       return;
     }
 
@@ -129,7 +128,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
       this.customerService.updateCustomer(this.customerId!, payload).subscribe({
         next: (response: any) => {
           this.isLoading = false;
-          this.toastService.showSuccess('Success', 'Customer updated successfully.');
+          toast.success('Success', 'Customer updated successfully.');
           this.customerUpdated.emit(response);
           this.customerForm.reset();
           this.isEditMode = false;
@@ -137,14 +136,14 @@ export class AddCustomerComponent implements OnInit, OnChanges {
         error: (error: any) => {
           this.isLoading = false;
           console.error('Error updating customer:', error);
-          this.toastService.showError('Error', 'Failed to update customer. Please try again.');
+          toast.error('Error', 'Failed to update customer. Please try again.');
         }
       });
     } else {
       this.customerService.createCustomer(payload).subscribe({
         next: (response: any) => {
           this.isLoading = false;
-          this.toastService.showSuccess('Success', 'Customer created successfully.');
+          toast.success('Success', 'Customer created successfully.');
           this.customerAdded.emit(response);
           this.customerForm.reset();
           if (!this.hasActiveCustomer) {
@@ -154,7 +153,7 @@ export class AddCustomerComponent implements OnInit, OnChanges {
         error: (error: any) => {
           this.isLoading = false;
           console.error('Error creating customer:', error);
-          this.toastService.showError('Error', 'Failed to create customer. Please try again.');
+          toast.error('Error', 'Failed to create customer. Please try again.');
         }
       });
     }

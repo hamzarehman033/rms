@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DevicesService, RealtimeDataSourceService, SignalrService, Site, SitesStreamStateService, ToastService } from '@app/core';
+import { DevicesService, RealtimeDataSourceService, SignalrService, Site, SitesStreamStateService } from '@app/core';
+import { toast } from '../../utils/global-toast';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -42,7 +43,6 @@ export class SitesComponent implements OnInit, OnDestroy {
     private router: Router,
     private devicesService: DevicesService,
     private signalrService: SignalrService,
-    private toastService: ToastService,
     private sitesStreamStateService: SitesStreamStateService,
     private realtimeDataSourceService: RealtimeDataSourceService
   ) {
@@ -79,7 +79,7 @@ export class SitesComponent implements OnInit, OnDestroy {
         this.allSites = [];
         this.sites = [];
         this.isLoading = false;
-        this.toastService.showError('Failed to load sites');
+        toast.error('Failed to load sites');
       }
     });
   }
@@ -383,7 +383,7 @@ export class SitesComponent implements OnInit, OnDestroy {
   async toggleDeviceStream(device: Site): Promise<void> {
     // const deviceId = this.toDeviceNumericId(device);
     // if (deviceId === null) {
-    //   this.toastService.showError('Invalid device id');
+    //   toast.error('Invalid device id');
     //   return;
     // }
 
@@ -401,16 +401,16 @@ export class SitesComponent implements OnInit, OnDestroy {
     //         await this.signalrService.start();
     //         await this.signalrService.subscribeToDevice(deviceId);
     //         this.activeStreamingDeviceIds.add(deviceId);
-    //         this.toastService.showSuccess(response.message || 'Stream started');
+    //         toast.success(response.message || 'Stream started');
     //       } catch (error) {
-    //         this.toastService.showError('Failed to open socket subscription');
+    //         toast.error('Failed to open socket subscription');
     //       } finally {
     //         this.streamActionInProgressIds.delete(deviceId);
     //       }
     //     },
     //     error: (error: any) => {
     //       this.streamActionInProgressIds.delete(deviceId);
-    //       this.toastService.showError(error?.error?.message || 'Failed to start MQTT listener');
+    //       toast.error(error?.error?.message || 'Failed to start MQTT listener');
     //     }
     //   });
     //   return;
@@ -421,16 +421,16 @@ export class SitesComponent implements OnInit, OnDestroy {
     //     try {
     //       await this.signalrService.unsubscribeFromDevice(deviceId);
     //       this.activeStreamingDeviceIds.delete(deviceId);
-    //       this.toastService.showSuccess(response.message || 'Stream stopped');
+    //       toast.success(response.message || 'Stream stopped');
     //     } catch (error) {
-    //       this.toastService.showError('Failed to close socket subscription');
+    //       toast.error('Failed to close socket subscription');
     //     } finally {
     //       this.streamActionInProgressIds.delete(deviceId);
     //     }
     //   },
     //   error: (error: any) => {
     //     this.streamActionInProgressIds.delete(deviceId);
-    //     this.toastService.showError(error?.error?.message || 'Failed to stop MQTT listener');
+    //     toast.error(error?.error?.message || 'Failed to stop MQTT listener');
     //   }
     // });
   }

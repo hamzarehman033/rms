@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { LocationsService, Location, CustomerService, DevicesService } from '@app/core';
-import { ToastService } from '@app/core';
+import { toast } from '../../utils/global-toast';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -34,8 +34,7 @@ export class LocationsComponent implements OnInit {
   constructor(
     private locationsService: LocationsService,
     private devicesService: DevicesService,
-    private customerService: CustomerService,
-    private toastService: ToastService
+    private customerService: CustomerService
   ) {}
 
   ngOnInit() {
@@ -74,7 +73,7 @@ export class LocationsComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.toastService.showError('Failed to load locations');
+        toast.error('Failed to load locations');
         this.loading = false;
       }
     });
@@ -173,13 +172,13 @@ export class LocationsComponent implements OnInit {
     this.locationsService.createLocation(location).subscribe({
       next: (response) => {
         const levelNames = {1: 'Region', 2: 'SubRegion', 3: 'Zone'};
-        this.toastService.showSuccess(`${levelNames[location.level as keyof typeof levelNames]} added successfully`);
+        toast.success(`${levelNames[location.level as keyof typeof levelNames]} added successfully`);
         this.displayAddLocationDialog = false;
         this.displayAddRegionDialog = false;
         this.loadLocations();
       },
       error: (error) => {
-        this.toastService.showError('Failed to add location');
+        toast.error('Failed to add location');
       }
     });
   }
@@ -207,13 +206,13 @@ export class LocationsComponent implements OnInit {
     this.locationsService.updateLocation(this.editingLocation.id, updateData).subscribe({
       next: (response) => {
         const levelNames = {1: 'Region', 2: 'SubRegion', 3: 'Zone'};
-        this.toastService.showSuccess(`${levelNames[updateData.level as keyof typeof levelNames]} updated successfully`);
+        toast.success(`${levelNames[updateData.level as keyof typeof levelNames]} updated successfully`);
         this.displayEditLocationDialog = false;
         this.editingLocation = null;
         this.loadLocations();
       },
       error: (error) => {
-        this.toastService.showError('Failed to update location');
+        toast.error('Failed to update location');
       }
     });
   }
@@ -234,13 +233,13 @@ export class LocationsComponent implements OnInit {
 
     this.locationsService.deleteLocation(locationId).subscribe({
       next: (response) => {
-        this.toastService.showSuccess(`Location "${locationName}" deleted successfully`);
+        toast.success(`Location "${locationName}" deleted successfully`);
         this.displayDeleteLocationDialog = false;
         this.deleteLocation = null;
         this.loadLocations();
       },
       error: (error) => {
-        this.toastService.showError('Failed to delete location');
+        toast.error('Failed to delete location');
       }
     });
   }

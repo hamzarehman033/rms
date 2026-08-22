@@ -2,8 +2,8 @@
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { ToastService } from '../../core/services/toast.service';
 import { CustomerService } from '../../core/services/customer.service';
+import { toast } from '../../utils/global-toast';
 import { catchError, finalize, map, of, switchMap, tap } from 'rxjs';
 
 @Component({
@@ -21,7 +21,6 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private customerService: CustomerService,
-    private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -41,7 +40,7 @@ export class LoginComponent implements OnInit {
 
   login(): void {
     if (this.loginForm.invalid) {
-      this.toastService.showError('Validation Error', 'Please fill in all required fields correctly.');
+      toast.error('Validation Error', 'Please fill in all required fields correctly.');
       return;
     }
 

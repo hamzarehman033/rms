@@ -1,7 +1,8 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
-import { DecodedPayload, DeviceDataEvent, DevicesService, SignalrService, ToastService } from '@app/core';
+import { DecodedPayload, DeviceDataEvent, DevicesService, SignalrService } from '@app/core';
+import { toast } from '../../utils/global-toast';
 
 type AlarmState = 'open' | 'acknowledged' | 'resolved';
 type AlarmSeverity = 'critical' | 'major' | 'minor' | 'warning' | 'info';
@@ -48,8 +49,7 @@ export class AlarmComponent implements OnInit {
 
   constructor(
     private readonly signalrService: SignalrService,
-    private readonly devicesService: DevicesService,
-    private readonly toastService: ToastService
+    private readonly devicesService: DevicesService
   ) {}
 
   ngOnInit(): void {
@@ -185,11 +185,11 @@ export class AlarmComponent implements OnInit {
           }
 
           void this.signalrService.subscribeToDevices(ids).catch(() => {
-            this.toastService.showError('Unable to subscribe alarm stream for all devices');
+            toast.error('Unable to subscribe alarm stream for all devices');
           });
         },
         error: () => {
-          this.toastService.showError('Failed to load devices for alarm stream');
+          toast.error('Failed to load devices for alarm stream');
         }
       });
   }

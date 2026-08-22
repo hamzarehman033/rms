@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DevicePayload, DEVICE_TYPE_OPTIONS, DeviceType, DevicesService, LocationsService, Site, TenantService, ToastService } from '@app/core';
+import { DevicePayload, DEVICE_TYPE_OPTIONS, DeviceType, DevicesService, LocationsService, Site, TenantService } from '@app/core';
+import { toast } from '../../../utils/global-toast';
 
 interface OptionItem {
   label: string;
@@ -62,8 +63,7 @@ export class AddSiteComponent implements OnInit {
     private fb: FormBuilder,
     private locationsService: LocationsService,
     private devicesService: DevicesService,
-    private tenantService: TenantService,
-    private toastService: ToastService
+    private tenantService: TenantService
   ) {
     this.siteForm = this.fb.group({
       siteName: ['', [Validators.required, Validators.minLength(3)]],
@@ -188,13 +188,13 @@ export class AddSiteComponent implements OnInit {
       this.devicesService.createDevice(devicePayload as DevicePayload).subscribe({
         next: (response: any) => {
           this.isLoading = false;
-          this.toastService.showSuccess('Site created successfully');
+          toast.success('Site created successfully');
           this.siteAdded.emit(response);
           this.resetForm();
         },
         error: () => {
           this.isLoading = false;
-          this.toastService.showError('Failed to create site');
+          toast.error('Failed to create site');
         }
       });
     }
@@ -340,7 +340,7 @@ export class AddSiteComponent implements OnInit {
   private updateSiteAndDevice(sitePayload: any, devicePayload: Partial<DevicePayload>): void {
     const deviceId = this.site?.deviceId || this.site?.siteId;
     if (!deviceId) {
-      this.toastService.showError('Site id is missing, cannot update site');
+      toast.error('Site id is missing, cannot update site');
       return;
     }
 
@@ -351,12 +351,12 @@ export class AddSiteComponent implements OnInit {
     } as Partial<DevicePayload>).subscribe({
       next: () => {
         this.isLoading = false;
-        this.toastService.showSuccess('Site updated successfully');
+        toast.success('Site updated successfully');
         this.siteAdded.emit({ mode: 'edit' });
       },
       error: () => {
         this.isLoading = false;
-        this.toastService.showError('Failed to update site');
+        toast.error('Failed to update site');
       }
     });
   }

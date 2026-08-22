@@ -4,7 +4,8 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CalendarModule } from 'primeng/calendar';
-import { DeviceInfrastructurePayload, DevicesService, Site, ToastService } from '@app/core';
+import { DeviceInfrastructurePayload, DevicesService, Site } from '@app/core';
+import { toast } from '../../../utils/global-toast';
 
 type InfrastructureSection = 'Battery' | 'Solar' | 'Generator';
 
@@ -26,8 +27,7 @@ export class SiteConfigurationComponent {
 
   constructor(
     private formBuilder: FormBuilder,
-    private devices: DevicesService,
-    private toastService: ToastService
+    private devices: DevicesService
   ) {
     this.configForm = this.formBuilder.group({
       rectifier: this.formBuilder.group({
@@ -76,18 +76,18 @@ export class SiteConfigurationComponent {
 
     const resolvedDeviceId = this.resolveDeviceId();
     if (!resolvedDeviceId) {
-      this.toastService.showError('Device ID is required to update infrastructure');
+      toast.error('Device ID is required to update infrastructure');
       return;
     }
 
     this.isSaving = true;
     this.devices.updateDeviceInfrastructure(resolvedDeviceId, this.buildPayload()).subscribe({
       next: (response: any) => {
-        this.toastService.showSuccess('Site configuration updated successfully');
+        toast.success('Site configuration updated successfully');
         this.siteConfigured.emit(response);
       },
       error: () => {
-        this.toastService.showError('Failed to update site configuration');
+        toast.error('Failed to update site configuration');
       },
       complete: () => {
         this.isSaving = false;
@@ -127,7 +127,7 @@ export class SiteConfigurationComponent {
         this.patchInfrastructureForm(payload);
       },
       error: () => {
-        this.toastService.showError('Failed to load existing site configuration');
+        toast.error('Failed to load existing site configuration');
       },
       complete: () => {
         this.isLoadingConfiguration = false;

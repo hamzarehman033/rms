@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AppRole, AuthService, ToastService, UsersService } from '@app/core';
+import { AppRole, AuthService, UsersService } from '@app/core';
+import { toast } from '../../utils/global-toast';
 import { Menu, MenuOptions } from '../../core/constants/sideMenu';
 
 @Component({
@@ -22,8 +23,7 @@ export class ProfileComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private usersService: UsersService,
-    private toastService: ToastService
+    private usersService: UsersService
   ) {}
 
   ngOnInit(): void {
@@ -47,7 +47,7 @@ export class ProfileComponent implements OnInit {
     const userId = authUser?.id;
 
     if (!userId) {
-      this.toastService.showError('Error', 'Unable to load current user.');
+      toast.error('Error', 'Unable to load current user.');
       return;
     }
 
@@ -65,7 +65,7 @@ export class ProfileComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        this.toastService.showError('Error', 'Failed to load profile.');
+        toast.error('Error', 'Failed to load profile.');
       }
     });
   }
@@ -90,11 +90,11 @@ export class ProfileComponent implements OnInit {
       next: () => {
         this.currentUser = { ...this.currentUser, phoneNumber: payload.phoneNumber };
         this.isSaving = false;
-        this.toastService.showSuccess('Success', 'Profile updated successfully.');
+        toast.success('Success', 'Profile updated successfully.');
       },
       error: () => {
         this.isSaving = false;
-        this.toastService.showError('Error', 'Failed to update profile.');
+        toast.error('Error', 'Failed to update profile.');
       }
     });
   }
@@ -109,11 +109,11 @@ export class ProfileComponent implements OnInit {
       next: () => {
         this.isChangingPassword = false;
         this.passwordForm.reset();
-        this.toastService.showSuccess('Success', 'Password changed successfully.');
+        toast.success('Success', 'Password changed successfully.');
       },
       error: () => {
         this.isChangingPassword = false;
-        this.toastService.showError('Error', 'Failed to change password.');
+        toast.error('Error', 'Failed to change password.');
       }
     });
   }

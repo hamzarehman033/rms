@@ -5,7 +5,7 @@ import { DevicesService } from '../../core/services/devices.service';
 import { LocationsService } from '../../core/services/locations.service';
 import { StatisticsService } from '../../core/services/statistics.service';
 import { TenantService } from '../../core/services/tenant.service';
-import { ToastService } from '../../core/services/toast.service';
+import { toast } from '../../utils/global-toast';
 
 interface BatteryStatusRecord {
   deviceId: number;
@@ -128,8 +128,7 @@ export class ReportsComponent implements OnInit {
     private statisticsService: StatisticsService,
     private locationsService: LocationsService,
     private devicesService: DevicesService,
-    private tenantService: TenantService,
-    private toastService: ToastService
+    private tenantService: TenantService
   ) {}
 
   ngOnInit(): void {
@@ -158,11 +157,11 @@ export class ReportsComponent implements OnInit {
       next: (response) => {
         this.downloadBlob(response.body, response.headers.get('content-disposition'), payload);
         this.isExporting = false;
-        this.toastService.showSuccess('Report exported', 'Your report download has started.');
+        toast.success('Report exported', 'Your report download has started.');
       },
       error: () => {
         this.isExporting = false;
-        this.toastService.showError('Export failed', 'Unable to export report. Please try again.');
+        toast.error('Export failed', 'Unable to export report. Please try again.');
       }
     });
   }
@@ -465,7 +464,7 @@ export class ReportsComponent implements OnInit {
 
   private downloadBlob(blob: Blob | null, contentDisposition: string | null, payload: ReportFiltersPayload): void {
     if (!blob || !blob.size) {
-      this.toastService.showWarning('Empty export', 'No file content was returned by the server.');
+      toast.warning('Empty export', 'No file content was returned by the server.');
       return;
     }
 

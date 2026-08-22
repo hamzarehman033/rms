@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { UsersService } from '../../core/services/users.service';
-import { ToastService } from '../../core/services/toast.service';
+import { toast } from '../../utils/global-toast';
 import { Menu, MenuMapper, MenuOptions } from '../../core/constants/sideMenu';
 import { AppRole } from '../../core/constants/roles';
 
@@ -25,7 +25,6 @@ export class UsersComponent {
 
   constructor(
     private usersService: UsersService,
-    private toastService: ToastService,
     private confirmationService: ConfirmationService
   ) {}
 
@@ -44,7 +43,7 @@ export class UsersComponent {
       error: (error: any) => {
         this.isLoading = false;
         console.error('Error loading users:', error);
-        this.toastService.showError('Error', 'Failed to load users. Please try again.');
+        toast.error('Error', 'Failed to load users. Please try again.');
       }
     });
   }
@@ -74,13 +73,13 @@ export class UsersComponent {
         this.usersService.deleteUser(user.id).subscribe({
           next: () => {
             this.isLoading = false;
-            this.toastService.showSuccess('Success', 'User deleted successfully.');
+            toast.success('Success', 'User deleted successfully.');
             this.loadUsers();
           },
           error: (error: any) => {
             this.isLoading = false;
             console.error('Error deleting user:', error);
-            this.toastService.showError('Error', 'Failed to delete user. Please try again.');
+            toast.error('Error', 'Failed to delete user. Please try again.');
           }
         });
       }

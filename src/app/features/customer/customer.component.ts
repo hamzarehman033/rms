@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { CustomerService } from '../../core/services/customer.service';
-import { ToastService } from '../../core/services/toast.service';
+import { toast } from '../../utils/global-toast';
 
 @Component({
   selector: 'app-customer',
@@ -20,7 +20,6 @@ export class CustomerComponent implements OnInit {
 
   constructor(
     private customerService: CustomerService,
-    private toastService: ToastService,
     private confirmationService: ConfirmationService
   ) {}
 
@@ -78,13 +77,13 @@ export class CustomerComponent implements OnInit {
         this.customerService.deleteCustomer(customer.id).subscribe({
           next: () => {
             this.isLoading = false;
-            this.toastService.showSuccess('Success', 'Customer deleted successfully.');
+            toast.success('Success', 'Customer deleted successfully.');
             this.loadCustomers();
           },
           error: (error: any) => {
             this.isLoading = false;
             console.error('Error deleting customer:', error);
-            this.toastService.showError('Error', 'Failed to delete customer. Please try again.');
+            toast.error('Error', 'Failed to delete customer. Please try again.');
           }
         });
       }

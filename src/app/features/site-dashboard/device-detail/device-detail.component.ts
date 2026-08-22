@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { SignalrService, ToastService } from '@app/core';
+import { SignalrService } from '@app/core';
+import { toast } from '../../../utils/global-toast';
 import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -80,8 +81,7 @@ export class DeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   constructor(
-    private signalrService: SignalrService,
-    private toastService: ToastService,
+    private signalrService: SignalrService
   ) {
     this.chartOptions = this.initChart();
   }
@@ -331,7 +331,7 @@ export class DeviceDetailComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.signalrService.subscribeToDevice(numericId).catch(() => {
-      this.toastService.showError('Failed to subscribe live socket for selected device');
+      toast.error('Failed to subscribe live socket for selected device');
     });
   }
 

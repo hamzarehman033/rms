@@ -1,7 +1,8 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { DevicesService, SignalrService, ToastService } from '@app/core';
+import { DevicesService, SignalrService } from '@app/core';
+import { toast } from '../../../utils/global-toast';
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 import { DecodedPayload, DeviceDataEvent } from '../../../core/constants/device-message.model';
@@ -172,8 +173,7 @@ export class DeviceViewComponent implements OnInit, OnDestroy {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly devicesService: DevicesService,
-    private readonly signalrService: SignalrService,
-    private readonly toastService: ToastService,
+    private readonly signalrService: SignalrService
   ) {}
 
   ngOnInit(): void {
@@ -233,7 +233,7 @@ export class DeviceViewComponent implements OnInit, OnDestroy {
           this.selectedDeviceDetails = null;
           this.selectedTopic = null;
           this.isLoadingDevice = false;
-          this.toastService.showError('Failed to load device for device view');
+          toast.error('Failed to load device for device view');
         }
       });
   }

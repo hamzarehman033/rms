@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Tenant, TenantService } from '../../core/services/tenant.service';
-import { ToastService } from '../../core/services/toast.service';
+import { toast } from '../../utils/global-toast';
 import { CustomerService } from '../../core/services/customer.service';
 
 @Component({
@@ -22,8 +22,7 @@ export class TenantComponent {
 
   constructor(
     private tenantService: TenantService,
-    private customerService: CustomerService,
-    private toastService: ToastService
+    private customerService: CustomerService
   ) {}
 
   ngOnInit(): void {
@@ -41,7 +40,7 @@ export class TenantComponent {
       error: (error: any) => {
         console.error('Error loading tenants:', error);
         this.isLoading = false;
-        this.toastService.showError('Error', 'Failed to load tenants. Please try again.');
+        toast.error('Error', 'Failed to load tenants. Please try again.');
       }
     });
   }
@@ -55,13 +54,13 @@ export class TenantComponent {
 
     this.tenantService.createTenant(payload).subscribe({
       next: () => {
-        this.toastService.showSuccess('Tenant added successfully');
+        toast.success('Tenant added successfully');
         this.displayAddTenantDialog = false;
         this.loadTenants();
       },
       error: (error: any) => {
         console.error('Error adding tenant:', error);
-        this.toastService.showError('Error', 'Failed to add tenant. Please try again.');
+        toast.error('Error', 'Failed to add tenant. Please try again.');
       }
     });
   }
@@ -90,14 +89,14 @@ export class TenantComponent {
 
     this.tenantService.updateTenant(tenantId, payload).subscribe({
       next: () => {
-        this.toastService.showSuccess('Tenant updated successfully');
+        toast.success('Tenant updated successfully');
         this.displayEditTenantDialog = false;
         this.selectedTenantForEdit = null;
         this.loadTenants();
       },
       error: (error: any) => {
         console.error('Error updating tenant:', error);
-        this.toastService.showError('Error', 'Failed to update tenant. Please try again.');
+        toast.error('Error', 'Failed to update tenant. Please try again.');
       }
     });
   }
@@ -115,14 +114,14 @@ export class TenantComponent {
 
     this.tenantService.deleteTenant(tenantId).subscribe({
       next: () => {
-        this.toastService.showSuccess('Tenant deleted successfully');
+        toast.success('Tenant deleted successfully');
         this.displayDeleteTenantDialog = false;
         this.selectedTenantForDelete = null;
         this.loadTenants();
       },
       error: (error: any) => {
         console.error('Error deleting tenant:', error);
-        this.toastService.showError('Error', 'Failed to delete tenant. Please try again.');
+        toast.error('Error', 'Failed to delete tenant. Please try again.');
       }
     });
   }

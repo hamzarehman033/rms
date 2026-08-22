@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { DevicesService, ToastService } from '@app/core';
+import { DevicesService } from '@app/core';
+import { toast } from '../../utils/global-toast';
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, finalize, map, takeUntil } from 'rxjs/operators';
 
@@ -27,8 +28,7 @@ export class SiteDashboardTabsComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private devicesService: DevicesService,
-    private toastService: ToastService,
+    private devicesService: DevicesService
   ) {}
 
   ngOnInit(): void {
@@ -76,7 +76,7 @@ export class SiteDashboardTabsComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.deviceDetails = null;
-          this.toastService.showError('Failed to load device details');
+          toast.error('Failed to load device details');
         }
       });
   }

@@ -10,7 +10,7 @@ import { SignalrService } from './signalr.service';
 import { RealtimeDataSourceService } from './realtime-data-source.service';
 import { GraphService } from './graph.service';
 import { SitesStreamStateService } from './sites-stream-state.service';
-import { ToastService } from './toast.service';
+import { toast } from '../../utils/global-toast';
 
 @Injectable({
   providedIn: 'root'
@@ -39,8 +39,7 @@ export class AuthService {
     private signalrService: SignalrService,
     private realtimeDataSourceService: RealtimeDataSourceService,
     private graphService: GraphService,
-    private sitesStreamStateService: SitesStreamStateService,
-    private toastService: ToastService
+    private sitesStreamStateService: SitesStreamStateService
   ) {
     this.updateAuthState(this.hasToken() || !!this.getRefreshToken());
   }
@@ -153,7 +152,7 @@ export class AuthService {
     this.realtimeDataSourceService.clear();
     this.graphService.clearCache();
     this.sitesStreamStateService.clear();
-    this.toastService.clear();
+    toast.clear();
     void this.signalrService.stop();
     localStorage.removeItem(this.ACCESS_TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);

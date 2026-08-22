@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsersService } from '../../../core/services/users.service';
-import { ToastService } from '../../../core/services/toast.service';
 import { AppRole, ROLE_OPTIONS } from '../../../core/constants/roles';
 import { Menu } from '../../../core/constants/sideMenu';
 import { CustomerService } from '@app/core';
+import { toast } from '../../../utils/global-toast';
 
 @Component({
   selector: 'app-add-user',
@@ -41,7 +41,6 @@ export class AddUserComponent implements OnInit, OnChanges {
     private fb: FormBuilder,
     private usersService: UsersService,
     private customerService: CustomerService,
-    private toastService: ToastService
   ) {
     this.userForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(2), Validators.pattern('^[A-Za-z0-9]+$')]],
@@ -76,7 +75,7 @@ export class AddUserComponent implements OnInit, OnChanges {
 
   onSubmit() {
     if (this.userForm.invalid) {
-      this.toastService.showError('Validation Error', 'Please fill in all required fields correctly.');
+      toast.error('Validation Error', 'Please fill in all required fields correctly.');
       return;
     }
 
@@ -100,7 +99,7 @@ export class AddUserComponent implements OnInit, OnChanges {
       this.usersService.updateUser(this.userData.id, payload).subscribe({
         next: (response: any) => {
           this.isLoading = false;
-          this.toastService.showSuccess('Success', 'User updated successfully.');
+          toast.success('Success', 'User updated successfully.');
           this.userUpdated.emit(response);
           this.userForm.reset();
           this.modules.forEach(_module => _module.selected = false);
@@ -109,7 +108,7 @@ export class AddUserComponent implements OnInit, OnChanges {
         error: (error: any) => {
           this.isLoading = false;
           console.error('Error updating user:', error);
-          this.toastService.showError('Error', 'Failed to update user. Please try again.');
+          toast.error('Error', 'Failed to update user. Please try again.');
         }
       });
       return;
@@ -119,7 +118,7 @@ export class AddUserComponent implements OnInit, OnChanges {
     this.usersService.createUser(addPayload).subscribe({
       next: (response: any) => {
         this.isLoading = false;
-        this.toastService.showSuccess('Success', 'User created successfully.');
+        toast.success('Success', 'User created successfully.');
         this.userAdded.emit(response);
         this.modules.forEach(_module => _module.selected = false);
         this.userForm.reset();
@@ -127,7 +126,7 @@ export class AddUserComponent implements OnInit, OnChanges {
       error: (error: any) => {
         this.isLoading = false;
         console.error('Error creating user:', error);
-        this.toastService.showError('Error', 'Failed to create user. Please try again.');
+        toast.error('Error', 'Failed to create user. Please try again.');
       }
     });
   }
