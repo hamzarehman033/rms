@@ -56,11 +56,6 @@
         </td>
         <td>{{ rowData.code }}</td>
         <td>{{ rowData.devices }}</td>
-        <!-- <td>
-          <span [ngClass]="'badge ' + (rowData.status === 'Operational' ? 'operational' : 'degraded')">
-            ● {{ rowData.status }}
-          </span>
-        </td> -->
         <td>
           <!-- Add Sub Location button -->
           <button *ngIf="rowData.level < 3" pButton type="button" 

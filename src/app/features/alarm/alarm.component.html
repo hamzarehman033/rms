@@ -15,7 +15,6 @@
           <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Acknowledged</button>
           <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Resolved</button>
         </div>
-        <!-- <button class="btn" (click)="acknowledgeAll()" [disabled]="!canAcknowledgeAll"><i class="pi pi-check-circle"></i><span>Acknowledge all</span></button> -->
       </div>
       <div class="card p-0">
         <p-table

@@ -24,12 +24,6 @@
     </div>
   </div>
   <div class="hstack justify-between flex-wrap gap-3 w-100">
-    <!-- <div class="tabs">
-      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalTenants }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Online <span class="muted">{{ onlineTenants }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Warning <span class="muted">{{ warningTenants }}</span></button>
-      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Offline <span class="muted">{{ offlineTenants }}</span></button>
-    </div> -->
     <div class="search"><i class="pi pi-search"></i><input placeholder="Search by ID or name…" (input)="searchTerm = $any($event).target.value"></div>
     <button class="btn primary" (click)="openAddTenantDialog()"><i class="pi pi-plus"></i><span>Add
         tenant</span></button>

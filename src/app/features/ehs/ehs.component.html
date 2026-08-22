@@ -33,10 +33,6 @@
         <option>CP + Bat + Gen</option>
         <option>CP + Bat + Gen + Solar</option>
       </select>
-      <!-- <select [ngModel]="selectedStatuses" (ngModelChange)="setStatusFilter($event)">
-        <option value="">All Statuses</option>
-        <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
-      </select> -->
       <select [ngModel]="selectedTenant" (ngModelChange)="setTenantFilter($event)">
         <option value="">All Tenants</option>
         <option *ngFor="let option of tenantOptions" [value]="option.id">{{ option.name }}</option>

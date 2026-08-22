@@ -19,14 +19,6 @@
     <div *ngIf="selectedTab === 0" class="card">
         <div class="flex gap-8">
             <!-- Avatar Section -->
-            <div class="flex flex-col items-center gap-4">
-                <!-- <p-avatar [label]="currentUser.avatar" size="xlarge" shape="circle" styleClass="text-2xl"></p-avatar>
-                <p-button label="Upload Photo" severity="secondary" [text]="false" (click)="onUploadPhoto()"
-                    styleClass="p-button-sm">
-                </p-button> -->
-                <!-- <div class="text-xs text-muted-foreground">JPG, PNG, GIF max 5MB</div> -->
-            </div>
-
             <!-- Form Section -->
             <div class="flex-1">
                 <form [formGroup]="profileForm" class="flex flex-col gap-3">
@@ -113,19 +105,5 @@
                 </p-button>
             </div>
         </form>
-
-        <!-- 2FA hidden for now.
-        <div class="mb-6">
-            <div class="flex justify-between items-center p-4 border border-border rounded mb-4">
-                <div>
-                    <h4 class="font-semibold m-0 mb-1">Two-Factor Authentication</h4>
-                    <p class="text-xs text-muted-foreground m-0">Enhance your account security
-                        with 2FA</p>
-                </div>
-                <p-button label="Enable 2FA" severity="secondary" icon="pi pi-shield">
-                </p-button>
-            </div>
-        </div>
-        -->
     </div>
 </main>

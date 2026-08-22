@@ -81,7 +81,6 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Site</th>
-          <!-- <th>Site Code</th> -->
           <th>Site Type</th>
           <th>Status</th>
           <th>Region</th>
@@ -89,7 +88,6 @@
           <th>Zone</th>
           <th>Power Source</th>
           <th>Battery %</th>
-          <!-- <th>Load (kW)</th> -->
           <th>Rect/DC Voltage</th>
           <th>Grid Voltage</th>
           <th>Actions</th>
@@ -103,7 +101,6 @@
               <div class="muted mono text-xs">{{ site.code }}</div>
             </a>
           </td>
-          <!-- <td class="mono">{{ site.siteCode || site.code || '-' }}</td> -->
           <td>{{ site.type || '-' }}</td>
           <td><span style="text-wrap-mode: nowrap;" [ngClass]="'badge ' + getSiteStatus(site)">● {{ getSiteStatus(site) | titlecase }}</span></td>
           <td>{{ site.regionName || '-' }}</td>
@@ -111,19 +108,10 @@
           <td>{{ site.zoneName || '-' }}</td>
           <td>{{ site.powerSources?.join(', ') || '-' }}</td>
           <td class="mono">{{ getBatteryPercentage(site) }}</td>
-          <!-- <td class="mono">{{ getLoadKw(site) }}</td> -->
           <td class="mono">{{ getRectDcVoltage(site) }}</td>
           <td class="mono">{{ getGridVoltage(site) }}</td>
           <td>
             <div class="flex gap-2">
-              <!-- <button
-                (click)="toggleDeviceStream(site)"
-                [disabled]="isStreamActionInProgress(site)"
-                [title]="isDeviceStreaming(site) ? 'Stop MQTT & Socket' : 'Start MQTT & Socket'"
-                [ngClass]="isDeviceStreaming(site) ? 'text-red-600 hover:text-white hover:bg-red-600 transition-colors p-2 rounded' : 'text-green-600 hover:text-white hover:bg-green-600 transition-colors p-2 rounded'"
-              >
-                <i class="pi" [ngClass]="isDeviceStreaming(site) ? 'pi-stop-circle' : 'pi-play-circle'"></i>
-              </button> -->
               <button (click)="navigateToSiteDashboard(site.siteId)" title="Site Dashboard" class="text-blue-500 hover:text-white hover:bg-blue-600 transition-colors p-2 rounded">
                 <i class="pi pi-chart-bar text-base"></i>
               </button>
