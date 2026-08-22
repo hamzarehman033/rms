@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
+import { SignalrService } from '../../../core/services/signalr.service';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -26,14 +27,23 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
 
-  constructor(private visionService: VisionService, private route: ActivatedRoute) {}
+  constructor(
+    private visionService: VisionService,
+    private signalrService: SignalrService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
+    this.signalrService.onVisionDetection$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(payload => this.applyLiveVisionPacket(payload));
+
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.deviceId = Number(params['id']);
 
       if (this.deviceId) {
         this.getAiVisionData();
+        void this.signalrService.subscribeToDevice(this.deviceId);
       }
     });
   }
@@ -65,17 +75,13 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   cameras = [
     {
       id: 1,
-      name: 'Camera 1 - Shelter Area',
-      features: 'Intrusion + Geofence Active',
+      name: 'Camera 1',
       status: 'Online',
-      lastAlert: 'Intrusion - 12:35',
     },
     {
       id: 2,
-      name: 'Camera 2 - Gate Area',
-      features: 'Fence + Head Count Active',
+      name: 'Camera 2',
       status: 'Online',
-      lastAlert: 'Boundary Cross - 12:28',
     },
   ];
 
@@ -211,6 +217,31 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     this.historyPayloads.clear();
   }
 
+  private applyLiveVisionPacket(payload: VisionDecodedPayload | null): void {
+    if (!payload || Number(payload.deviceId) !== this.deviceId) {
+      return;
+    }
+    const id =  -Math.abs(payload.messageIdHash || payload.packetSequence || Date.now());
+    this.historyPayloads.set(id, payload);
+
+    if (payload.messageType === 1 && payload.snapshotReasonCode !== 0) {
+      const alert = {
+        id,
+        title: payload.snapshotReasonLabel !== 'None' ? payload.snapshotReasonLabel : payload.eventTypeLabel,
+        meta: `Cam ${payload.cameraId || '-'} · Confidence ${this.formatConfidence(payload.confidence)}`,
+        time: this.formatPacketTime(payload.timestampUtcIso),
+        severity: this.getSeverityClass(payload.severity),
+      };
+      this.aiAlerts = [alert, ...this.aiAlerts.filter(item => item.id !== id)];
+      this.selectedAlertId = alert.id;
+
+      const cachedPayload = this.historyPayloads.get(alert.id);
+      if (cachedPayload) {
+        this.applySelectedEventDetails(cachedPayload);
+      }
+    }
+  }
+
   private applySelectedEventDetails(payload: VisionDecodedPayload): void {
     const packetTime = this.formatPacketTime(payload.timestampUtcIso);
     const alertTitle = payload.snapshotReasonLabel !== 'None' ? payload.snapshotReasonLabel : payload.eventTypeLabel;
@@ -246,7 +277,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     };
     this.selectedEventDetails = [
       { label: 'Event ID', value: String(payload.eventIdHash) },
-      { label: 'Snapshot Reason', value: payload.snapshotReasonLabel },
+      { label: 'Reason', value: payload.snapshotReasonLabel },
       { label: 'Active Cameras', value: String(payload.activeCameraCount) },
       { label: 'Configured Cameras', value: String(payload.configuredCameraCount) },
       { label: 'Severity', value: payload.severityLabel, valueClass: payload.severity >= 2 ? 'text-warning' : '' },

@@ -44,15 +44,11 @@
             <div class="hstack justify-between items-start mb-2">
               <div>
                 <div class="font-medium">{{ camera.name }}</div>
-                <div class="muted text-xs">{{ camera.features }}</div>
               </div>
               <span class="badge online">● {{ camera.status }}</span>
             </div>
             <div class="camera-viewport muted text-xs">
               Camera feed placeholder
-            </div>
-            <div class="hstack justify-between items-center camera-footer">
-              <div class="muted text-xs">Last alert: {{ camera.lastAlert || '—' }}</div>
             </div>
           </div>
         </div>

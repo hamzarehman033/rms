@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
+import { SignalrService } from '../../../core/services/signalr.service';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -34,14 +35,23 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
   selectedAlertId: number | null = null;
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
 
-  constructor(private visionService: VisionService, private route: ActivatedRoute) {}
+  constructor(
+    private visionService: VisionService,
+    private signalrService: SignalrService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
+    this.signalrService.onVisionDetection$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(payload => this.applyLiveVisionPacket(payload));
+
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.deviceId = Number(params['id']);
 
       if (this.deviceId) {
         this.getAiVisionData();
+        void this.signalrService.subscribeToDevice(this.deviceId);
       }
     });
   }
@@ -75,14 +85,12 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
   cameras = [
     {
       id: 1,
-      name: 'Camera 1 - Shelter Area',
-      features: 'PPE + Geofence Active',
+      name: 'Camera 1',
       status: 'Online',
     },
     {
       id: 2,
-      name: 'Camera 2 - Gate Area',
-      features: 'Intrusion + Geofence Active',
+      name: 'Camera 2',
       status: 'Online',
     },
   ];
@@ -90,8 +98,8 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
   aiAlerts: Array<{ id: number; title: string; meta: string; time: string; severity: string }> = [];
 
   lastEvent = {
-    title: 'No Helmet',
-    meta: 'Cam 1 - 12:35 PM',
+    title: '',
+    meta: '',
   };
 
   selectedEvent = {
@@ -109,10 +117,10 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     { label: 'Confidence', value: '-' },
     { label: 'Active Cameras', value: '-' },
     { label: 'Configured Cameras', value: '-' },
-    { label: 'Severity', value: 'Major', valueClass: 'text-warning' },
-    { label: 'Violation Type', value: 'No Helmet' },
-    { label: 'Camera', value: 'Cam 1 - Shelter' },
-    { label: 'Status', value: 'New / Unacknowledged' },
+    { label: 'Severity', value: '', valueClass: 'text-warning' },
+    { label: 'Violation Type', value: '' },
+    { label: 'Camera', value: '' },
+    { label: 'Status', value: '' },
   ];
 
 
@@ -218,6 +226,32 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     this.historyPayloads.clear();
   }
 
+  private applyLiveVisionPacket(payload: VisionDecodedPayload | null): void {
+    if (!payload || Number(payload.deviceId) !== this.deviceId) {
+      return;
+    }
+    const id =  -Math.abs(payload.messageIdHash || payload.packetSequence || Date.now());
+    this.historyPayloads.set(id, payload);
+    this.lastPacketAt = payload.timestampUtcIso;
+
+    if (payload.messageType === 1 && payload.snapshotReasonCode !== 0) {
+      const alert = {
+        id,
+        title: payload.snapshotReasonLabel !== 'None' ? payload.snapshotReasonLabel : payload.eventTypeLabel,
+        meta: `Cam ${payload.cameraId || '-'} · Confidence ${this.formatConfidence(payload.confidence)}`,
+        time: this.formatPacketTime(payload.timestampUtcIso),
+        severity: this.getSeverityClass(payload.severity),
+      };
+      this.aiAlerts = [alert, ...this.aiAlerts.filter(item => item.id !== id)];
+      this.selectedAlertId = alert.id;
+
+      const cachedPayload = this.historyPayloads.get(alert.id);
+      if (cachedPayload) {
+        this.applySelectedEventDetails(cachedPayload);
+      }
+    }
+  }
+
   private applySelectedEventDetails(payload: VisionDecodedPayload): void {
     const packetTime = this.formatPacketTime(payload.timestampUtcIso);
     const alertTitle = payload.snapshotReasonLabel !== 'None' ? payload.snapshotReasonLabel : payload.eventTypeLabel;
@@ -254,7 +288,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     };
     this.selectedEventDetails = [
       { label: 'Event ID', value: String(payload.eventIdHash) },
-      { label: 'Snapshot Reason', value: payload.snapshotReasonLabel },
+      { label: 'Reason', value: payload.snapshotReasonLabel },
       { label: 'Active Cameras', value: String(payload.activeCameraCount) },
       { label: 'Configured Cameras', value: String(payload.configuredCameraCount) },
       { label: 'Severity', value: payload.severityLabel, valueClass: payload.severity >= 2 ? 'text-warning' : '' },
