@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   login(payload: any): Observable<any> {
-    return this.http.post(this.baseUrl + this.url + '/token', payload);
+    return this.http.post(this.baseUrl + this.url + '/login', payload);
   }
 
   handleLoginSuccess(responseObj: any): void {
