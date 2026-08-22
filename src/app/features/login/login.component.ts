@@ -72,9 +72,6 @@ export class LoginComponent implements OnInit {
         }, 500);
       },
       error: (error: any) => {
-        console.error('Login error:', error);
-        this.toastService.showError('Login Failed', 'Invalid username or password. Please try again.');
-        // Error toast is handled by the global error interceptor
       }
     });
   }

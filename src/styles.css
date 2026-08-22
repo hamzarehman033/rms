@@ -1177,8 +1177,6 @@ main.content {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
   display: grid;
   place-items: center;
   color: var(--muted-foreground);

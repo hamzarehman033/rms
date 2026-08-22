@@ -22,8 +22,8 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: customTheme,
         options: {
-          darkMode: true,
-          cssVariablePrefix: 'p'
+          darkModeSelector: '[data-theme="dark"]',
+          prefix: 'p'
         }
       }
     }),

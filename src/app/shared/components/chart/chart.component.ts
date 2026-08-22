@@ -27,8 +27,6 @@ export class ChartComponent implements OnInit {
   }
 
   private initChart() {
-    const isDark = true;
-    
     // Base chart configuration
     const baseConfig: any = {
       backgroundColor: 'transparent',

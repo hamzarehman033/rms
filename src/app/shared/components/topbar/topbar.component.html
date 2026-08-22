@@ -23,6 +23,10 @@
         (onSelect)="onDeviceSelect($event)"
       ></p-autocomplete>
     </div>
+    <button class="icon-btn theme-toggle" type="button" (click)="onThemeToggle()" aria-label="Toggle theme">
+      <i class="pi pi-sun icon-sun"></i>
+      <i class="pi pi-moon icon-moon"></i>
+    </button>
     <button class="icon-btn" (click)="onNotificationMenuToggle($event)" aria-label="Notifications"><i class="pi pi-bell"></i><span class="dot" *ngIf="notifications.length > 0"></span></button>
     <div *ngIf="showNotifications" style="position: fixed; top: 60px; right: 20px; min-width: 350px; max-width: 400px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000;">
       <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px;">
