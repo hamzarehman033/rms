@@ -121,7 +121,6 @@ export class DeviceMapComponent implements OnInit, AfterViewInit {
   }
 
   onRegionChange(region: any): void {
-    debugger
     this.selectedRegion = region;
     const ts = this.regionOptions.find(region => region.name === region.name);
     this.subRegionOptions = ts?.children ?? [];
@@ -131,7 +130,6 @@ export class DeviceMapComponent implements OnInit, AfterViewInit {
   }
 
   onSubRegionChange(subRegion: any): void { 
-    debugger
     this.selectedSubRegion = subRegion;
     this.zoneOptions = this.subRegionOptions.find(subRegion => subRegion.name === subRegion.name)?.children ?? [];
     this.selectedZone = null;
