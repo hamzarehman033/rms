@@ -7,14 +7,14 @@
 
 /* ========== PulseGrid — shared design system ========== */
 :root {
-  --background: #0b0d12;
+  --background: #161a23;
   --foreground: #e6e8ee;
-  --muted: #11141b;
+  --muted: #1c2230;
   --muted-foreground: #8b93a7;
-  --card: #11141b;
-  --surface-1: #161a23;
-  --border: #1f2533;
-  --popover: #161a23;
+  --card: #1c2230;
+  --surface-1: #222836;
+  --border: #2a3140;
+  --popover: #222836;
 
   --primary: #5b6cff;
   --primary-glow: #8a7bff;
@@ -32,11 +32,6 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
   --font-display: "Space Grotesk", var(--font-sans);
   --font-mono: ui-monospace, "JetBrains Mono", Menlo, monospace;
-
-  --background: 210 20% 98%;
-  --foreground: 215 28% 17%;
-  --border: 214 20% 88%;
-  --muted-foreground: 215 16% 42%;
 
   /* Sidebar palette */
   --sidebar-background: #1b2637;
@@ -364,6 +359,13 @@ main.content {
 }
 
 /* Stat cards */
+.stat,
+.s-card,
+.kpi-vert,
+.power-tile {
+  font-family: var(--font-display);
+}
+
 .stat {
   background: var(--card);
   border: 1px solid var(--border);
@@ -403,6 +405,12 @@ main.content {
   font-size: 28px;
   font-weight: 600;
   margin-top: 10px;
+}
+
+.s-num,
+.kpi-num,
+.power-value {
+  font-family: var(--font-display);
 }
 
 .stat .hint {
@@ -1136,6 +1144,14 @@ main.content {
   margin: 12px 0;
 }
 
+
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  --p-content-background: var(--p-surface-900) !important;
+  --p-content-color: var(--muted-foreground) !important;
+  --p-datatable-header-cell-background: var(--background) !important;
+  --p-select-color: var(--muted-foreground) !important;
+}
 
 /* ========== Light theme ========== */
 :root[data-theme="light"] {

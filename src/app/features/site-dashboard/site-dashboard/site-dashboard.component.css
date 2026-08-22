@@ -19,7 +19,7 @@
   align-items: flex-start;
   background: var(--card);
   border: 1px solid var(--border);
-  border-left-width: 4px;
+  border-top-width: 2px;
   border-radius: 12px;
   padding: 16px;
   box-shadow: var(--shadow-card);
@@ -98,8 +98,9 @@
 .detail-card::before {
   content: '';
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--detail-accent);
 }
 .detail-card-head {
   display: flex;
