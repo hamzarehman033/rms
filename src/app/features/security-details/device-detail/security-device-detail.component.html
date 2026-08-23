@@ -39,19 +39,38 @@
         <div class="hstack justify-between items-center mb-2">
           <div class="sec-title" style="flex:1;margin-bottom:0"><i class="pi pi-video"></i> Live Camera Monitoring</div>
         </div>
-        <div class="camera-grid">
+        <div class="camera-grid" *ngIf="cameras.length; else noCameras">
           <div class="card camera-card" *ngFor="let camera of cameras">
             <div class="hstack justify-between items-start mb-2">
               <div>
                 <div class="font-medium">{{ camera.name }}</div>
               </div>
-              <span class="badge online">● {{ camera.status }}</span>
+              <div class="hstack items-center gap-2">
+                <span class="badge" [class.online]="camera.isStreaming" [class.offline]="!camera.isStreaming">
+                  ● {{ cameraStatusLabel(camera) }}
+                </span>
+                <button
+                  type="button"
+                  class="btn sm"
+                  [class.primary]="!camera.isStreaming"
+                  [class.secondary]="camera.isStreaming"
+                  [disabled]="!camera.isEnabled || camera.isBusy"
+                  (click)="toggleCameraStream(camera)"
+                >
+                  {{ camera.isStreaming ? 'Stop' : 'Start' }}
+                </button>
+              </div>
             </div>
             <div class="camera-viewport muted text-xs">
-              Camera feed placeholder
+              {{ cameraViewportLabel(camera) }}
             </div>
           </div>
         </div>
+        <ng-template #noCameras>
+          <div class="card camera-card">
+            <div class="camera-viewport muted text-xs">No cameras configured</div>
+          </div>
+        </ng-template>
       </div>
     </div>
 

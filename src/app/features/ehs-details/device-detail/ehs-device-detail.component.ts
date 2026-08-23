@@ -3,9 +3,19 @@ import { LineChartOptions } from '../../../shared/components/chart-components';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
+import { DeviceCameraPayload, DevicesService } from '../../../core/services/devices.service';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
 import { SignalrService } from '../../../core/services/signalr.service';
 import { ActivatedRoute } from '@angular/router';
+import { toast } from '../../../utils/global-toast';
+
+interface LiveCamera {
+  cameraIndex: number;
+  name: string;
+  isEnabled: boolean;
+  isStreaming: boolean;
+  isBusy: boolean;
+}
 
 @Component({
   selector: 'app-ehs-device-detail',
@@ -37,6 +47,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private visionService: VisionService,
+    private devicesService: DevicesService,
     private signalrService: SignalrService,
     private route: ActivatedRoute
   ) {}
@@ -50,6 +61,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
       this.deviceId = Number(params['id']);
 
       if (this.deviceId) {
+        this.loadCameras();
         this.getAiVisionData();
         void this.signalrService.subscribeToDevice(this.deviceId);
       }
@@ -82,18 +94,7 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
     { label: 'Team Activity', code: 7, count: 0 },
   ];
 
-  cameras = [
-    {
-      id: 1,
-      name: 'Camera 1',
-      status: 'Online',
-    },
-    {
-      id: 2,
-      name: 'Camera 2',
-      status: 'Online',
-    },
-  ];
+  cameras: LiveCamera[] = [];
 
   aiAlerts: Array<{ id: number; title: string; meta: string; time: string; severity: string }> = [];
 
@@ -130,11 +131,77 @@ export class EhsDeviceDetailComponent implements OnInit, OnDestroy {
   }
 
   getActiveCameraCount(): number {
-    return this.latestVisionPayload?.activeCameraCount ?? this.cameras.length;
+    return this.latestVisionPayload?.activeCameraCount ?? this.cameras.filter(camera => camera.isStreaming).length;
   }
 
   getConfiguredCameraCount(): number {
     return this.latestVisionPayload?.configuredCameraCount ?? this.cameras.length;
+  }
+
+  cameraViewportLabel(camera: LiveCamera): string {
+    if (!camera.isEnabled) {
+      return 'Camera disabled';
+    }
+
+    if (camera.isBusy) {
+      return camera.isStreaming ? 'Stopping…' : 'Starting…';
+    }
+
+    return camera.isStreaming ? 'Live' : 'Stream stopped';
+  }
+
+  toggleCameraStream(camera: LiveCamera): void {
+    if (!this.deviceId || !camera.isEnabled || camera.isBusy) {
+      return;
+    }
+
+    camera.isBusy = true;
+    const request = camera.isStreaming
+      ? this.devicesService.stopCameraStream(this.deviceId, camera.cameraIndex)
+      : this.devicesService.startCameraStream(this.deviceId, camera.cameraIndex);
+
+    request.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response: { message?: string }) => {
+        camera.isStreaming = !camera.isStreaming;
+        camera.isBusy = false;
+        toast.success(response?.message || (camera.isStreaming ? 'Camera started' : 'Camera stopped'));
+      },
+      error: (error: { error?: { message?: string } }) => {
+        camera.isBusy = false;
+        toast.error(error?.error?.message || 'Failed to update camera stream');
+      }
+    });
+  }
+
+  private loadCameras(): void {
+    this.devicesService.getDeviceById(this.deviceId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response: unknown) => {
+        this.cameras = this.mapLiveCameras(response);
+      },
+      error: () => {
+        this.cameras = [];
+        toast.error('Failed to load cameras');
+      }
+    });
+  }
+
+  private mapLiveCameras(response: unknown): LiveCamera[] {
+    const responseData = (response as { data?: Record<string, unknown> } | Record<string, unknown>) ?? {};
+    const data = (responseData as { data?: Record<string, unknown> }).data ?? responseData as Record<string, unknown>;
+    const payload = (data['infrastructure'] ?? data['deviceInfrastructure'] ?? data) as { cameras?: DeviceCameraPayload[] };
+    const cameras = Array.isArray(payload?.cameras) ? payload.cameras : [];
+
+    return cameras
+      .filter((camera) => camera.cameraIndex === 1 || camera.cameraIndex === 2)
+      .sort((left, right) => left.cameraIndex - right.cameraIndex)
+      .slice(0, 2)
+      .map((camera) => ({
+        cameraIndex: Number(camera.cameraIndex),
+        name: camera.name?.trim() || `Camera ${camera.cameraIndex}`,
+        isEnabled: camera.isEnabled !== false,
+        isStreaming: false,
+        isBusy: false,
+      }));
   }
 
   onAlertClick(alert: { id: number }): void {
