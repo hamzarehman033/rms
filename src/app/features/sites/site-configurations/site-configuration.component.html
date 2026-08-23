@@ -97,13 +97,34 @@
       </div>
     </div>
 
-    <div class="grid cols-1 gap-4 mb-4">
+    <div class="config-section border-t border-surface-border pt-6 mb-4" formArrayName="cameras">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="text-lg font-bold">Cameras</h4>
+        <button type="button" class="btn secondary" [disabled]="!canAddCamera" (click)="addCamera()">
+          <i class="pi pi-plus"></i>
+          <span>Add Camera</span>
+        </button>
+      </div>
+
+      <div *ngIf="cameras.length === 0" class="text-sm muted mb-4">No cameras configured.</div>
+
+      <div *ngFor="let camera of cameras.controls; let i = index" [formGroupName]="i" class="grid cols-2 gap-3 mb-3">
         <div class="vstack gap-1">
-            <label class="text-sm font-semibold">Number of Cameras Installed</label>
-          <input type="number" formControlName="camerasInstalledCount" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="0" />
+          <label class="text-sm font-semibold">{{ cameraLabel(i) }}</label>
+          <input type="text" formControlName="name" class="px-3 py-2 rounded border border-surface-border bg-surface-0 text-foreground" placeholder="Enter camera name" />
         </div>
-      
+        <div class="flex items-end justify-between gap-3">
+          <div class="flex items-center gap-2 pb-2">
+            <input type="checkbox" [id]="'cameraEnabled' + i" formControlName="isEnabled" class="w-4 h-4 cursor-pointer" />
+            <label [for]="'cameraEnabled' + i" class="text-sm font-semibold cursor-pointer">Enabled</label>
+          </div>
+          <button type="button" class="btn secondary" (click)="removeCamera(i)" title="Remove camera">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </div>
     </div>
+
     <div class="grid cols-2 gap-4 mb-4">
       <div class="flex items-center gap-2">
         <input type="checkbox" id="aiEhs" formControlName="aiEhsInstalled" class="w-4 h-4 cursor-pointer" />

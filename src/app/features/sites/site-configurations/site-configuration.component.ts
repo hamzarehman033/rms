@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CalendarModule } from 'primeng/calendar';
-import { DeviceInfrastructurePayload, DevicesService, Site } from '@app/core';
+import { DeviceCameraPayload, DeviceInfrastructurePayload, DevicesService, Site } from '@app/core';
 import { toast } from '../../../utils/global-toast';
 
 type InfrastructureSection = 'Battery' | 'Solar' | 'Generator';
@@ -16,6 +16,8 @@ type InfrastructureSection = 'Battery' | 'Solar' | 'Generator';
   standalone: false,
 })
 export class SiteConfigurationComponent {
+  private static readonly maxCameras = 2;
+  private static readonly cameraIndexes = [1, 2] as const;
   @Input() site: Site | null = null;
   @Input() deviceId: string | number | null = null;
   @Output() siteConfigured = new EventEmitter<any>();
@@ -54,8 +56,32 @@ export class SiteConfigurationComponent {
       simCardNumber: [''],
       aiEhsInstalled: [false],
       aiSecurityInstalled: [false],
-      camerasInstalledCount: ['']
+      cameras: this.formBuilder.array([])
     });
+  }
+
+  get cameras(): FormArray {
+    return this.configForm.get('cameras') as FormArray;
+  }
+
+  get canAddCamera(): boolean {
+    return this.cameras.length < SiteConfigurationComponent.maxCameras;
+  }
+
+  cameraLabel(index: number): string {
+    return `Camera ${this.cameras.at(index).get('cameraIndex')?.value}`;
+  }
+
+  addCamera(): void {
+    if (!this.canAddCamera) {
+      return;
+    }
+
+    this.cameras.push(this.createCameraGroup());
+  }
+
+  removeCamera(index: number): void {
+    this.cameras.removeAt(index);
   }
 
   ngOnInit(): void {
@@ -169,10 +195,10 @@ export class SiteConfigurationComponent {
       rmsSerialNumber: payload?.rmsSerialNumber ?? '',
       simCardNumber: payload?.simCardNumber ?? '',
       aiEhsInstalled: !!payload?.aiEhsInstalled,
-      aiSecurityInstalled: !!payload?.aiSecurityInstalled,
-      camerasInstalledCount: this.toNumberOrBlank(payload?.camerasInstalledCount)
+      aiSecurityInstalled: !!payload?.aiSecurityInstalled
     });
 
+    this.patchCameras(payload?.cameras);
     this.sectionEnabled = payload.powerSources ?? [];
   }
 
@@ -193,11 +219,73 @@ export class SiteConfigurationComponent {
       generatorCapacity: this.isSectionEnabled('Generator') ? formValue.generator?.capacity ?? '' : '',
       rmsSerialNumber: formValue.rmsSerialNumber ?? '',
       simCardNumber: formValue.simCardNumber ?? '',
-      camerasInstalledCount: Number(formValue.camerasInstalledCount) || 0,
+      cameras: this.buildCamerasPayload(formValue.cameras),
+      camerasInstalledCount: this.cameras.length,
       aiEhsInstalled: !!formValue.aiEhsInstalled,
       aiSecurityInstalled: !!formValue.aiSecurityInstalled,
       powerSources: this.sectionEnabled
     };
+  }
+
+  private createCameraGroup(camera?: Partial<DeviceCameraPayload>): FormGroup {
+    return this.formBuilder.group({
+      cameraIndex: [this.resolveCameraIndex(camera?.cameraIndex)],
+      name: [camera?.name ?? '', Validators.required],
+      isEnabled: [camera?.isEnabled ?? true]
+    });
+  }
+
+  private patchCameras(cameras: unknown): void {
+    this.cameras.clear();
+
+    const rows = (Array.isArray(cameras) ? cameras : []) as Partial<DeviceCameraPayload>[];
+    rows
+      .slice()
+      .sort((left, right) => Number(left?.cameraIndex ?? 0) - Number(right?.cameraIndex ?? 0))
+      .slice(0, SiteConfigurationComponent.maxCameras)
+      .forEach((camera) => {
+        this.cameras.push(this.createCameraGroup({
+          cameraIndex: this.resolveCameraIndex(camera?.cameraIndex),
+          name: camera?.name ?? '',
+          isEnabled: camera?.isEnabled ?? true
+        }));
+      });
+  }
+
+  private buildCamerasPayload(cameras: unknown): DeviceCameraPayload[] {
+    if (!Array.isArray(cameras)) {
+      return [];
+    }
+
+    return (cameras as Partial<DeviceCameraPayload>[]).map((camera) => ({
+      cameraIndex: Number(camera.cameraIndex),
+      name: (camera?.name ?? '').trim(),
+      isEnabled: !!camera?.isEnabled
+    }));
+  }
+
+  private resolveCameraIndex(value?: number): number {
+    const parsed = Number(value);
+    if ((parsed === 1 || parsed === 2) && !this.isCameraIndexUsed(parsed)) {
+      return parsed;
+    }
+
+    return this.nextCameraIndex();
+  }
+
+  private nextCameraIndex(): number {
+    const used = this.usedCameraIndexes();
+    return SiteConfigurationComponent.cameraIndexes.find((index) => !used.has(index)) ?? 2;
+  }
+
+  private isCameraIndexUsed(index: number): boolean {
+    return this.usedCameraIndexes().has(index);
+  }
+
+  private usedCameraIndexes(): Set<number> {
+    return new Set(
+      this.cameras.controls.map((control) => Number(control.get('cameraIndex')?.value))
+    );
   }
 
   private toNumberOrBlank(value: any): number | '' {

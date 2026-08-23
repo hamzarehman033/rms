@@ -23,6 +23,12 @@ export interface DevicePayload {
   aiSubscribeTopic: string;
 }
 
+export interface DeviceCameraPayload {
+  cameraIndex: number;
+  name: string;
+  isEnabled: boolean;
+}
+
 export interface DeviceInfrastructurePayload {
   rectifierBrand: string;
   rectifierQty: number;
@@ -39,6 +45,7 @@ export interface DeviceInfrastructurePayload {
   rmsSerialNumber: string;
   simCardNumber: string;
   camerasInstalledCount: number;
+  cameras: DeviceCameraPayload[];
   aiEhsInstalled: boolean;
   aiSecurityInstalled: boolean;
   powerSources: string[];
