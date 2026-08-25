@@ -184,6 +184,12 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           throw new Error('Camera viewport is not ready');
         }
 
+        console.log('[CameraStream] Camera', {
+          deviceId: this.deviceId,
+          cameraIndex: camera.cameraIndex,
+          name: camera.name,
+          isEnabled: camera.isEnabled
+        });
         await this.cameraStreamService.start(
           this.deviceId,
           camera.cameraIndex,

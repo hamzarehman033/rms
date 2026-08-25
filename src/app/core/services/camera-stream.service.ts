@@ -85,6 +85,13 @@ export class CameraStreamService {
     try {
       await connection.start();
       await this.joinViewer(session);
+      console.log('[CameraStream] Started', {
+        deviceId,
+        cameraIndex,
+        viewerConnectionId: connection.connectionId,
+        hubUrl: environment.cameraStreamHubUrl,
+        connectionState: connection.state
+      });
     } catch (error) {
       this.sessions.delete(key);
       this.closePeer(session, false);
