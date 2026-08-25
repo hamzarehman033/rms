@@ -184,9 +184,13 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           throw new Error('Camera viewport is not ready');
         }
 
-        await this.cameraStreamService.start(this.deviceId, camera.cameraIndex, video, () => {
-          camera.hasVideo = true;
-        });
+        await this.cameraStreamService.start(
+          this.deviceId,
+          camera.cameraIndex,
+          video,
+          () => { camera.hasVideo = true; },
+          () => { camera.hasVideo = false; }
+        );
         camera.isStreaming = true;
       }
     } catch (error: unknown) {
