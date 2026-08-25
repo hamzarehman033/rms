@@ -51,17 +51,26 @@
                 </span>
                 <button
                   type="button"
-                  class="btn sm"
-                  [class.primary]="!camera.isStreaming"
-                  [class.secondary]="camera.isStreaming"
+                  class="icon-btn"
                   [disabled]="!camera.isEnabled || camera.isBusy"
+                  [attr.aria-label]="camera.isStreaming ? 'Stop camera' : 'Play camera'"
+                  [title]="camera.isStreaming ? 'Stop' : 'Play'"
                   (click)="toggleCameraStream(camera)"
                 >
-                  {{ camera.isStreaming ? 'Stop' : 'Start' }}
+                  <i class="pi" [ngClass]="camera.isStreaming ? 'pi-stop' : 'pi-play'"></i>
                 </button>
               </div>
             </div>
-            <div class="camera-viewport muted text-xs">
+            <div class="camera-viewport">
+              <video
+                #cameraVideo
+                [attr.data-camera-index]="camera.cameraIndex"
+                autoplay
+                playsinline
+                muted
+              ></video>
+            </div>
+            <div class="text-xs" *ngIf="!camera.hasVideo">
               {{ cameraViewportLabel(camera) }}
             </div>
           </div>

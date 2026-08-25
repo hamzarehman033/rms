@@ -8,4 +8,5 @@ export const environment = {
   // signalrHubUrl: 'http://localhost:7170/hubs/device-data',
   baseUrl: domain + '/api',
   signalrHubUrl: domain + '/hubs/device-data',
+  cameraStreamHubUrl: domain + '/hubs/camera-stream',
 };

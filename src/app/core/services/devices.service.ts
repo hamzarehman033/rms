@@ -91,16 +91,4 @@ export class DevicesService {
   updateDeviceInfrastructure(deviceId: number | string, payload: DeviceInfrastructurePayload): Observable<any> {
     return this.http.patch<any>(`${this.baseUrl}/device/${encodeURIComponent(String(deviceId))}/infrastructure`, payload);
   }
-
-  startCameraStream(deviceId: number | string, cameraIndex: number): Observable<any> {
-    return this.http.post<any>(this.cameraStreamUrl(deviceId, cameraIndex, 'start'), {});
-  }
-
-  stopCameraStream(deviceId: number | string, cameraIndex: number): Observable<any> {
-    return this.http.post<any>(this.cameraStreamUrl(deviceId, cameraIndex, 'stop'), {});
-  }
-
-  private cameraStreamUrl(deviceId: number | string, cameraIndex: number, action: 'start' | 'stop'): string {
-    return `${this.baseUrl}/device/${encodeURIComponent(String(deviceId))}/cameras/${encodeURIComponent(String(cameraIndex))}/${action}`;
-  }
 }

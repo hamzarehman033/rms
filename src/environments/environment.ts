@@ -5,4 +5,5 @@ export const environment = {
   isLocal: true,
   baseUrl: domain + '/api',
   signalrHubUrl: domain + '/hubs/device-data',
+  cameraStreamHubUrl: domain + '/hubs/camera-stream',
 };

@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
 import { DeviceCameraPayload, DevicesService } from '../../../core/services/devices.service';
+import { CameraStreamService } from '../../../core/services/camera-stream.service';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
 import { SignalrService } from '../../../core/services/signalr.service';
 import { ActivatedRoute } from '@angular/router';
@@ -14,6 +15,7 @@ interface LiveCamera {
   isEnabled: boolean;
   isStreaming: boolean;
   isBusy: boolean;
+  hasVideo: boolean;
 }
 
 @Component({
@@ -36,10 +38,12 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   selectedAlertId: number | null = null;
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
+  @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
 
   constructor(
     private visionService: VisionService,
     private devicesService: DevicesService,
+    private cameraStreamService: CameraStreamService,
     private signalrService: SignalrService,
     private route: ActivatedRoute
   ) {}
@@ -53,6 +57,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       this.deviceId = Number(params['id']);
 
       if (this.deviceId) {
+        void this.cameraStreamService.stopAll();
+        this.cameras = [];
         this.loadCameras();
         this.getAiVisionData();
         void this.signalrService.subscribeToDevice(this.deviceId);
@@ -115,6 +121,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   ];
 
   ngOnDestroy(): void {
+    void this.cameraStreamService.stopAll();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -136,7 +143,11 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       return camera.isStreaming ? 'Stopping…' : 'Starting…';
     }
 
-    return camera.isStreaming ? 'Live' : 'Stream stopped';
+    if (camera.isStreaming) {
+      return camera.hasVideo ? 'Live' : 'Waiting for remote stream';
+    }
+
+    return 'Stream stopped';
   }
 
   cameraStatusLabel(camera: LiveCamera): string {
@@ -148,30 +159,50 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       return camera.isStreaming ? 'Stopping' : 'Starting';
     }
 
-    return camera.isStreaming ? 'Live' : 'Stopped';
+    if (camera.isStreaming) {
+      return camera.hasVideo ? 'Live' : 'Waiting';
+    }
+
+    return 'Stopped';
   }
 
-  toggleCameraStream(camera: LiveCamera): void {
+  async toggleCameraStream(camera: LiveCamera): Promise<void> {
     if (!this.deviceId || !camera.isEnabled || camera.isBusy) {
       return;
     }
 
     camera.isBusy = true;
-    const request = camera.isStreaming
-      ? this.devicesService.stopCameraStream(this.deviceId, camera.cameraIndex)
-      : this.devicesService.startCameraStream(this.deviceId, camera.cameraIndex);
 
-    request.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (response: { message?: string }) => {
-        camera.isStreaming = !camera.isStreaming;
-        camera.isBusy = false;
-        toast.success(response?.message || (camera.isStreaming ? 'Camera started' : 'Camera stopped'));
-      },
-      error: (error: { error?: { message?: string } }) => {
-        camera.isBusy = false;
-        toast.error(error?.error?.message || 'Failed to update camera stream');
+    try {
+      if (camera.isStreaming) {
+        await this.cameraStreamService.stop(this.deviceId, camera.cameraIndex);
+        camera.isStreaming = false;
+        camera.hasVideo = false;
+      } else {
+        const video = this.getCameraVideo(camera.cameraIndex);
+        if (!video) {
+          throw new Error('Camera viewport is not ready');
+        }
+
+        await this.cameraStreamService.start(this.deviceId, camera.cameraIndex, video, () => {
+          camera.hasVideo = true;
+        });
+        camera.isStreaming = true;
       }
-    });
+    } catch (error: unknown) {
+      camera.isStreaming = false;
+      camera.hasVideo = false;
+      const message = error instanceof Error ? error.message : 'Failed to update camera stream';
+      toast.error(message);
+    } finally {
+      camera.isBusy = false;
+    }
+  }
+
+  private getCameraVideo(cameraIndex: number): HTMLVideoElement | null {
+    return this.cameraVideos?.find(
+      (ref) => Number(ref.nativeElement.getAttribute('data-camera-index')) === cameraIndex
+    )?.nativeElement ?? null;
   }
 
   private loadCameras(): void {
@@ -189,12 +220,15 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   private mapLiveCameras(response: unknown): LiveCamera[] {
     const responseData = (response as { data?: Record<string, unknown> } | Record<string, unknown>) ?? {};
     const data = (responseData as { data?: Record<string, unknown> }).data ?? responseData as Record<string, unknown>;
-    const payload = (data['infrastructure'] ?? data['deviceInfrastructure'] ?? data) as { cameras?: DeviceCameraPayload[] };
-    const cameras = Array.isArray(payload?.cameras) ? payload.cameras : [];
+    const nested = (data['infrastructure'] ?? data['deviceInfrastructure'] ?? {}) as Record<string, unknown>;
+    const cameras = (data['cameras'] ?? nested['cameras'] ?? []) as DeviceCameraPayload[];
+    if (!Array.isArray(cameras)) {
+      return [];
+    }
 
     return cameras
-      .filter((camera) => camera.cameraIndex === 1 || camera.cameraIndex === 2)
-      .sort((left, right) => left.cameraIndex - right.cameraIndex)
+      .slice()
+      .sort((left, right) => Number(left.cameraIndex) - Number(right.cameraIndex))
       .slice(0, 2)
       .map((camera) => ({
         cameraIndex: Number(camera.cameraIndex),
@@ -202,6 +236,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         isEnabled: camera.isEnabled !== false,
         isStreaming: false,
         isBusy: false,
+        hasVideo: false,
       }));
   }
 
