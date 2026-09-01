@@ -192,8 +192,8 @@ export class AddActivityComponent implements OnInit, OnChanges {
     if (!value) {
       return value;
     }
-    const normalized = String(value).trim();
-    return normalized.length === 5 ? `${normalized}:00` : normalized.slice(0, 8);
+    const [hours = '', minutes = '', seconds = '00'] = String(value).trim().split(':');
+    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0').slice(0, 2)}.0000000`;
   }
 
   private static toInputTime(value: string): string {
