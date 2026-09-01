@@ -58,6 +58,10 @@
             <i class="pi pi-map-marker"></i>
             <span>Locations</span>
           </a></li>
+        <li *ngIf="userHasModule(Menu.Activities)"><a class="menu-btn" [routerLink]="'/activities'" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="pi pi-calendar"></i>
+            <span>Activities</span>
+          </a></li>
       </ul>
     </section>
 

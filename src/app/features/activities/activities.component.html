@@ -1,0 +1,88 @@
+<main class="content">
+  <div class="page-header">
+    <div>
+      <h1 class="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">Activities</h1>
+      <p>Schedule and track maintenance events on site.</p>
+    </div>
+  </div>
+
+  <div class="grid cols-4">
+    <div class="stat">
+      <div class="row"><span class="label">Activities</span></div>
+      <div><span class="value">{{ totalActivities }}</span></div>
+      <div class="hint">Total scheduled</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Upcoming</span></div>
+      <div><span class="value">{{ upcomingActivities }}</span></div>
+      <div class="hint">Not yet started</div>
+    </div>
+    <div class="stat">
+      <div class="row"><span class="label">Today</span></div>
+      <div><span class="value">{{ todayActivities }}</span></div>
+      <div class="hint">Scheduled today</div>
+    </div>
+  </div>
+
+  <div class="hstack justify-between flex-wrap gap-3">
+    <div class="tabs">
+      <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="selectedTab = 0">All <span class="muted">{{ totalActivities }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="selectedTab = 1">Upcoming <span class="muted">{{ upcomingActivities }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="selectedTab = 2">Today <span class="muted">{{ todayActivities }}</span></button>
+      <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Past <span class="muted">{{ pastActivities }}</span></button>
+    </div>
+    <div class="hstack">
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by name, company, or site…" (input)="searchTerm = $any($event).target.value"></div>
+      <button class="btn primary" (click)="openAddActivityDialog()"><i class="pi pi-plus"></i><span>Add
+          activity</span></button>
+    </div>
+  </div>
+
+  <div class="card p-0">
+    <p-table
+      [value]="filteredActivities"
+      [loading]="isLoading"
+      styleClass="p-datatable-sm"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Activity</th>
+          <th>Site</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Company</th>
+          <th>Technicians</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-activity>
+        <tr>
+          <td>
+            <div class="font-medium">{{ activity.name }}</div>
+          </td>
+          <td>{{ activity.siteName }}</td>
+          <td>{{ activity.date | date:'mediumDate' }}</td>
+          <td class="mono">{{ activity.startTime }} – {{ activity.endTime }}</td>
+          <td>{{ activity.company }}</td>
+          <td>{{ activity.technicians }}</td>
+          <td>
+            <span class="badge info" *ngIf="getScheduleStatus(activity) === 'Upcoming'">● Upcoming</span>
+            <span class="badge online" *ngIf="getScheduleStatus(activity) === 'In Progress'">● In Progress</span>
+            <span class="badge warning" *ngIf="getScheduleStatus(activity) === 'Past'">● Past</span>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-8 muted">No activities found</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</main>
+
+<app-modal-dialog [(visible)]="displayAddActivityDialog" header="Schedule Activity" [width]="'600px'"
+  (onHide)="displayAddActivityDialog = false">
+  <app-add-activity (activityAdded)="onActivityAdded()"></app-add-activity>
+</app-modal-dialog>

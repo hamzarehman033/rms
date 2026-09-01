@@ -11,6 +11,7 @@ export enum Menu {
   Settings = 10,
   EHS = 11,
   Security = 12,
+  Activities = 13,
 }
 
 
@@ -27,6 +28,7 @@ export const MenuOptions = [
   { id: Menu.Settings, label: 'Settings', icon: 'pi pi-cog' },
   { id: Menu.EHS, label: 'EHS', icon: 'pi pi-shield' },
   { id: Menu.Security, label: 'Security', icon: 'pi pi-lock' },
+  { id: Menu.Activities, label: 'Activities', icon: 'pi pi-calendar' },
 ]
 
 
@@ -43,4 +45,5 @@ export const MenuMapper = {
   [Menu.Settings]: 'Settings',
   [Menu.EHS]: 'EHS',
   [Menu.Security]: 'Security',
+  [Menu.Activities]: 'Activities',
 };

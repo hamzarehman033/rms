@@ -69,6 +69,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "activities",
+        loadChildren: () =>
+          import("./features/activities/activities.module").then(
+            (m) => m.ActivitiesModule,
+          ),
+      },
+      {
         path: "site-dashboard",
         loadChildren: () =>
           import("./features/site-dashboard/site-dashboard.module").then(
