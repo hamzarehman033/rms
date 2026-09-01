@@ -1,19 +1,28 @@
 <form [formGroup]="activityForm" class="form-section">
     <div class="form-group">
-        <label for="name">Activity Name</label>
-        <input id="name" pInputText type="text" formControlName="name" placeholder="Enter activity name"
-            class="w-full" />
-        <small class="error" *ngIf="activityForm.get('name')?.invalid && activityForm.get('name')?.touched">
-            Activity name is required and must be at least 2 characters
+        <label for="deviceId">Site / Device</label>
+        <p-dropdown id="deviceId" formControlName="deviceId" [options]="devices" optionLabel="label" optionValue="value"
+            placeholder="Select site / device" class="w-full" [filter]="true" [showClear]="false"></p-dropdown>
+        <small class="error" *ngIf="activityForm.get('deviceId')?.invalid && activityForm.get('deviceId')?.touched">
+            Site / device is required
         </small>
     </div>
 
     <div class="form-group">
-        <label for="siteId">Site</label>
-        <p-dropdown id="siteId" formControlName="siteId" [options]="sites" optionLabel="label" optionValue="value"
-            placeholder="Select site" class="w-full" [filter]="true"></p-dropdown>
-        <small class="error" *ngIf="activityForm.get('siteId')?.invalid && activityForm.get('siteId')?.touched">
-            Site is required
+        <label for="name">Activity Name</label>
+        <input id="name" pInputText type="text" formControlName="name" placeholder="Enter activity name"
+            class="w-full" maxlength="100" />
+        <small class="error" *ngIf="activityForm.get('name')?.invalid && activityForm.get('name')?.touched">
+            Activity name is required (2–100 characters)
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" formControlName="description" placeholder="Enter description"
+            class="textarea w-full" rows="3" maxlength="1000"></textarea>
+        <small class="error" *ngIf="activityForm.get('description')?.invalid && activityForm.get('description')?.touched">
+            Description is required (max 1000 characters)
         </small>
     </div>
 
@@ -46,21 +55,21 @@
     </small>
 
     <div class="form-group">
-        <label for="company">Company</label>
-        <input id="company" pInputText type="text" formControlName="company" placeholder="Enter company name"
-            class="w-full" />
-        <small class="error" *ngIf="activityForm.get('company')?.invalid && activityForm.get('company')?.touched">
-            Company is required
+        <label for="team">Team</label>
+        <input id="team" pInputText type="text" formControlName="team" placeholder="Enter team name"
+            class="w-full" maxlength="100" />
+        <small class="error" *ngIf="activityForm.get('team')?.invalid && activityForm.get('team')?.touched">
+            Team is required (max 100 characters)
         </small>
     </div>
 
     <div class="form-group">
-        <label for="technicians">Technicians</label>
-        <p-inputNumber id="technicians" formControlName="technicians" [min]="1" [showButtons]="true"
+        <label for="persons">Persons</label>
+        <p-inputNumber id="persons" formControlName="persons" [min]="0" [showButtons]="true"
             placeholder="Total persons involved" class="w-full"></p-inputNumber>
         <small class="muted">Total persons involved</small>
-        <small class="error" *ngIf="activityForm.get('technicians')?.invalid && activityForm.get('technicians')?.touched">
-            At least 1 technician is required
+        <small class="error" *ngIf="activityForm.get('persons')?.invalid && activityForm.get('persons')?.touched">
+            Persons must be 0 or greater
         </small>
     </div>
 </form>
@@ -68,6 +77,8 @@
 <div class="form-actions pt-2" dialogFooter>
     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-secondary"
         (click)="resetForm()" [disabled]="isLoading"></button>
-    <button type="submit" pButton [label]="isLoading ? 'Scheduling...' : 'Schedule Activity'" icon="pi pi-check"
-        [disabled]="!activityForm.valid || isLoading" [loading]="isLoading" (click)="onSubmit()"></button>
+    <button type="submit" pButton
+        [label]="isLoading ? (isEditMode ? 'Updating...' : 'Scheduling...') : (isEditMode ? 'Update Activity' : 'Schedule Activity')"
+        icon="pi pi-check" [disabled]="!activityForm.valid || isLoading" [loading]="isLoading"
+        (click)="onSubmit()"></button>
 </div>

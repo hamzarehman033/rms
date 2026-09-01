@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ConfirmationService } from 'primeng/api';
 import { ActivityService } from '../../core/services/activity.service';
+import { DevicesService } from '../../core/services/devices.service';
 import { toast } from '../../utils/global-toast';
 
 @Component({
@@ -14,37 +16,86 @@ export class ActivitiesComponent implements OnInit {
   isLoading = false;
   searchTerm = '';
   activities: any[] = [];
+  selectedActivityId: number | string | null = null;
+  dialogHeader = 'Schedule Activity';
+  private deviceNameById = new Map<number, string>();
 
-  constructor(private activityService: ActivityService) {}
+  constructor(
+    private activityService: ActivityService,
+    private devicesService: DevicesService,
+    private confirmationService: ConfirmationService
+  ) {}
 
   ngOnInit(): void {
+    this.loadDevices();
     this.loadActivities();
   }
 
   loadActivities(): void {
     this.isLoading = true;
-    this.activityService.getActivities().subscribe({
+    this.activityService.getActivities({
+      pagesize: 1000,
+      pagenumber: 1,
+      filters: [{ key: 'isActive', value: true, operator: 'equals' }]
+    }).subscribe({
       next: (response: any) => {
-        const activityList = response?.data?.pageData || response?.data || response || [];
+        const activityList = response?.data?.pageData || [];
         const items = Array.isArray(activityList) ? activityList : [];
         this.activities = items.map((activity: any) => this.mapActivity(activity));
         this.isLoading = false;
       },
-      error: (error: any) => {
-        console.error('Error loading activities:', error);
+      error: () => {
         this.activities = [];
         this.isLoading = false;
-        toast.error('Error', 'Failed to load activities. Please try again.');
       }
     });
   }
 
   openAddActivityDialog(): void {
+    this.selectedActivityId = null;
+    this.dialogHeader = 'Schedule Activity';
     this.displayAddActivityDialog = true;
+  }
+
+  openEditActivityDialog(activity: any): void {
+    this.selectedActivityId = activity?.id ?? null;
+    this.dialogHeader = 'Edit Activity';
+    this.displayAddActivityDialog = true;
+  }
+
+  deleteActivity(activity: any): void {
+    this.confirmationService.confirm({
+      header: 'Delete Activity',
+      message: `Are you sure you want to delete ${activity?.name || 'this activity'}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.isLoading = true;
+        this.activityService.deleteActivity(activity.id).subscribe({
+          next: () => {
+            this.isLoading = false;
+            toast.success('Success', 'Activity deleted successfully.');
+            this.loadActivities();
+          },
+          error: () => {
+            this.isLoading = false;
+          }
+        });
+      }
+    });
   }
 
   onActivityAdded(): void {
     this.displayAddActivityDialog = false;
+    this.selectedActivityId = null;
+    this.loadActivities();
+  }
+
+  onActivityUpdated(): void {
+    this.displayAddActivityDialog = false;
+    this.selectedActivityId = null;
     this.loadActivities();
   }
 
@@ -79,8 +130,9 @@ export class ActivitiesComponent implements OnInit {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(activity =>
         String(activity.name ?? '').toLowerCase().includes(term) ||
-        String(activity.company ?? '').toLowerCase().includes(term) ||
-        String(activity.siteName ?? '').toLowerCase().includes(term)
+        String(activity.team ?? '').toLowerCase().includes(term) ||
+        String(activity.deviceName ?? '').toLowerCase().includes(term) ||
+        String(activity.description ?? '').toLowerCase().includes(term)
       );
     }
 
@@ -104,18 +156,46 @@ export class ActivitiesComponent implements OnInit {
     return 'Upcoming';
   }
 
+  formatTime(value: string): string {
+    return value ? String(value).slice(0, 5) : '-';
+  }
+
+  private loadDevices(): void {
+    this.devicesService.getDevices().subscribe({
+      next: (response: any) => {
+        const list = response?.data?.pageData || response?.data || response || [];
+        const items = Array.isArray(list) ? list : [];
+        this.deviceNameById.clear();
+        items.forEach((item: any) => {
+          const id = Number(item?.id ?? item?.deviceId ?? item?.siteId);
+          if (!Number.isFinite(id) || id <= 0) {
+            return;
+          }
+          const name = String(item?.siteName ?? item?.name ?? item?.deviceName ?? `Site ${id}`).trim();
+          this.deviceNameById.set(id, name);
+        });
+        this.activities = this.activities.map(activity => ({
+          ...activity,
+          deviceName: this.deviceNameById.get(Number(activity.deviceId)) || activity.deviceName
+        }));
+      }
+    });
+  }
+
   private mapActivity(activity: any): any {
-    const dateValue = activity.date || activity.Date || '';
+    const deviceId = Number(activity.deviceId) || 0;
     return {
-      id: activity.id || activity.Id || 'N/A',
-      name: activity.name || activity.Name || activity.activityName || 'Unknown',
-      date: dateValue,
-      startTime: activity.startTime || activity.StartTime || '',
-      endTime: activity.endTime || activity.EndTime || '',
-      company: activity.company || activity.Company || activity.companyName || '-',
-      technicians: activity.technicians ?? activity.Technicians ?? activity.technicianCount ?? 0,
-      siteId: activity.siteId || activity.SiteId || activity.deviceId || '',
-      siteName: activity.siteName || activity.SiteName || activity.site?.name || activity.site?.siteName || '-'
+      id: activity.id,
+      deviceId,
+      deviceName: this.deviceNameById.get(deviceId) || `Device ${deviceId}`,
+      name: activity.name || 'Unknown',
+      description: activity.description || '',
+      date: activity.date ? String(activity.date).slice(0, 10) : '',
+      startTime: activity.startTime || '',
+      endTime: activity.endTime || '',
+      team: activity.team || '-',
+      persons: activity.persons ?? 0,
+      isActive: activity.isActive ?? true
     };
   }
 
@@ -138,7 +218,7 @@ export class ActivitiesComponent implements OnInit {
       return null;
     }
     const datePart = String(dateValue).slice(0, 10);
-    const timePart = timeValue ? String(timeValue).slice(0, 5) : '00:00';
+    const timePart = timeValue ? String(timeValue).slice(0, 8) : '00:00:00';
     const parsed = new Date(`${datePart}T${timePart}`);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }

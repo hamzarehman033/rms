@@ -1,6 +1,6 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
-import { ActivityService } from '../../../core/services/activity.service';
+import { Activity, ActivityService } from '../../../core/services/activity.service';
 import { DevicesService } from '../../../core/services/devices.service';
 import { toast } from '../../../utils/global-toast';
 
@@ -10,12 +10,15 @@ import { toast } from '../../../utils/global-toast';
   templateUrl: './add-activity.component.html',
   styleUrl: './add-activity.component.css'
 })
-export class AddActivityComponent implements OnInit {
+export class AddActivityComponent implements OnInit, OnChanges {
+  @Input() activityId: number | string | null = null;
   @Output() activityAdded = new EventEmitter<any>();
+  @Output() activityUpdated = new EventEmitter<any>();
 
   activityForm: FormGroup;
   isLoading = false;
-  sites: Array<{ label: string; value: number }> = [];
+  isEditMode = false;
+  devices: Array<{ label: string; value: number }> = [];
 
   constructor(
     private fb: FormBuilder,
@@ -23,18 +26,38 @@ export class AddActivityComponent implements OnInit {
     private devicesService: DevicesService
   ) {
     this.activityForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      siteId: [null, Validators.required],
+      deviceId: [null, [Validators.required, Validators.min(1)]],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.maxLength(1000)]],
       date: ['', Validators.required],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
-      company: ['', [Validators.required, Validators.minLength(2)]],
-      technicians: [1, [Validators.required, Validators.min(1)]],
+      team: ['', [Validators.required, Validators.maxLength(100)]],
+      persons: [0, [Validators.required, Validators.min(0)]],
     }, { validators: AddActivityComponent.timeRangeValidator });
   }
 
   ngOnInit(): void {
-    this.loadSites();
+    this.loadDevices();
+    if (this.activityId !== null && this.activityId !== undefined) {
+      this.isEditMode = true;
+      this.fetchAndPopulateActivity();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['activityId'] || changes['activityId'].firstChange) {
+      return;
+    }
+
+    if (this.activityId !== null && this.activityId !== undefined) {
+      this.isEditMode = true;
+      this.fetchAndPopulateActivity();
+      return;
+    }
+
+    this.isEditMode = false;
+    this.resetForm();
   }
 
   onSubmit(): void {
@@ -46,19 +69,32 @@ export class AddActivityComponent implements OnInit {
 
     this.isLoading = true;
     const formValue = this.activityForm.value;
-    const selectedSite = this.sites.find(site => site.value === formValue.siteId);
-
-    const payload = {
-      id: 0,
+    const payload: Activity = {
+      deviceId: Number(formValue.deviceId),
       name: formValue.name,
+      description: formValue.description,
       date: formValue.date,
-      startTime: formValue.startTime,
-      endTime: formValue.endTime,
-      company: formValue.company,
-      technicians: Number(formValue.technicians),
-      siteId: formValue.siteId,
-      siteName: selectedSite?.label || ''
+      startTime: AddActivityComponent.toApiTime(formValue.startTime),
+      endTime: AddActivityComponent.toApiTime(formValue.endTime),
+      team: formValue.team,
+      persons: Number(formValue.persons)
     };
+
+    if (this.isEditMode) {
+      const id = Number(this.activityId);
+      this.activityService.updateActivity(id, { ...payload, id }).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          toast.success('Success', 'Activity updated successfully.');
+          this.activityUpdated.emit(response);
+          this.resetForm();
+        },
+        error: () => {
+          this.isLoading = false;
+        }
+      });
+      return;
+    }
 
     this.activityService.createActivity(payload).subscribe({
       next: (response: any) => {
@@ -67,48 +103,105 @@ export class AddActivityComponent implements OnInit {
         this.activityAdded.emit(response);
         this.resetForm();
       },
-      error: (error: any) => {
+      error: () => {
         this.isLoading = false;
-        console.error('Error creating activity:', error);
-        toast.error('Error', 'Failed to schedule activity. Please try again.');
       }
     });
   }
 
   resetForm(): void {
-    if (!this.isLoading) {
-      this.activityForm.reset({
-        name: '',
-        siteId: null,
-        date: '',
-        startTime: '',
-        endTime: '',
-        company: '',
-        technicians: 1
-      });
+    if (this.isLoading) {
+      return;
     }
+
+    this.activityForm.reset({
+      deviceId: null,
+      name: '',
+      description: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+      team: '',
+      persons: 0
+    });
+    this.isEditMode = false;
+    this.activityId = null;
   }
 
-  private loadSites(): void {
+  private fetchAndPopulateActivity(): void {
+    if (this.activityId === null || this.activityId === undefined) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.activityService.getActivityById(this.activityId).subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+        const activity = response?.data || response;
+        this.populateForm(activity);
+      },
+      error: () => {
+        this.isLoading = false;
+        toast.error('Error', 'Failed to load activity details. Please try again.');
+      }
+    });
+  }
+
+  private populateForm(activity: any): void {
+    if (!activity) {
+      return;
+    }
+
+    this.activityForm.patchValue({
+      deviceId: Number(activity.deviceId) || null,
+      name: activity.name || '',
+      description: activity.description || '',
+      date: AddActivityComponent.toInputDate(activity.date),
+      startTime: AddActivityComponent.toInputTime(activity.startTime),
+      endTime: AddActivityComponent.toInputTime(activity.endTime),
+      team: activity.team || '',
+      persons: activity.persons ?? 0
+    });
+  }
+
+  private loadDevices(): void {
     this.devicesService.getDevices().subscribe({
       next: (response: any) => {
         const list = response?.data?.pageData || response?.data || response || [];
         const items = Array.isArray(list) ? list : [];
-        this.sites = items
+        this.devices = items
           .map((item: any) => {
-            const id = Number(item?.siteId ?? item?.deviceId ?? item?.id);
+            const id = Number(item?.id ?? item?.deviceId ?? item?.siteId);
             if (!Number.isFinite(id) || id <= 0) {
               return null;
             }
-            const label = String(item?.siteName ?? item?.name ?? item?.deviceName ?? `Site ${id}`).trim();
-            return { label, value: id };
+
+            const name = String(item?.siteName ?? item?.name ?? item?.deviceName ?? `Site ${id}`).trim();
+            const code = String(item?.siteCode ?? item?.code ?? item?.deviceCode ?? '').trim();
+            return { label: code ? `${name} (${code})` : name, value: id };
           })
           .filter((item: { label: string; value: number } | null): item is { label: string; value: number } => !!item);
       },
       error: () => {
-        this.sites = [];
+        this.devices = [];
       }
     });
+  }
+
+  private static toApiTime(value: string): string {
+    if (!value) {
+      return value;
+    }
+    const normalized = String(value).trim();
+    return normalized.length === 5 ? `${normalized}:00` : normalized.slice(0, 8);
+  }
+
+  private static toInputTime(value: string): string {
+    return value ? String(value).slice(0, 5) : '';
+  }
+
+  private static toInputDate(value: string): string {
+    return value ? String(value).slice(0, 10) : '';
   }
 
   private static timeRangeValidator(group: AbstractControl): ValidationErrors | null {
@@ -117,6 +210,8 @@ export class AddActivityComponent implements OnInit {
     if (!startTime || !endTime) {
       return null;
     }
-    return startTime < endTime ? null : { timeRange: true };
+    return AddActivityComponent.toApiTime(startTime) < AddActivityComponent.toApiTime(endTime)
+      ? null
+      : { timeRange: true };
   }
 }

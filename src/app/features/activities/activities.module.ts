@@ -9,6 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { ModalDialogComponent } from '@app/shared';
 
 const routes: Routes = [
@@ -29,7 +31,9 @@ const routes: Routes = [
     InputNumberModule,
     DropdownModule,
     TableModule,
+    ConfirmDialogModule,
     ModalDialogComponent,
   ],
+  providers: [ConfirmationService],
 })
 export class ActivitiesModule {}

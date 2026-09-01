@@ -32,7 +32,7 @@
       <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="selectedTab = 3">Past <span class="muted">{{ pastActivities }}</span></button>
     </div>
     <div class="hstack">
-      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by name, company, or site…" (input)="searchTerm = $any($event).target.value"></div>
+      <div class="search"><i class="pi pi-search"></i><input placeholder="Search by name, team, or site…" (input)="searchTerm = $any($event).target.value"></div>
       <button class="btn primary" (click)="openAddActivityDialog()"><i class="pi pi-plus"></i><span>Add
           activity</span></button>
     </div>
@@ -48,41 +48,56 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Activity</th>
-          <th>Site</th>
+          <th>Site / Device</th>
           <th>Date</th>
           <th>Time</th>
-          <th>Company</th>
-          <th>Technicians</th>
+          <th>Team</th>
+          <th>Persons</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-activity>
         <tr>
           <td>
             <div class="font-medium">{{ activity.name }}</div>
+            <div class="muted text-xs">{{ activity.description }}</div>
           </td>
-          <td>{{ activity.siteName }}</td>
+          <td>{{ activity.deviceName }}</td>
           <td>{{ activity.date | date:'mediumDate' }}</td>
-          <td class="mono">{{ activity.startTime }} – {{ activity.endTime }}</td>
-          <td>{{ activity.company }}</td>
-          <td>{{ activity.technicians }}</td>
+          <td class="mono">{{ formatTime(activity.startTime) }} – {{ formatTime(activity.endTime) }}</td>
+          <td>{{ activity.team }}</td>
+          <td>{{ activity.persons }}</td>
           <td>
             <span class="badge info" *ngIf="getScheduleStatus(activity) === 'Upcoming'">● Upcoming</span>
             <span class="badge online" *ngIf="getScheduleStatus(activity) === 'In Progress'">● In Progress</span>
             <span class="badge warning" *ngIf="getScheduleStatus(activity) === 'Past'">● Past</span>
           </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <button class="btn sm" (click)="openEditActivityDialog(activity)" title="Edit activity" aria-label="Edit activity">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button class="btn sm" (click)="deleteActivity(activity)" title="Delete activity" aria-label="Delete activity">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="7" class="text-center py-8 muted">No activities found</td>
+          <td colspan="8" class="text-center py-8 muted">No activities found</td>
         </tr>
       </ng-template>
     </p-table>
   </div>
 </main>
 
-<app-modal-dialog [(visible)]="displayAddActivityDialog" header="Schedule Activity" [width]="'600px'"
+<app-modal-dialog [(visible)]="displayAddActivityDialog" [header]="dialogHeader" [width]="'600px'"
   (onHide)="displayAddActivityDialog = false">
-  <app-add-activity (activityAdded)="onActivityAdded()"></app-add-activity>
+  <app-add-activity *ngIf="displayAddActivityDialog" [activityId]="selectedActivityId"
+    (activityAdded)="onActivityAdded()" (activityUpdated)="onActivityUpdated()"></app-add-activity>
 </app-modal-dialog>
+
+<p-confirmDialog></p-confirmDialog>
