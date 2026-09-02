@@ -66,6 +66,11 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  get activityDeviceId(): number | null {
+    const id = Number(this.deviceId || this.selectedDeviceDetails?.id || this.selectedDeviceDetails?.deviceId);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
   getAiVisionData(): void {
     this.visionService.getAiVisionData(this.deviceId, this.selectedTimeSpan).pipe(takeUntil(this.destroy$)).subscribe(data => {
       this.applyHistoryFromApi(data);
@@ -218,6 +223,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   private loadCameras(): void {
     this.devicesService.getDeviceById(this.deviceId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: unknown) => {
+        this.selectedDeviceDetails = (response as { data?: unknown })?.data ?? response ?? null;
         this.cameras = this.mapLiveCameras(response);
       },
       error: () => {

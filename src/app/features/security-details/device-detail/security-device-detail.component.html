@@ -84,6 +84,36 @@
     </div>
 
     <div class="right-col">
+      <div class="right-sec-title"><i class="pi pi-calendar" style="font-size:11px"></i> Scheduled Activities</div>
+      <app-scheduled-activities [deviceId]="activityDeviceId"></app-scheduled-activities>
+    </div>
+  </div>
+
+  <!-- Evidence preview + alerts -->
+  <div class="body-layout">
+    <div class="left-col">
+      <div class="card">
+        <div class="hstack justify-between items-start mb-2">
+          <div>
+            <div class="sec-title" style="margin-bottom:4px"><i class="pi pi-image"></i> Violation Evidence Preview</div>
+            <p class="muted text-xs">Snapshot image attached with event</p>
+          </div>
+        </div>
+
+        <div class="evidence-viewport">
+          <div class="hstack justify-between evidence-overlays">
+            <span class="badge critical">{{ selectedEvent.violationLabel }}</span>
+            <span class="badge info">{{ selectedEvent.cameraTime }}</span>
+          </div>
+          <img *ngIf="evidenceImageSrc; else noEvidenceImage" class="evidence-image" [src]="evidenceImageSrc" alt="Violation evidence snapshot">
+          <ng-template #noEvidenceImage>
+            <div class="muted text-xs evidence-placeholder">No evidence image</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
       <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
       <div class="card">
         <div class="hstack justify-between items-center mb-3">
@@ -114,28 +144,6 @@
   <!-- Evidence preview + selected event details -->
   <div class="body-layout">
     <div class="left-col">
-      <div class="card">
-        <div class="hstack justify-between items-start mb-2">
-          <div>
-            <div class="sec-title" style="margin-bottom:4px"><i class="pi pi-image"></i> Violation Evidence Preview</div>
-            <p class="muted text-xs">Snapshot image attached with event</p>
-          </div>
-        </div>
-
-        <div class="evidence-viewport">
-          <div class="hstack justify-between evidence-overlays">
-            <span class="badge critical">{{ selectedEvent.violationLabel }}</span>
-            <span class="badge info">{{ selectedEvent.cameraTime }}</span>
-          </div>
-          <img *ngIf="evidenceImageSrc; else noEvidenceImage" class="evidence-image" [src]="evidenceImageSrc" alt="Violation evidence snapshot">
-          <ng-template #noEvidenceImage>
-            <div class="muted text-xs evidence-placeholder">No evidence image</div>
-          </ng-template>
-        </div>
-      </div>
-    </div>
-
-    <div class="right-col">
       <div class="right-sec-title"><i class="pi pi-info-circle" style="font-size:11px"></i> Event Details</div>
       <div class="event-details-grid">
         <div class="card event-detail-item" *ngFor="let item of selectedEventDetails">

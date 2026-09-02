@@ -118,7 +118,6 @@
 	color: var(--muted-foreground);
 	letter-spacing: .09em;
 	text-transform: uppercase;
-	margin-bottom: 8px;
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -194,7 +193,7 @@
 
 .event-details-grid {
 	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-columns: repeat(5, minmax(0, 1fr));
 	gap: 8px;
 }
 

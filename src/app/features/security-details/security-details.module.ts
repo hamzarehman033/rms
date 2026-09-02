@@ -7,6 +7,7 @@ import { TabsModule } from 'primeng/tabs';
 import { DockModule } from 'primeng/dock';
 import { SecurityDetailsTabsComponent } from './security-details-tabs.component';
 import { SecurityDeviceDetailComponent } from './device-detail/security-device-detail.component';
+import { ScheduledActivitiesComponent } from '../../shared/components/scheduled-activities/scheduled-activities.component';
 
 const routes: Routes = [
   { path: '', component: SecurityDetailsTabsComponent },
@@ -22,6 +23,7 @@ const routes: Routes = [
     LineChartComponent,
     TabsModule,
     DockModule,
+    ScheduledActivitiesComponent,
   ],
 })
 export class SecurityDetailsModule {}

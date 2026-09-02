@@ -9,6 +9,7 @@ type SiteDashboardTab =
   | 'site-pulse'
   | 'equipment-view'
   | 'event-log'
+  | 'activities'
   | 'analysis'
   | 'site-details';
 
@@ -48,6 +49,11 @@ export class SiteDashboardTabsComponent implements OnInit, OnDestroy {
 
         this.loadDeviceDetails(id);
       });
+  }
+
+  get activityDeviceId(): number | null {
+    const id = Number(this.deviceId ?? this.deviceDetails?.id ?? this.deviceDetails?.deviceId);
+    return Number.isFinite(id) && id > 0 ? id : null;
   }
 
   ngOnDestroy(): void {

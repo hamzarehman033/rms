@@ -79,30 +79,8 @@
     </div>
 
     <div class="right-col">
-      <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
-      <div class="card">
-        <div class="hstack justify-between items-center mb-3">
-          <div class="sub">Timestamp, violation details, snapshot, team</div>
-          <select class="timespan-select" [value]="selectedTimeSpan" (change)="onTimeSpanChange($event)">
-            <option *ngFor="let option of timeSpanOptions" [value]="option.value">{{ option.label }}</option>
-          </select>
-        </div>
-
-        <div *ngIf="aiAlerts.length; else noAiAlerts" style="max-height: 250px; overflow-y: auto;">
-          <div class="alert-item" *ngFor="let alert of aiAlerts" (click)="onAlertClick(alert)" [class.alert-item-selected]="selectedAlertId === alert.id">
-            <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
-            <div class="flex-1">
-              <div class="font-medium text-sm">{{ alert.title }}</div>
-              <div class="meta">{{ alert.meta }}</div>
-            </div>
-            <div class="muted text-xs mono">{{ alert.time }}</div>
-          </div>
-        </div>
-
-        <ng-template #noAiAlerts>
-          <div class="text-sm muted">No alerts</div>
-        </ng-template>
-      </div>
+      <div class="right-sec-title"><i class="pi pi-calendar" style="font-size:11px"></i> Scheduled Activities</div>
+      <app-scheduled-activities [deviceId]="activityDeviceId"></app-scheduled-activities>
     </div>
   </div>
 
@@ -131,13 +109,41 @@
     </div>
 
     <div class="right-col">
-      <div class="right-sec-title"><i class="pi pi-info-circle" style="font-size:11px"></i> Event Details</div>
-      <div class="event-details-grid">
-        <div class="card event-detail-item" *ngFor="let item of selectedEventDetails">
-          <div class="info-label">{{ item.label }}</div>
-          <div class="info-value" [ngClass]="item.valueClass">{{ item.value }}</div>
+      <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
+      <div class="card">
+        <div class="hstack justify-between items-center mb-3">
+          <div class="sub">Timestamp, violation details, snapshot, team</div>
+          <select class="timespan-select" [value]="selectedTimeSpan" (change)="onTimeSpanChange($event)">
+            <option *ngFor="let option of timeSpanOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
         </div>
+
+        <div *ngIf="aiAlerts.length; else noAiAlerts" style="max-height: 250px; overflow-y: auto;">
+          <div class="alert-item" *ngFor="let alert of aiAlerts" (click)="onAlertClick(alert)" [class.alert-item-selected]="selectedAlertId === alert.id">
+            <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
+            <div class="flex-1">
+              <div class="font-medium text-sm">{{ alert.title }}</div>
+              <div class="meta">{{ alert.meta }}</div>
+            </div>
+            <div class="muted text-xs mono">{{ alert.time }}</div>
+          </div>
+        </div>
+
+        <ng-template #noAiAlerts>
+          <div class="text-sm muted">No alerts</div>
+        </ng-template>
       </div>
+    </div>
+  </div>
+  <div class="body-layout">
+    <div class="left-col">
+      <div class="right-sec-title"><i class="pi pi-info-circle" style="font-size:11px"></i> Event Details</div>
+        <div class="event-details-grid">
+          <div class="card event-detail-item" *ngFor="let item of selectedEventDetails">
+            <div class="info-label">{{ item.label }}</div>
+            <div class="info-value" [ngClass]="item.valueClass">{{ item.value }}</div>
+          </div>
+        </div>
     </div>
   </div>
 </main>

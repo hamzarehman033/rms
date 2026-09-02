@@ -11,3 +11,4 @@ export * from './topbar/topbar.component';
 export * from './chart-components';
 export * from './modal-dialog/modal-dialog.component';
 export * from './device-view/device-view.component';
+export * from './scheduled-activities/scheduled-activities.component';

@@ -14,6 +14,7 @@ import { AnalysisViewComponent } from './analysis-view/analysis-view.component';
 import { DeviceViewComponent } from "@app/shared";
 import { DeviceDetailModule } from './device-detail/device-detail.module';
 import { DeviceDetailComponent } from './device-detail/device-detail.component';
+import { ScheduledActivitiesComponent } from '../../shared/components/scheduled-activities/scheduled-activities.component';
 
 const routes: Routes = [
   {
@@ -46,6 +47,7 @@ const routes: Routes = [
     TabsModule,
     TableModule,
     DeviceViewComponent,
+    ScheduledActivitiesComponent,
   ],
 })
 export class SiteDashboardModule {}

@@ -1,0 +1,22 @@
+<div class="card">
+  <div class="sub mb-3">Date, time, team, persons</div>
+  <div *ngIf="activities.length; else empty" style="max-height: 250px; overflow-y: auto;">
+    <div class="alert-item" *ngFor="let activity of activities">
+      <div class="sev-bar info"></div>
+      <div class="flex-1">
+        <div class="font-medium text-sm">{{ activity.name }}</div>
+        <div class="meta">{{ activity.team }} · {{ activity.persons }} persons</div>
+      </div>
+      <div class="text-right">
+        <div class="muted text-xs mono">{{ activity.date | date:'mediumDate' }} {{ activity.startTime }}–{{ activity.endTime }}</div>
+        <span class="badge info" *ngIf="getScheduleStatus(activity) === 'Upcoming'">● Upcoming</span>
+        <span class="badge online" *ngIf="getScheduleStatus(activity) === 'In Progress'">● In Progress</span>
+        <span class="badge warning" *ngIf="getScheduleStatus(activity) === 'Past'">● Past</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #empty>
+    <div class="text-sm muted">{{ isLoading ? 'Loading activities…' : 'No scheduled activities' }}</div>
+  </ng-template>
+</div>

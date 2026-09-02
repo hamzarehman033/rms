@@ -4,6 +4,7 @@
       <p-tab value="site-pulse">Site Pulse</p-tab>
       <p-tab value="equipment-view">Equipment View</p-tab>
       <p-tab value="event-log">Event Log</p-tab>
+      <p-tab value="activities">Activities</p-tab>
       <p-tab value="analysis">Analysis</p-tab>
       <p-tab value="site-details">Site Details</p-tab>
     </p-tablist>
@@ -16,6 +17,11 @@
       </p-tabpanel>
       <p-tabpanel value="event-log">
         <app-event-log [deviceDetails]="deviceDetails" [isLoadingDevice]="isLoadingDevice"></app-event-log>
+      </p-tabpanel>
+      <p-tabpanel value="activities">
+        <div class="activities-tab">
+          <app-scheduled-activities [deviceId]="activityDeviceId"></app-scheduled-activities>
+        </div>
       </p-tabpanel>
       <p-tabpanel value="analysis">
         <app-analysis-view [deviceDetails]="deviceDetails"></app-analysis-view>
