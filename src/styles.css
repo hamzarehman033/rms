@@ -188,11 +188,10 @@ textarea {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: rgba(39, 53, 73, 0.4);
   border: 1px solid var(--sidebar-border);
   display: grid;
   place-items: center;
-  color: rgba(189, 197, 209, 0.7);
+  color: var(--sidebar-background);
 }
 
 .topbar .search input {
