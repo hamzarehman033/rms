@@ -2,7 +2,7 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { SidebarComponent, TopbarComponent } from '@app/shared';
+import { ChatbotComponent, SidebarComponent, TopbarComponent } from '@app/shared';
 import { ThemeService } from '../core/services/theme.service';
 import { CustomerService } from '../core/services/customer.service';
 import { DevicesService } from '../core/services/devices.service';
@@ -14,7 +14,7 @@ import { SitesStreamStateService } from '../core/services/sites-stream-state.ser
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, TopbarComponent],
+  imports: [RouterOutlet, SidebarComponent, TopbarComponent, ChatbotComponent],
 })
 export class AdminLayoutComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);

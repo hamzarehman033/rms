@@ -11,6 +11,7 @@ export * from './services/settings.service';
 export * from './services/users.service';
 export * from './services/tenant.service';
 export * from './services/activity.service';
+export * from './services/chat.service';
 export * from './services/toast.service';
 export * from './services/devices.service';
 export * from './services/camera-stream.service';

@@ -1,0 +1,73 @@
+<button
+  type="button"
+  class="chatbot-fab"
+  (click)="toggle()"
+  [attr.aria-label]="isOpen ? 'Close chat' : 'Open chat'"
+>
+  <i class="pi" [ngClass]="isOpen ? 'pi-times' : 'pi-comments'"></i>
+</button>
+
+<div class="chatbot-panel" *ngIf="isOpen">
+  <div class="chatbot-header">
+    <span><i class="pi pi-comments"></i> Assistant</span>
+    <button type="button" class="icon-btn" (click)="toggle()" aria-label="Close chat">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <div #messageList class="chatbot-messages">
+    <div class="muted text-sm" *ngIf="!messages.length && !isLoading">
+      Ask about sites, alarms, or activities.
+    </div>
+
+    <div class="chatbot-row" *ngFor="let item of messages" [class.user]="item.role === 'user'">
+      <div class="chatbot-bubble">{{ item.content }}</div>
+    </div>
+
+    <div class="chatbot-row" *ngIf="isLoading">
+      <div class="chatbot-bubble muted">Thinking…</div>
+    </div>
+  </div>
+
+  <div class="chatbot-error text-sm" *ngIf="error">{{ error }}</div>
+
+  <div class="chatbot-pills" *ngIf="!pendingQuestion">
+    <button
+      type="button"
+      class="chatbot-pill"
+      *ngFor="let question of questions"
+      (click)="selectQuestion(question)"
+      [disabled]="isLoading"
+    >
+      {{ question.text }}
+    </button>
+  </div>
+
+  <div class="chatbot-pills" *ngIf="pendingQuestion">
+    <div class="muted text-sm chatbot-pills-label">Select a device for: {{ pendingQuestion.text }}</div>
+    <div class="muted text-sm" *ngIf="isLoadingDevices">Loading devices…</div>
+    <button
+      type="button"
+      class="chatbot-pill"
+      *ngFor="let device of devices"
+      (click)="selectDevice(device)"
+      [disabled]="isLoading"
+    >
+      {{ device.name }}
+    </button>
+  </div>
+
+  <div class="chatbot-composer">
+    <input
+      type="text"
+      class="input"
+      [(ngModel)]="draft"
+      placeholder="Type a message…"
+      [disabled]="isLoading"
+      (keydown.enter)="send()"
+    />
+    <button type="button" class="btn primary" (click)="send()" [disabled]="isLoading || !draft.trim()">
+      Send
+    </button>
+  </div>
+</div>
