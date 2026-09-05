@@ -61,12 +61,10 @@
     <input
       type="text"
       class="input"
-      [(ngModel)]="draft"
-      placeholder="Type a message…"
-      [disabled]="isLoading"
-      (keydown.enter)="send()"
+      disabled
+      placeholder="Select a question"
     />
-    <button type="button" class="btn primary" (click)="send()" [disabled]="isLoading || !draft.trim()">
+    <button type="button" class="btn primary" disabled>
       Send
     </button>
   </div>
