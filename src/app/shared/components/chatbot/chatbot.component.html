@@ -1,15 +1,17 @@
 <button
   type="button"
   class="chatbot-fab"
+  [class.is-open]="isOpen"
   (click)="toggle()"
-  [attr.aria-label]="isOpen ? 'Close chat' : 'Open chat'"
+  [attr.aria-label]="isOpen ? 'Close chat' : 'Ask me'"
 >
-  <i class="pi" [ngClass]="isOpen ? 'pi-times' : 'pi-comments'"></i>
+  <i class="pi" [ngClass]="isOpen ? 'pi-times' : 'pi-sparkles'"></i>
+  <span *ngIf="!isOpen">Ask me</span>
 </button>
 
 <div class="chatbot-panel" *ngIf="isOpen">
   <div class="chatbot-header">
-    <span><i class="pi pi-comments"></i> Mobi</span>
+    <span><i class="pi pi-sparkles"></i> Mobi</span>
     <button type="button" class="icon-btn" (click)="toggle()" aria-label="Close chat">
       <i class="pi pi-times"></i>
     </button>
