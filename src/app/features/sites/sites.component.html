@@ -149,6 +149,7 @@
     mode="edit"
     [site]="selectedSiteForEdit"
     (siteAdded)="onSiteEdited()"
+    (close)="displayEditSiteDialog = false"
   ></app-add-site>
 </app-modal-dialog>
 

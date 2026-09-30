@@ -18,6 +18,7 @@ export class AddSiteComponent implements OnInit {
   @Input() mode: 'add' | 'edit' = 'add';
   @Input() site: Site | null = null;
   @Output() siteAdded = new EventEmitter<any>();
+  @Output() close = new EventEmitter<void>();
   isLoading = false;
   activeStep = 1;
 
@@ -208,6 +209,7 @@ export class AddSiteComponent implements OnInit {
     this.mqttForm.reset();
     this.subRegions = [];
     this.zones = [];
+    this.close.emit();
   }
 
   private loadLocationTree(): void {

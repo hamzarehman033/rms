@@ -143,7 +143,8 @@ export class ChatbotComponent {
   }
 
   private readError(error: any): string {
-    const message = error?.error?.message;
+    const message = "Failed to send message.";
+    // const message = error?.error?.message;
     if (Array.isArray(message) && message.length) {
       return message.join(' ');
     }

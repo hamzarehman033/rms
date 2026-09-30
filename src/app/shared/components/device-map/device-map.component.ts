@@ -143,7 +143,7 @@ export class DeviceMapComponent implements OnInit, AfterViewInit {
     this.map = L.map(this.mapContainer.nativeElement).setView([30.3753, 69.3451], 6);
 
     // Add tile layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_45ag_1_4b1ddbec6700099c08f93050', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(this.map);
