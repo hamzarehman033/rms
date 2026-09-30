@@ -29,6 +29,9 @@ export interface ReportFiltersPayload {
   deviceId?: number;
   tenantId?: string | number;
   siteType?: string;
+  regionId?: number;
+  subRegionId?: number;
+  zoneId?: number;
   fromUtc?: string;
   toUtc?: string;
   timeRange?: number;

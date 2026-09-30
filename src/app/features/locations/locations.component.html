@@ -92,6 +92,7 @@
   <app-add-location 
     [level]="1" 
     [parentId]="0"
+    (onCancel)="displayAddRegionDialog = false"
     (locationAdded)="onLocationAdded($event)">
   </app-add-location>
 
@@ -111,6 +112,7 @@
   <app-add-location 
     [level]="currentLevel" 
     [parentId]="currentParentId"
+    (onCancel)="displayAddLocationDialog = false"
     (locationAdded)="onLocationAdded($event)">
   </app-add-location>
 
@@ -126,6 +128,7 @@
     [level]="editingLocation?.level || 1"
     [parentId]="editingLocation?.parentId || 0"
     [editingLocation]="editingLocation"
+    (onCancel)="displayEditLocationDialog = false"
     (locationUpdated)="onLocationUpdated($event)">
   </app-add-location>
 

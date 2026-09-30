@@ -97,12 +97,13 @@ export class ReportsComponent implements OnInit {
   devices: Array<{ name: string; id: string, regionId: string, subRegionId: string, zoneId: string, type: string }> = [];
   tenants: Array<{ name: string; id: string }> = [];
 
-  selectedRegion: string | null = '';
-  selectedSubRegion: string | null = '';
-  selectedZone: string | null = '';
-  selectedDevice: string | null = null;
-  selectedSiteType: string | null = '';
-  selectedTenant: string | null = null;
+  selectedRegion: string | number | null = null;
+  selectedSubRegion: string | number | null = null;
+  selectedZone: string | number | null = null;
+  selectedDevice: string | number | null = null;
+  selectedSiteType: string | null = null;
+  selectedTenant: string | number | null = null;
+
 
   siteTypeOptions = DEVICE_TYPE_OPTIONS.map((item) => ({
     label: item.label,
@@ -122,6 +123,7 @@ export class ReportsComponent implements OnInit {
   alarmLoading = false;
 
 
+  filteredDevices: Array<{ name: string; id: string | number, regionId?: string | number, subRegionId?: string | number, zoneId?: string | number, type?: string }> = [];
   filters: ReportFiltersPayload = {};
 
   constructor(
@@ -143,7 +145,11 @@ export class ReportsComponent implements OnInit {
   }
 
   onApplyFilters(): void {
-    this.loadActiveTabReport();
+    this.loadEnergyReport();
+    this.loadBatteryReport();
+    this.loadSolarReport();
+    this.loadGridReport();
+    this.loadAlarmReport();
   }
 
   onExport(reportType: ReportType): void {
@@ -188,15 +194,29 @@ export class ReportsComponent implements OnInit {
   }
 
   onRegionChange(): void {
-    this.selectedSubRegion = '';
-    this.selectedZone = '';
+    this.selectedSubRegion = null;
+    this.selectedZone = null;
+    this.selectedDevice = null;
     this.updateSubRegionOptions();
     this.zones = [];
+    this.refreshFilteredDevices();
   }
 
   onSubRegionChange(): void {
-    this.selectedZone = '';
+    this.selectedZone = null;
+    this.selectedDevice = null;
     this.updateZoneOptions();
+    this.refreshFilteredDevices();
+  }
+
+  onZoneChange(): void {
+    this.selectedDevice = null;
+    this.refreshFilteredDevices();
+  }
+
+  onSiteTypeChange(): void {
+    this.selectedDevice = null;
+    this.refreshFilteredDevices();
   }
 
   get batteryAvgVoltage(): number {
@@ -366,17 +386,20 @@ export class ReportsComponent implements OnInit {
   private loadLocationTree(): void {
     this.locationsService.getLocationTree().subscribe({
       next: (response) => {
-        this.regions = response?.data;
-        this.selectedRegion = '';
-        this.selectedSubRegion = '';
-        this.selectedZone = '';
+        const treeData = response?.data ?? response ?? [];
+        this.regions = Array.isArray(treeData) ? treeData : [];
+        this.selectedRegion = null;
+        this.selectedSubRegion = null;
+        this.selectedZone = null;
         this.subRegions = [];
         this.zones = [];
+        this.refreshFilteredDevices();
       },
       error: () => {
         this.regions = [];
         this.subRegions = [];
         this.zones = [];
+        this.refreshFilteredDevices();
       },
     });
   }
@@ -384,10 +407,12 @@ export class ReportsComponent implements OnInit {
   private loadDevices(): void {
     this.devicesService.getDevices().subscribe({
       next: (response) => {
-        this.devices = response?.data?.pageData;
+        this.devices = response?.data?.pageData ?? response?.data ?? [];
+        this.refreshFilteredDevices();
       },
       error: () => {
         this.devices = [];
+        this.refreshFilteredDevices();
       },
     });
   }
@@ -395,7 +420,7 @@ export class ReportsComponent implements OnInit {
   private loadTenants(): void {
     this.tenantService.getTenants().subscribe({
       next: (response) => {
-        this.tenants = response?.data?.pageData;
+        this.tenants = response?.data?.pageData ?? response?.data ?? [];
       },
       error: () => {
         this.tenants = [];
@@ -423,6 +448,14 @@ export class ReportsComponent implements OnInit {
       return response.records as T[];
     }
 
+    if (Array.isArray(response?.data?.records)) {
+      return response.data.records as T[];
+    }
+
+    if (Array.isArray(response?.data)) {
+      return response.data as T[];
+    }
+
     if (Array.isArray(response)) {
       return response as T[];
     }
@@ -444,18 +477,21 @@ export class ReportsComponent implements OnInit {
     const now = Date.now();
     const defaultFrom = new Date(now - (24 * 60 * 60 * 1000)).toISOString();
     const defaultTo = new Date(now).toISOString();
-    const parsedDeviceId = Number(this.selectedDevice);
-    const parsedTenantId = Number(this.selectedTenant);
+    const parsedDeviceId = this.toPositiveInt(this.selectedDevice);
+    const parsedTenantId = this.toPositiveInt(this.selectedTenant);
+    const regionId = this.toPositiveInt(this.selectedRegion);
+    const subRegionId = this.toPositiveInt(this.selectedSubRegion);
+    const zoneId = this.toPositiveInt(this.selectedZone);
 
     return {
-      ...this.filters,
       reportType,
       format: this.selectedFormat,
-      deviceId: Number.isFinite(parsedDeviceId) && parsedDeviceId > 0 ? parsedDeviceId : undefined,
-      tenantId: Number.isFinite(parsedTenantId) && parsedTenantId > 0
-        ? parsedTenantId
-        : this.selectedTenant || undefined,
+      deviceId: parsedDeviceId || undefined,
+      tenantId: parsedTenantId || this.selectedTenant || undefined,
       siteType: this.selectedSiteType || undefined,
+      regionId: regionId || undefined,
+      subRegionId: subRegionId || undefined,
+      zoneId: zoneId || undefined,
       fromUtc: this.filters.fromUtc ?? defaultFrom,
       toUtc: this.filters.toUtc ?? defaultTo,
       timeRange: this.filters.timeRange ?? 0,
@@ -516,28 +552,42 @@ export class ReportsComponent implements OnInit {
   }
 
 
-  get filteredDevices(): Array<any> {
-    let devices = this.devices ?? [];
-    if(!this.devices || !this.devices.length) {
-      return [];
-    }
+  refreshFilteredDevices(): void {
+    const devices = this.devices ?? [];
+    this.filteredDevices = devices.filter((device) => {
+      if (this.selectedRegion && !this.sameId(device.regionId, this.selectedRegion)) {
+        return false;
+      }
+      if (this.selectedSubRegion && !this.sameId(device.subRegionId, this.selectedSubRegion)) {
+        return false;
+      }
+      if (this.selectedZone && !this.sameId(device.zoneId, this.selectedZone)) {
+        return false;
+      }
+      if (this.selectedSiteType && String(device.type ?? '') !== String(this.selectedSiteType)) {
+        return false;
+      }
+      return true;
+    });
 
-    if (this.selectedRegion) {
-      devices = devices.filter((device) => device.regionId === this.selectedRegion);
+    if (this.selectedDevice && !this.filteredDevices.some((device) => this.sameId(device.id, this.selectedDevice))) {
+      this.selectedDevice = null;
     }
+  }
 
-    if (this.selectedSubRegion) {
-      devices = devices.filter((device) => device.subRegionId === this.selectedSubRegion);
+  private sameId(left: unknown, right: unknown): boolean {
+    if (left === null || left === undefined || left === '' || right === null || right === undefined || right === '') {
+      return false;
     }
+    return String(left) === String(right);
+  }
 
-    if (this.selectedZone) {
-      devices = devices.filter((device) => device.zoneId === this.selectedZone);
+  private toPositiveInt(value: unknown): number {
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return 0;
     }
-    if(this.selectedSiteType) {
-      devices = devices.filter((device) => device.type === this.selectedSiteType);
-    }
-
-    return devices;
+    return parsed;
   }
 
   private tableToCSV(table: HTMLTableElement): void {
