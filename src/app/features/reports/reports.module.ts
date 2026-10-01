@@ -6,6 +6,7 @@ import { ReportsComponent } from './reports.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TabsModule } from 'primeng/tabs';
 import { TableModule } from 'primeng/table';
 
@@ -27,6 +28,7 @@ const routes: Routes = [
     ButtonModule,
     InputTextModule,
     SelectModule,
+    MultiSelectModule,
     TabsModule,
     TableModule,
   ],

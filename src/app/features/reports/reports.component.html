@@ -28,11 +28,31 @@
         </div>
         <div class="filter-field">
           <label class="filter-label" for="device-filter-{{ suffix }}">Device</label>
-          <p-select inputId="device-filter-{{ suffix }}" [options]="filteredDevices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevice" placeholder="All devices" [showClear]="true" styleClass="w-full"></p-select>
+          <p-multiSelect inputId="device-filter-{{ suffix }}" [options]="filteredDevices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevices" placeholder="All devices" [showClear]="true" [filter]="true" display="chip" appendTo="body" styleClass="w-full"></p-multiSelect>
         </div>
         <div class="filter-field">
           <label class="filter-label" for="tenant-filter-{{ suffix }}">Tenant</label>
-          <p-select inputId="tenant-filter-{{ suffix }}" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenant" placeholder="All tenants" [showClear]="true" styleClass="w-full"></p-select>
+          <p-multiSelect inputId="tenant-filter-{{ suffix }}" [options]="tenants" optionLabel="name" optionValue="id" [(ngModel)]="selectedTenants" placeholder="All tenants" [showClear]="true" [filter]="true" display="chip" appendTo="body" styleClass="w-full"></p-multiSelect>
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="from-date-{{ suffix }}">From</label>
+          <input
+            id="from-date-{{ suffix }}"
+            class="w-full report-date-input"
+            type="date"
+            [(ngModel)]="filters.fromUtc"
+            [max]="filters.toUtc"
+          />
+        </div>
+        <div class="filter-field">
+          <label class="filter-label" for="to-date-{{ suffix }}">To</label>
+          <input
+            id="to-date-{{ suffix }}"
+            class="w-full report-date-input"
+            type="date"
+            [(ngModel)]="filters.toUtc"
+            [min]="filters.fromUtc"
+          />
         </div>
         <div class="filter-field filter-action">
           <button class="btn primary" (click)="onApplyFilters()"><i class="pi pi-filter"></i>Apply</button>

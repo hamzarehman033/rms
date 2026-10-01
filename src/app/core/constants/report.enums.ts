@@ -26,8 +26,8 @@ export const REPORT_FORMAT_OPTIONS: ReportFormatOption[] = [
 ];
 
 export interface ReportFiltersPayload {
-  deviceId?: number;
-  tenantId?: string | number;
+  deviceIds?: number[];
+  tenantIds?: number[];
   siteType?: string;
   regionId?: number;
   subRegionId?: number;

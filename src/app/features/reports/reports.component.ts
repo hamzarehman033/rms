@@ -100,9 +100,9 @@ export class ReportsComponent implements OnInit {
   selectedRegion: string | number | null = null;
   selectedSubRegion: string | number | null = null;
   selectedZone: string | number | null = null;
-  selectedDevice: string | number | null = null;
+  selectedDevices: Array<string | number> = [];
   selectedSiteType: string | null = null;
-  selectedTenant: string | number | null = null;
+  selectedTenants: Array<string | number> = [];
 
 
   siteTypeOptions = DEVICE_TYPE_OPTIONS.map((item) => ({
@@ -172,31 +172,10 @@ export class ReportsComponent implements OnInit {
     });
   }
 
-  private loadActiveTabReport(): void {
-    switch (this.activeTab) {
-      case 'grid-report':
-        this.loadGridReport();
-        return;
-      case 'battery-report':
-        this.loadBatteryReport();
-        return;
-      case 'solar-report':
-        this.loadSolarReport();
-        return;
-      case 'alarms':
-        this.loadAlarmReport();
-        return;
-      case 'energy-consumption':
-      default:
-        this.loadEnergyReport();
-        return;
-    }
-  }
-
   onRegionChange(): void {
     this.selectedSubRegion = null;
     this.selectedZone = null;
-    this.selectedDevice = null;
+    this.selectedDevices = [];
     this.updateSubRegionOptions();
     this.zones = [];
     this.refreshFilteredDevices();
@@ -204,18 +183,18 @@ export class ReportsComponent implements OnInit {
 
   onSubRegionChange(): void {
     this.selectedZone = null;
-    this.selectedDevice = null;
+    this.selectedDevices = [];
     this.updateZoneOptions();
     this.refreshFilteredDevices();
   }
 
   onZoneChange(): void {
-    this.selectedDevice = null;
+    this.selectedDevices = [];
     this.refreshFilteredDevices();
   }
 
   onSiteTypeChange(): void {
-    this.selectedDevice = null;
+    this.selectedDevices = [];
     this.refreshFilteredDevices();
   }
 
@@ -477,8 +456,12 @@ export class ReportsComponent implements OnInit {
     const now = Date.now();
     const defaultFrom = new Date(now - (24 * 60 * 60 * 1000)).toISOString();
     const defaultTo = new Date(now).toISOString();
-    const parsedDeviceId = this.toPositiveInt(this.selectedDevice);
-    const parsedTenantId = this.toPositiveInt(this.selectedTenant);
+    const deviceIds = (this.selectedDevices ?? [])
+      .map((id) => this.toPositiveInt(id))
+      .filter((id) => id > 0);
+    const tenantIds = (this.selectedTenants ?? [])
+      .map((id) => this.toPositiveInt(id))
+      .filter((id) => id > 0);
     const regionId = this.toPositiveInt(this.selectedRegion);
     const subRegionId = this.toPositiveInt(this.selectedSubRegion);
     const zoneId = this.toPositiveInt(this.selectedZone);
@@ -486,14 +469,14 @@ export class ReportsComponent implements OnInit {
     return {
       reportType,
       format: this.selectedFormat,
-      deviceId: parsedDeviceId || undefined,
-      tenantId: parsedTenantId || this.selectedTenant || undefined,
+      deviceIds,
+      tenantIds,
       siteType: this.selectedSiteType || undefined,
       regionId: regionId || undefined,
       subRegionId: subRegionId || undefined,
       zoneId: zoneId || undefined,
-      fromUtc: this.filters.fromUtc ?? defaultFrom,
-      toUtc: this.filters.toUtc ?? defaultTo,
+      fromUtc: this.filters.fromUtc ? new Date(this.filters.fromUtc).toISOString() : defaultFrom,
+      toUtc: this.filters.toUtc ? new Date(this.filters.toUtc).toISOString() : defaultTo,
       timeRange: this.filters.timeRange ?? 0,
     };
   }
@@ -570,9 +553,9 @@ export class ReportsComponent implements OnInit {
       return true;
     });
 
-    if (this.selectedDevice && !this.filteredDevices.some((device) => this.sameId(device.id, this.selectedDevice))) {
-      this.selectedDevice = null;
-    }
+    this.selectedDevices = this.selectedDevices.filter((id) =>
+      this.filteredDevices.some((device) => this.sameId(device.id, id))
+    );
   }
 
   private sameId(left: unknown, right: unknown): boolean {
@@ -590,6 +573,4 @@ export class ReportsComponent implements OnInit {
     return parsed;
   }
 
-  private tableToCSV(table: HTMLTableElement): void {
-  }
 }
