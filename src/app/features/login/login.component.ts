@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
   private initializeForm(): void {
     this.loginForm = this.formBuilder.group({
       username: ['Sysadmin', [Validators.required]],
-      password: ['Aa@123', [Validators.required, Validators.minLength(6)]]
+      password: ['#SysAdmin0', [Validators.required, Validators.minLength(6)]]
     });
   }
 

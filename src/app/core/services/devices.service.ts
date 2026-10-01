@@ -88,6 +88,13 @@ export class DevicesService {
   //   return this.http.post<any>(`${this.baseUrl}/device/${encodeURIComponent(String(id))}/mqtt/unsubscribe`, {});
   // }
 
+  sendDeviceCommand(deviceId: number | string, command: 'siren' | 'flash' | 'door', active: boolean): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}${this.url}/${encodeURIComponent(String(deviceId))}/command`,
+      { command, active }
+    );
+  }
+
   updateDeviceInfrastructure(deviceId: number | string, payload: DeviceInfrastructurePayload): Observable<any> {
     return this.http.patch<any>(`${this.baseUrl}/device/${encodeURIComponent(String(deviceId))}/infrastructure`, payload);
   }

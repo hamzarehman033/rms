@@ -148,6 +148,23 @@
 	flex-direction: column;
 }
 
+.camera-card:fullscreen,
+.camera-card:-webkit-full-screen {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 16px;
+	border-radius: 0;
+	background: #000;
+	color: #fff;
+}
+
+.camera-card:fullscreen .icon-btn,
+.camera-card:-webkit-full-screen .icon-btn {
+	color: #fff;
+	border-color: rgba(255, 255, 255, 0.28);
+}
+
 .camera-viewport {
 	aspect-ratio: 16 / 10;
 	border-radius: 8px;
@@ -156,6 +173,23 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	overflow: hidden;
+}
+
+.camera-card:fullscreen .camera-viewport,
+.camera-card:-webkit-full-screen .camera-viewport {
+	flex: 1;
+	aspect-ratio: auto;
+	min-height: 0;
+	border: none;
+	background: #000;
+}
+
+.camera-card:fullscreen video,
+.camera-card:-webkit-full-screen video {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
 }
 
 .evidence-viewport {

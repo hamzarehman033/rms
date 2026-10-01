@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
@@ -36,6 +36,10 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   evidenceImageSrc: string | null = null;
   deviceId: number = 0;
   selectedAlertId: number | null = null;
+  sirenOn = false;
+  flashOn = false;
+  doorOpen = false;
+  private readonly busyActions = new Set<'siren' | 'flash' | 'door'>();
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
   @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
@@ -59,6 +63,10 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       if (this.deviceId) {
         void this.cameraStreamService.stopAll();
         this.cameras = [];
+        this.sirenOn = false;
+        this.flashOn = false;
+        this.doorOpen = false;
+        this.busyActions.clear();
         this.loadCameras();
         this.getAiVisionData();
         void this.signalrService.subscribeToDevice(this.deviceId);
@@ -125,10 +133,92 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     { label: 'Status', value: '-' },
   ];
 
+  private fullscreenCameraIndex: number | null = null;
+
   ngOnDestroy(): void {
+    void this.exitCameraFullscreen();
     void this.cameraStreamService.stopAll();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('document:fullscreenchange')
+  @HostListener('document:webkitfullscreenchange')
+  onFullscreenChange(): void {
+    const element = this.getFullscreenElement();
+    if (!element) {
+      this.fullscreenCameraIndex = null;
+      return;
+    }
+
+    const index = Number(element.getAttribute('data-camera-index'));
+    this.fullscreenCameraIndex = Number.isFinite(index) ? index : null;
+  }
+
+  isCameraFullscreen(camera: LiveCamera): boolean {
+    return this.fullscreenCameraIndex === camera.cameraIndex;
+  }
+
+  async toggleCameraFullscreen(camera: LiveCamera): Promise<void> {
+    if (this.isCameraFullscreen(camera)) {
+      await this.exitCameraFullscreen();
+      return;
+    }
+
+    const card = this.getCameraCard(camera.cameraIndex);
+    if (!card) {
+      toast.error('Camera viewport is not ready');
+      return;
+    }
+
+    try {
+      await this.requestFullscreen(card);
+      this.fullscreenCameraIndex = camera.cameraIndex;
+    } catch {
+      toast.error('Unable to open full screen');
+    }
+  }
+
+  toggleSiteAction(action: 'siren' | 'flash' | 'door'): void {
+    const nextValue = action === 'door' ? !this.doorOpen : action === 'siren' ? !this.sirenOn : !this.flashOn;
+
+    this.setSiteActionState(action, nextValue);
+    
+    return
+    this.devicesService.sendDeviceCommand(this.deviceId, action, nextValue)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.busyActions.delete(action);
+          toast.success(this.siteActionLabel(action, nextValue));
+        },
+        error: () => {
+          this.busyActions.delete(action);
+          toast.error(`Failed to ${nextValue ? 'activate' : 'deactivate'} ${action}`);
+        }
+      });
+  }
+
+  private setSiteActionState(action: 'siren' | 'flash' | 'door', active: boolean): void {
+    if (action === 'siren') {
+      this.sirenOn = active;
+      return;
+    }
+    if (action === 'flash') {
+      this.flashOn = active;
+      return;
+    }
+    this.doorOpen = active;
+  }
+
+  private siteActionLabel(action: 'siren' | 'flash' | 'door', active: boolean): string {
+    if (action === 'door') {
+      return active ? 'Door opened' : 'Door closed';
+    }
+    if (action === 'siren') {
+      return active ? 'Siren on' : 'Siren off';
+    }
+    return active ? 'Flash on' : 'Flash off';
   }
 
   getActiveCameraCount(): number {
@@ -180,6 +270,9 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
 
     try {
       if (camera.isStreaming) {
+        if (this.isCameraFullscreen(camera)) {
+          await this.exitCameraFullscreen();
+        }
         await this.cameraStreamService.stop(this.deviceId, camera.cameraIndex);
         camera.isStreaming = false;
         camera.hasVideo = false;
@@ -218,6 +311,42 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     return this.cameraVideos?.find(
       (ref) => Number(ref.nativeElement.getAttribute('data-camera-index')) === cameraIndex
     )?.nativeElement ?? null;
+  }
+
+  private getCameraCard(cameraIndex: number): HTMLElement | null {
+    return this.getCameraVideo(cameraIndex)?.closest('.camera-card') as HTMLElement | null;
+  }
+
+  private getFullscreenElement(): HTMLElement | null {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null };
+    return (document.fullscreenElement ?? doc.webkitFullscreenElement ?? null) as HTMLElement | null;
+  }
+
+  private requestFullscreen(element: HTMLElement): Promise<void> {
+    const target = element as HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    };
+    const request = element.requestFullscreen?.bind(element) ?? target.webkitRequestFullscreen?.bind(element);
+    if (!request) {
+      return Promise.reject(new Error('Fullscreen is not supported'));
+    }
+    return Promise.resolve(request());
+  }
+
+  private exitCameraFullscreen(): Promise<void> {
+    const doc = document as Document & { webkitExitFullscreen?: () => Promise<void> | void };
+    if (!this.getFullscreenElement()) {
+      this.fullscreenCameraIndex = null;
+      return Promise.resolve();
+    }
+    const exit = document.exitFullscreen?.bind(document) ?? doc.webkitExitFullscreen?.bind(document);
+    if (!exit) {
+      this.fullscreenCameraIndex = null;
+      return Promise.resolve();
+    }
+    return Promise.resolve(exit()).then(() => {
+      this.fullscreenCameraIndex = null;
+    });
   }
 
   private loadCameras(): void {

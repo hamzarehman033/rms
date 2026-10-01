@@ -36,11 +36,43 @@
   <div class="body-layout">
     <div class="left-col">
       <div>
-        <div class="hstack justify-between items-center mb-2">
+        <div class="hstack justify-between items-center mb-2 site-actions-row">
           <div class="sec-title" style="flex:1;margin-bottom:0"><i class="pi pi-video"></i> Live Camera Monitoring</div>
+          <div class="site-actions">
+            <button
+              type="button"
+              class="btn site-action"
+              [class.active]="sirenOn"  
+              (click)="toggleSiteAction('siren')"
+            >
+              <i class="pi" [ngClass]="sirenOn ? 'pi-volume-up' : 'pi-volume-off'"></i>
+              Siren
+              <span class="site-action-state">{{ sirenOn ? 'On' : 'Off' }}</span>
+            </button>
+            <button
+              type="button"
+              class="btn site-action"
+              [class.active]="flashOn"
+              (click)="toggleSiteAction('flash')"
+            >
+              <i class="pi" [ngClass]="flashOn ? 'pi-sun' : 'pi-moon'"></i>
+              Flash
+              <span class="site-action-state">{{ flashOn ? 'On' : 'Off' }}</span>
+            </button>
+            <button
+              type="button"
+              class="btn site-action"
+              [class.active]="doorOpen"
+              (click)="toggleSiteAction('door')"
+            >
+              <i class="pi" [ngClass]="doorOpen ? 'pi-lock-open' : 'pi-lock'"></i>
+              Door
+              <span class="site-action-state">{{ doorOpen ? 'Open' : 'Closed' }}</span>
+            </button>
+          </div>
         </div>
         <div class="camera-grid" *ngIf="cameras.length; else noCameras">
-          <div class="card camera-card" *ngFor="let camera of cameras">
+          <div class="card camera-card" *ngFor="let camera of cameras" [attr.data-camera-index]="camera.cameraIndex">
             <div class="hstack justify-between items-start mb-2">
               <div>
                 <div class="font-medium">{{ camera.name }}</div>
@@ -59,10 +91,21 @@
                 >
                   <i class="pi" [ngClass]="camera.isStreaming ? 'pi-stop' : 'pi-play'"></i>
                 </button>
+                <button
+                  *ngIf="camera.isStreaming"
+                  type="button"
+                  class="icon-btn"
+                  [attr.aria-label]="isCameraFullscreen(camera) ? 'Exit full screen' : 'Full screen'"
+                  [title]="isCameraFullscreen(camera) ? 'Exit full screen' : 'Full screen'"
+                  (click)="toggleCameraFullscreen(camera)"
+                >
+                  <i class="pi" [ngClass]="isCameraFullscreen(camera) ? 'pi-window-minimize' : 'pi-window-maximize'"></i>
+                </button>
               </div>
             </div>
             <div class="camera-viewport">
               <video
+                class="w-full h-full object-cover"
                 #cameraVideo
                 [attr.data-camera-index]="camera.cameraIndex"
                 autoplay
