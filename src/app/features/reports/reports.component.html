@@ -7,6 +7,13 @@
     <p-tab value="alarms">Alarms</p-tab>
   </p-tablist>
 
+  <ng-template #reportSiteFilterTemplate let-suffix="suffix">
+    <div class="report-site-filter">
+      <label class="filter-label" for="site-filter-{{ suffix }}">Select Site</label>
+      <p-multiSelect inputId="site-filter-{{ suffix }}" [options]="filteredDevices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevices" placeholder="All sites" [showClear]="true" [filter]="true" display="chip" appendTo="body" styleClass="w-full"></p-multiSelect>
+    </div>
+  </ng-template>
+
   <ng-template #reportFiltersTemplate let-suffix="suffix">
     <section class="card report-filters">
       <div class="report-filters-grid">
@@ -25,10 +32,6 @@
         <div class="filter-field">
           <label class="filter-label" for="site-type-filter-{{ suffix }}">Site Type</label>
           <p-select inputId="site-type-filter-{{ suffix }}" [options]="siteTypeOptions" optionLabel="label" optionValue="value" [(ngModel)]="selectedSiteType" placeholder="All site types" [showClear]="true" (onChange)="onSiteTypeChange()" styleClass="w-full"></p-select>
-        </div>
-        <div class="filter-field">
-          <label class="filter-label" for="device-filter-{{ suffix }}">Device</label>
-          <p-multiSelect inputId="device-filter-{{ suffix }}" [options]="filteredDevices" optionLabel="name" optionValue="id" [(ngModel)]="selectedDevices" placeholder="All devices" [showClear]="true" [filter]="true" display="chip" appendTo="body" styleClass="w-full"></p-multiSelect>
         </div>
         <div class="filter-field">
           <label class="filter-label" for="tenant-filter-{{ suffix }}">Tenant</label>
@@ -70,6 +73,7 @@
             <h1>Energy Consumption Report</h1>
             <p>Generate daily source-wise energy consumption details.</p>
           </div>
+          <ng-container *ngTemplateOutlet="reportSiteFilterTemplate; context: { suffix: 'energy' }"></ng-container>
         </div>
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'energy' }"></ng-container>
@@ -168,6 +172,7 @@
             <h1>Grid Report</h1>
             <p>Review grid runtime, draw, and load profile across selected sites.</p>
           </div>
+          <ng-container *ngTemplateOutlet="reportSiteFilterTemplate; context: { suffix: 'grid' }"></ng-container>
         </div>
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'grid' }"></ng-container>
@@ -259,6 +264,7 @@
             <h1>Battery Report</h1>
             <p>Track battery throughput, charge state, and cycle performance.</p>
           </div>
+          <ng-container *ngTemplateOutlet="reportSiteFilterTemplate; context: { suffix: 'battery' }"></ng-container>
         </div>
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'battery' }"></ng-container>
@@ -354,6 +360,7 @@
             <h1>Solar Report</h1>
             <p>Analyze solar generation, irradiance, and system performance ratio.</p>
           </div>
+          <ng-container *ngTemplateOutlet="reportSiteFilterTemplate; context: { suffix: 'solar' }"></ng-container>
         </div>
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'solar' }"></ng-container>
@@ -449,6 +456,7 @@
             <h1>Alarms Report</h1>
             <p>Export active and historical alarm events across the fleet.</p>
           </div>
+          <ng-container *ngTemplateOutlet="reportSiteFilterTemplate; context: { suffix: 'alarms' }"></ng-container>
         </div>
 
         <ng-container *ngTemplateOutlet="reportFiltersTemplate; context: { suffix: 'alarms' }"></ng-container>
