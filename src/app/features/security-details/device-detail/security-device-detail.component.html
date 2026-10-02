@@ -32,45 +32,53 @@
     </div>
   </div>
 
+  <section class="site-actions-bar">
+    <button
+      type="button"
+      class="site-action siren"
+      [class.active]="sirenOn"
+      [disabled]="!deviceId"
+      (click)="toggleSiteAction('siren')"
+    >
+      <i class="pi" [ngClass]="sirenOn ? 'pi-volume-up' : 'pi-volume-off'"></i>
+      <span class="site-action-copy">
+        <span class="site-action-name">Siren</span>
+        <span class="site-action-state">{{ sirenOn ? 'On' : 'Off' }}</span>
+      </span>
+    </button>
+    <button
+      type="button"
+      class="site-action flash"
+      [class.active]="flashOn"
+      [disabled]="!deviceId"
+      (click)="toggleSiteAction('flash')"
+    >
+      <i class="pi" [ngClass]="flashOn ? 'pi-sun' : 'pi-moon'"></i>
+      <span class="site-action-copy">
+        <span class="site-action-name">Flash</span>
+        <span class="site-action-state">{{ flashOn ? 'On' : 'Off' }}</span>
+      </span>
+    </button>
+    <button
+      type="button"
+      class="site-action door"
+      [class.active]="doorOpen"
+      [disabled]="!deviceId"
+      (click)="toggleSiteAction('door')"
+    >
+      <i class="pi" [ngClass]="doorOpen ? 'pi-lock-open' : 'pi-lock'"></i>
+      <span class="site-action-copy">
+        <span class="site-action-name">Door</span>
+        <span class="site-action-state">{{ doorOpen ? 'Open' : 'Closed' }}</span>
+      </span>
+    </button>
+  </section>
+
   <!-- Body: cameras (left) + alerts (right) -->
   <div class="body-layout">
     <div class="left-col">
       <div>
-        <div class="hstack justify-between items-center mb-2 site-actions-row">
-          <div class="sec-title" style="flex:1;margin-bottom:0"><i class="pi pi-video"></i> Live Camera Monitoring</div>
-          <div class="site-actions">
-            <button
-              type="button"
-              class="btn site-action"
-              [class.active]="sirenOn"  
-              (click)="toggleSiteAction('siren')"
-            >
-              <i class="pi" [ngClass]="sirenOn ? 'pi-volume-up' : 'pi-volume-off'"></i>
-              Siren
-              <span class="site-action-state">{{ sirenOn ? 'On' : 'Off' }}</span>
-            </button>
-            <button
-              type="button"
-              class="btn site-action"
-              [class.active]="flashOn"
-              (click)="toggleSiteAction('flash')"
-            >
-              <i class="pi" [ngClass]="flashOn ? 'pi-sun' : 'pi-moon'"></i>
-              Flash
-              <span class="site-action-state">{{ flashOn ? 'On' : 'Off' }}</span>
-            </button>
-            <button
-              type="button"
-              class="btn site-action"
-              [class.active]="doorOpen"
-              (click)="toggleSiteAction('door')"
-            >
-              <i class="pi" [ngClass]="doorOpen ? 'pi-lock-open' : 'pi-lock'"></i>
-              Door
-              <span class="site-action-state">{{ doorOpen ? 'Open' : 'Closed' }}</span>
-            </button>
-          </div>
-        </div>
+        <div class="sec-title"><i class="pi pi-video"></i> Live Camera Monitoring</div>
         <div class="camera-grid" *ngIf="cameras.length; else noCameras">
           <div class="card camera-card" *ngFor="let camera of cameras" [attr.data-camera-index]="camera.cameraIndex">
             <div class="hstack justify-between items-start mb-2">
