@@ -118,7 +118,43 @@
           </div>
         </div>
 
-        <!-- ROW 3: CHARTS — pie + power source table -->
+        <!-- ROW 3: POWER SOURCE DURING DAY -->
+        <div>
+          <div class="sec-title"><i class="pi pi-bolt"></i> Power Source During Day</div>
+          <div class="pie-card">
+            <div class="pie-card-title">Active power source — last 24 hours</div>
+            <div class="source-step-chart" *ngIf="powerSourceDayOptions.segments.length; else noPowerSourceData">
+              <div class="source-step-yaxis">
+                <span *ngFor="let label of powerSourceDayOptions.yLabels">{{ label }}</span>
+              </div>
+              <div class="source-step-body">
+                <div class="source-step-plot">
+                  <div
+                    *ngFor="let seg of powerSourceDayOptions.segments"
+                    class="source-step-seg"
+                    [style.flex]="seg.hours"
+                    [style.height.px]="getPowerSourceBandHeight(seg.level)"
+                    [style.background]="seg.color"
+                    [title]="seg.source + ' · ' + seg.level + ' kW'"
+                  ></div>
+                </div>
+                <div class="source-step-xaxis">
+                  <span *ngFor="let tick of powerSourceDayOptions.ticks">{{ tick }}</span>
+                </div>
+              </div>
+            </div>
+            <ng-template #noPowerSourceData>
+              <div class="text-sm text-muted-foreground">No power source data</div>
+            </ng-template>
+            <div class="source-step-legend">
+              <span *ngFor="let item of powerSourceDayOptions.legend" class="source-step-legend-item">
+                <i [style.background]="item.color"></i>{{ item.label }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 4: CHARTS — pie + power source table -->
         <div>
           <div class="sec-title"><i class="pi pi-chart-pie"></i> Fleet Distribution</div>
           <div class="pie-row">

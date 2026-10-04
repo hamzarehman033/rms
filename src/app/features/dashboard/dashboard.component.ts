@@ -12,6 +12,21 @@ import {
 } from '../../core/services/realtime-data-source.service';
 import { TenantService } from '../../core/services/tenant.service';
 import { RecentSitesFilterRequest, StatisticsService } from '../../core/services/statistics.service';
+interface PowerSourceDaySegment {
+  source: string;
+  color: string;
+  hours: number;
+  level: number;
+}
+
+interface PowerSourceDayChart {
+  segments: PowerSourceDaySegment[];
+  legend: Array<{ label: string; color: string }>;
+  ticks: string[];
+  yLabels: string[];
+  yMin: number;
+  yMax: number;
+}
 
 interface RecentAnomaly {
   title: string;
@@ -179,6 +194,19 @@ export class DashboardComponent implements OnInit {
     showSymbol: false
   };
 
+  private dashboardDevices: any[] = [];
+  private readonly powerSourceLegend = [
+    { label: 'Grid', color: 'var(--info)' },
+    { label: 'Solar', color: 'var(--success)' },
+    { label: 'Generator', color: 'var(--primary)' }
+  ];
+  private readonly powerSourceColors: Record<string, string> = {
+    Grid: 'var(--info)',
+    Solar: 'var(--success)',
+    Generator: 'var(--primary)'
+  };
+  powerSourceDayOptions: PowerSourceDayChart = this.emptyPowerSourceDayChart();
+
   // Weekly Activity Chart Data
   weeklyActivityOptions = {
     xAxisData: [...this.weekDayOrder],
@@ -299,9 +327,11 @@ export class DashboardComponent implements OnInit {
         next: response => {
           const list = response?.data?.pageData ?? response?.data ?? response ?? [];
           const devices = Array.isArray(list) ? list : [];
+          this.dashboardDevices = devices;
           this.fleetDistribution = this.buildFleetDistribution(devices);
           this.generatorInstalledDeviceIds = this.extractGeneratorInstalledDeviceIds(devices);
           this.distributionDonutData = this.buildFleetDistributionDonutData(this.fleetDistribution);
+          this.loadHourlyPowerSourceUsage();
         },
         error: () => {
           this.fleetDistribution = {
@@ -318,8 +348,10 @@ export class DashboardComponent implements OnInit {
               allSources: 0
             }
           };
+          this.dashboardDevices = [];
           this.generatorInstalledDeviceIds.clear();
           this.distributionDonutData = [];
+          this.powerSourceDayOptions = this.emptyPowerSourceDayChart();
         }
       });
   }
@@ -1099,6 +1131,167 @@ export class DashboardComponent implements OnInit {
       );
   }
 
+  getPowerSourceBandHeight(level: number): number {
+    if (level <= 0) {
+      return 0;
+    }
+
+    const min = this.powerSourceDayOptions.yMin;
+    const span = Math.max(1, this.powerSourceDayOptions.yMax - min);
+    return Math.max(10, Math.round(((level - min) / span) * 140));
+  }
+
+  private emptyPowerSourceDayChart(): PowerSourceDayChart {
+    return {
+      segments: [],
+      legend: [...this.powerSourceLegend],
+      ticks: ['0h', '4h', '8h', '12h', '16h', '20h'],
+      yLabels: ['1', '0.5', '0'],
+      yMin: 0,
+      yMax: 1
+    };
+  }
+
+  private loadHourlyPowerSourceUsage(): void {
+    const deviceIds = this.extractDashboardDeviceIds(this.dashboardDevices);
+    if (deviceIds.length === 0) {
+      this.powerSourceDayOptions = this.emptyPowerSourceDayChart();
+      return;
+    }
+
+    this.startStatsRequest();
+    this.statisticsService
+      .getHourlyPowerSourceUsage({ deviceIds })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.endStatsRequest())
+      )
+      .subscribe({
+        next: response => {
+          this.powerSourceDayOptions = this.mapHourlyPowerSourceUsage(response);
+        },
+        error: () => {
+          this.powerSourceDayOptions = this.emptyPowerSourceDayChart();
+        }
+      });
+  }
+
+  private extractDashboardDeviceIds(devices: any[]): number[] {
+    return devices
+      .filter(device => this.matchesDashboardFilters(device))
+      .map(device => Number(device?.id ?? device?.deviceId))
+      .filter(id => Number.isInteger(id) && id > 0);
+  }
+
+  private matchesDashboardFilters(device: any): boolean {
+    if (this.selectedRegions && String(device?.regionId ?? '') !== String(this.selectedRegions)) {
+      return false;
+    }
+    if (this.selectedSubRegions && String(device?.subRegionId ?? '') !== String(this.selectedSubRegions)) {
+      return false;
+    }
+    if (this.selectedZones && String(device?.zoneId ?? '') !== String(this.selectedZones)) {
+      return false;
+    }
+    if (this.selectedDeviceType) {
+      const deviceType = String(device?.type ?? device?.deviceType ?? '').toLowerCase();
+      if (deviceType !== String(this.selectedDeviceType).toLowerCase()) {
+        return false;
+      }
+    }
+    if (this.selectedTenant) {
+      const tenantIds = (device?.tenantIds ?? []).map((id: unknown) => String(id));
+      if (!tenantIds.includes(String(this.selectedTenant))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private mapHourlyPowerSourceUsage(response: unknown): PowerSourceDayChart {
+    const hours = this.extractHourlyPowerSourceHours(response);
+    const points = hours.map(hour => {
+      const top = [
+        { source: 'Grid', watts: hour.gridW },
+        { source: 'Solar', watts: hour.solarW },
+        { source: 'Generator', watts: hour.generatorW }
+      ]
+        .map(item => ({ source: item.source, level: this.wattsToKw(item.watts) }))
+        .filter((item): item is { source: string; level: number } => item.level !== null)
+        .reduce<{ source: string; level: number } | null>(
+          (best, item) => (!best || item.level > best.level ? item : best),
+          null
+        );
+
+      return {
+        hourUtc: hour.hourUtc,
+        source: top?.source ?? 'No data',
+        level: top?.level ?? 0
+      };
+    });
+
+    if (!points.some(point => point.source !== 'No data')) {
+      return this.emptyPowerSourceDayChart();
+    }
+
+    const segments: PowerSourceDaySegment[] = [];
+    points.forEach(point => {
+      const last = segments[segments.length - 1];
+      if (last && last.source === point.source) {
+        last.hours += 1;
+        last.level = Math.max(last.level, point.level);
+        return;
+      }
+
+      segments.push({
+        source: point.source,
+        color: this.powerSourceColors[point.source] ?? 'var(--border)',
+        hours: 1,
+        level: point.level
+      });
+    });
+
+    const activeLevels = points.filter(point => point.source !== 'No data').map(point => point.level);
+    const yMax = Math.max(1, Math.ceil(Math.max(...activeLevels)));
+    return {
+      segments,
+      legend: [...this.powerSourceLegend],
+      ticks: hours.filter((_, index) => index % 4 === 0).map(hour => this.formatHourLabel(hour.hourUtc)),
+      yLabels: [String(yMax), String(Number((yMax / 2).toFixed(1))), '0'],
+      yMin: 0,
+      yMax
+    };
+  }
+
+  private extractHourlyPowerSourceHours(response: unknown): Array<{
+    hourUtc: string;
+    gridW: number | null;
+    solarW: number | null;
+    generatorW: number | null;
+  }> {
+    const root = (response as any)?.hours ? response : (response as any)?.data;
+    const hours = Array.isArray((root as any)?.hours) ? (root as any).hours : [];
+
+    return hours
+      .filter((item: unknown) => !!item && typeof item === 'object')
+      .map((item: any) => ({
+        hourUtc: String(item.hourUtc ?? ''),
+        gridW: item.gridW,
+        solarW: item.solarW,
+        generatorW: item.generatorW
+      }))
+      .filter((item: { hourUtc: string }) => !!item.hourUtc)
+      .sort(
+        (left: { hourUtc: string }, right: { hourUtc: string }) =>
+          new Date(left.hourUtc).getTime() - new Date(right.hourUtc).getTime()
+      );
+  }
+
+  private wattsToKw(value: unknown): number | null {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Number((numeric / 1000).toFixed(2)) : null;
+  }
+
   private formatHourLabel(hourIsoString: string): string {
     const date = new Date(hourIsoString);
     if (Number.isNaN(date.getTime())) {
@@ -1121,6 +1314,7 @@ export class DashboardComponent implements OnInit {
     }
 
     this.loadRecentSites();
+    this.loadHourlyPowerSourceUsage();
   }
 
   setRegionFilter(value: string): void {

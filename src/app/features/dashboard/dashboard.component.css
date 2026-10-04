@@ -341,3 +341,65 @@ select:focus {
     height: 1px;
     background: var(--border)
 }
+
+.source-step-chart {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 8px;
+    align-items: stretch
+}
+
+.source-step-yaxis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--muted-foreground);
+    font-size: 10px;
+    text-align: right;
+    padding: 2px 0 22px
+}
+
+.source-step-plot {
+    display: flex;
+    align-items: flex-end;
+    height: 140px;
+    overflow: hidden;
+    background:
+        linear-gradient(var(--border), var(--border)) 0 0 / 100% 1px no-repeat,
+        linear-gradient(var(--border), var(--border)) 0 50% / 100% 1px no-repeat,
+        linear-gradient(var(--border), var(--border)) 0 100% / 100% 1px no-repeat
+}
+
+.source-step-seg {
+    min-width: 0
+}
+
+.source-step-xaxis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin-top: 6px;
+    color: var(--muted-foreground);
+    font-size: 10px
+}
+
+.source-step-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px
+}
+
+.source-step-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted-foreground);
+    font-size: 11px
+}
+
+.source-step-legend-item i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block
+}

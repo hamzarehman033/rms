@@ -46,6 +46,10 @@ export class StatisticsService {
     return this.http.get<any>(`${this.baseUrl}${this.url}/weekly-alerts`);
   }
 
+  getHourlyPowerSourceUsage(data: { deviceIds: number[] }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.url}/hourly-power-source-usage`, data);
+  }
+
   getRecentSites(filters: RecentSitesFilterRequest): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}${this.url}/recent-sites`, filters);
   }
