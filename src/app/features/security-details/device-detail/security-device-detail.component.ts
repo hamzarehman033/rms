@@ -180,23 +180,37 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   }
 
   toggleSiteAction(action: 'siren' | 'flash' | 'door'): void {
+    if (!this.deviceId || this.busyActions.has(action)) {
+      return;
+    }
+
+    const deviceId = this.deviceId;
     const nextValue = action === 'door' ? !this.doorOpen : action === 'siren' ? !this.sirenOn : !this.flashOn;
 
-    this.setSiteActionState(action, nextValue);
-    
-    return
-    this.devicesService.sendDeviceCommand(this.deviceId, action, nextValue)
+    this.busyActions.add(action);
+    this.devicesService.sendDeviceCommand(deviceId, action, nextValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
+          if (this.deviceId !== deviceId) {
+            return;
+          }
           this.busyActions.delete(action);
+          this.setSiteActionState(action, nextValue);
           toast.success(this.siteActionLabel(action, nextValue));
         },
         error: () => {
+          if (this.deviceId !== deviceId) {
+            return;
+          }
           this.busyActions.delete(action);
           toast.error(`Failed to ${nextValue ? 'activate' : 'deactivate'} ${action}`);
         }
       });
+  }
+
+  isSiteActionBusy(action: 'siren' | 'flash' | 'door'): boolean {
+    return this.busyActions.has(action);
   }
 
   private setSiteActionState(action: 'siren' | 'flash' | 'door', active: boolean): void {

@@ -89,9 +89,13 @@ export class DevicesService {
   // }
 
   sendDeviceCommand(deviceId: number | string, command: 'siren' | 'flash' | 'door', active: boolean): Observable<any> {
+    const payload = command === 'door'
+      ? { action: active ? 'open' : 'close' }
+      : { enabled: active };
+
     return this.http.post<any>(
-      `${this.baseUrl}${this.url}/${encodeURIComponent(String(deviceId))}/command`,
-      { command, active }
+      `${this.baseUrl}${this.url}/${encodeURIComponent(String(deviceId))}/commands`,
+      { command, payload }
     );
   }
 

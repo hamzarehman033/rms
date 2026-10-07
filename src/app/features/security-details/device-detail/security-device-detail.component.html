@@ -37,7 +37,8 @@
       type="button"
       class="site-action siren"
       [class.active]="sirenOn"
-      [disabled]="!deviceId"
+      [disabled]="!deviceId || isSiteActionBusy('siren')"
+      [attr.aria-busy]="isSiteActionBusy('siren')"
       (click)="toggleSiteAction('siren')"
     >
       <i class="pi" [ngClass]="sirenOn ? 'pi-volume-up' : 'pi-volume-off'"></i>
@@ -50,7 +51,8 @@
       type="button"
       class="site-action flash"
       [class.active]="flashOn"
-      [disabled]="!deviceId"
+      [disabled]="!deviceId || isSiteActionBusy('flash')"
+      [attr.aria-busy]="isSiteActionBusy('flash')"
       (click)="toggleSiteAction('flash')"
     >
       <i class="pi" [ngClass]="flashOn ? 'pi-sun' : 'pi-moon'"></i>
@@ -63,7 +65,8 @@
       type="button"
       class="site-action door"
       [class.active]="doorOpen"
-      [disabled]="!deviceId"
+      [disabled]="!deviceId || isSiteActionBusy('door')"
+      [attr.aria-busy]="isSiteActionBusy('door')"
       (click)="toggleSiteAction('door')"
     >
       <i class="pi" [ngClass]="doorOpen ? 'pi-lock-open' : 'pi-lock'"></i>
