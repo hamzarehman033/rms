@@ -59,6 +59,18 @@
                 <button
                   *ngIf="camera.isStreaming"
                   type="button"
+                  class="camera-audio-button p-2"
+                  [disabled]="camera.isBusy || camera.isAudioBusy"
+                  [attr.aria-busy]="camera.isAudioBusy"
+                  [attr.aria-label]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
+                  [title]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
+                  (click)="toggleCameraAudio(camera)"
+                >
+                  <span class="camera-mic-icon" [class.mic-off]="!camera.isAudioConnected"><i class="pi pi-microphone"></i></span>
+                </button>
+                <button
+                  *ngIf="camera.isStreaming"
+                  type="button"
                   class="icon-btn"
                   [attr.aria-label]="isCameraFullscreen(camera) ? 'Exit full screen' : 'Full screen'"
                   [title]="isCameraFullscreen(camera) ? 'Exit full screen' : 'Full screen'"
@@ -77,6 +89,13 @@
                 playsinline
                 muted
               ></video>
+              <audio
+                #cameraAudio
+                class="camera-audio"
+                [attr.data-camera-index]="camera.cameraIndex"
+                autoplay
+                playsinline
+              ></audio>
             </div>
             <div *ngIf="!camera.hasVideo">
               {{ cameraViewportLabel(camera) }}

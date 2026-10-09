@@ -16,6 +16,8 @@ interface LiveCamera {
   isStreaming: boolean;
   isBusy: boolean;
   hasVideo: boolean;
+  isAudioConnected: boolean;
+  isAudioBusy: boolean;
 }
 
 @Component({
@@ -43,6 +45,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
   @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
+  @ViewChildren('cameraAudio') private cameraAudios?: QueryList<ElementRef<HTMLAudioElement>>;
 
   constructor(
     private visionService: VisionService,
@@ -292,7 +295,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         camera.hasVideo = false;
       } else {
         const video = this.getCameraVideo(camera.cameraIndex);
-        if (!video) {
+        const audio = this.getCameraAudio(camera.cameraIndex);
+        if (!video || !audio) {
           throw new Error('Camera viewport is not ready');
         }
 
@@ -306,8 +310,10 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           this.deviceId,
           camera.cameraIndex,
           video,
+          audio,
           () => { camera.hasVideo = true; },
-          () => { camera.hasVideo = false; }
+          () => { camera.hasVideo = false; },
+          () => { camera.isAudioConnected = false; }
         );
         camera.isStreaming = true;
       }
@@ -321,8 +327,32 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  async toggleCameraAudio(camera: LiveCamera): Promise<void> {
+    if (!this.deviceId || !camera.isStreaming || camera.isBusy || camera.isAudioBusy) {
+      return;
+    }
+
+    const enabled = !camera.isAudioConnected;
+    camera.isAudioBusy = true;
+    try {
+      await this.cameraStreamService.setAudioEnabled(this.deviceId, camera.cameraIndex, enabled);
+      camera.isAudioConnected = enabled;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update camera audio';
+      toast.error(message);
+    } finally {
+      camera.isAudioBusy = false;
+    }
+  }
+
   private getCameraVideo(cameraIndex: number): HTMLVideoElement | null {
     return this.cameraVideos?.find(
+      (ref) => Number(ref.nativeElement.getAttribute('data-camera-index')) === cameraIndex
+    )?.nativeElement ?? null;
+  }
+
+  private getCameraAudio(cameraIndex: number): HTMLAudioElement | null {
+    return this.cameraAudios?.find(
       (ref) => Number(ref.nativeElement.getAttribute('data-camera-index')) === cameraIndex
     )?.nativeElement ?? null;
   }
@@ -396,6 +426,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         isStreaming: false,
         isBusy: false,
         hasVideo: false,
+        isAudioConnected: false,
+        isAudioBusy: false,
       }));
   }
 

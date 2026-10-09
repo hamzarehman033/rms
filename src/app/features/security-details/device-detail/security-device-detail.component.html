@@ -89,6 +89,7 @@
                 <div class="font-medium">{{ camera.name }}</div>
               </div>
               <div class="hstack items-center gap-2">
+                
                 <span class="badge" [class.online]="camera.isStreaming" [class.offline]="!camera.isStreaming">
                   ● {{ cameraStatusLabel(camera) }}
                 </span>
@@ -101,6 +102,18 @@
                   (click)="toggleCameraStream(camera)"
                 >
                   <i class="pi" [ngClass]="camera.isStreaming ? 'pi-stop' : 'pi-play'"></i>
+                </button>
+                <button
+                  *ngIf="camera.isStreaming"
+                  type="button"
+                  class="icon-btn"
+                  [disabled]="camera.isBusy || camera.isAudioBusy"
+                  [attr.aria-busy]="camera.isAudioBusy"
+                  [attr.aria-label]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
+                  [title]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
+                  (click)="toggleCameraAudio(camera)"
+                >
+                  <span class="camera-mic-icon" [class.mic-off]="!camera.isAudioConnected"><i class="pi pi-microphone"></i></span>
                 </button>
                 <button
                   *ngIf="camera.isStreaming"
@@ -123,6 +136,13 @@
                 playsinline
                 muted
               ></video>
+              <audio
+                #cameraAudio
+                class="camera-audio"
+                [attr.data-camera-index]="camera.cameraIndex"
+                autoplay
+                playsinline
+              ></audio>
             </div>
             <div class="text-xs" *ngIf="!camera.hasVideo">
               {{ cameraViewportLabel(camera) }}

@@ -7,6 +7,7 @@ interface CameraSignalPayload {
   type?: string;
   sdp?: string;
   candidate?: RTCIceCandidateInit;
+  enabled?: boolean;
 }
 
 interface CameraSignalMessage {
@@ -19,6 +20,7 @@ interface CameraSignalMessage {
 interface CameraStreamCallbacks {
   onTrack?: () => void;
   onWaiting?: () => void;
+  onAudioStateChanged?: (enabled: boolean) => void;
 }
 
 interface CameraStreamSession {
@@ -27,6 +29,9 @@ interface CameraStreamSession {
   connection: signalR.HubConnection;
   peer: RTCPeerConnection | null;
   video: HTMLVideoElement;
+  audio: HTMLAudioElement;
+  audioSender: RTCRtpSender | null;
+  localAudioStream: MediaStream | null;
   callbacks: CameraStreamCallbacks;
 }
 
@@ -44,8 +49,10 @@ export class CameraStreamService {
     deviceId: number,
     cameraIndex: number,
     video: HTMLVideoElement,
+    audio: HTMLAudioElement,
     onTrack?: () => void,
-    onWaiting?: () => void
+    onWaiting?: () => void,
+    onAudioStateChanged?: (enabled: boolean) => void
   ): Promise<void> {
     await this.stop(deviceId, cameraIndex);
 
@@ -63,7 +70,10 @@ export class CameraStreamService {
       connection,
       peer: null,
       video,
-      callbacks: { onTrack, onWaiting }
+      audio,
+      audioSender: null,
+      localAudioStream: null,
+      callbacks: { onTrack, onWaiting, onAudioStateChanged }
     };
     this.sessions.set(key, session);
     this.createPeer(session);
@@ -108,6 +118,7 @@ export class CameraStreamService {
     }
 
     this.sessions.delete(key);
+    await this.disconnectAudio(session).catch(() => undefined);
     this.closePeer(session, false);
 
     try {
@@ -126,6 +137,54 @@ export class CameraStreamService {
     await Promise.all(sessions.map((session) => this.stop(session.deviceId, session.cameraIndex)));
   }
 
+  async setAudioEnabled(deviceId: number, cameraIndex: number, enabled: boolean): Promise<void> {
+    const key = this.sessionKey(deviceId, cameraIndex);
+    const session = this.sessions.get(key);
+    if (!session) {
+      throw new Error('Start the camera stream before connecting audio');
+    }
+
+    if (!enabled) {
+      await this.disconnectAudio(session);
+      return;
+    }
+
+    if (session.localAudioStream) {
+      return;
+    }
+
+    void session.audio.play().catch(() => undefined);
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const track = stream.getAudioTracks()[0];
+    if (!track) {
+      stream.getTracks().forEach((localTrack) => localTrack.stop());
+      throw new Error('No microphone track is available');
+    }
+
+    if (this.sessions.get(key) !== session || !session.peer || !session.audioSender) {
+      stream.getTracks().forEach((localTrack) => localTrack.stop());
+      throw new Error('Camera stream is no longer active');
+    }
+
+    const sender = session.audioSender;
+    session.localAudioStream = stream;
+    try {
+      await sender.replaceTrack(track);
+      if (this.sessions.get(key) !== session) {
+        throw new Error('Camera stream is no longer active');
+      }
+      await this.sendSignal(session, { type: 'audio-state', enabled: true });
+      session.callbacks.onAudioStateChanged?.(true);
+    } catch (error) {
+      await sender.replaceTrack(null).catch(() => undefined);
+      stream.getTracks().forEach((localTrack) => localTrack.stop());
+      if (session.localAudioStream === stream) {
+        session.localAudioStream = null;
+      }
+      throw error;
+    }
+  }
+
   private async joinViewer(session: CameraStreamSession): Promise<void> {
     await session.connection.invoke('StartViewer', session.deviceId, session.cameraIndex);
   }
@@ -141,9 +200,16 @@ export class CameraStreamService {
   private createPeer(session: CameraStreamSession): void {
     const peer = new RTCPeerConnection({ iceServers: this.iceServers });
     session.peer = peer;
+    session.audioSender = peer.addTransceiver('audio', { direction: 'sendrecv' }).sender;
 
     peer.ontrack = (event) => {
       this.zone.run(() => {
+        if (event.track.kind === 'audio') {
+          session.audio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
+          void session.audio.play().catch(() => undefined);
+          return;
+        }
+
         session.video.srcObject = event.streams[0] ?? new MediaStream([event.track]);
         void session.video.play().catch(() => undefined);
         session.callbacks.onTrack?.();
@@ -163,12 +229,36 @@ export class CameraStreamService {
   }
 
   private closePeer(session: CameraStreamSession, notifyWaiting: boolean): void {
+    const hadLocalAudio = !!session.localAudioStream;
+    session.localAudioStream?.getTracks().forEach((track) => track.stop());
+    session.localAudioStream = null;
     session.peer?.close();
     session.peer = null;
+    session.audioSender = null;
     session.video.srcObject = null;
+    session.audio.srcObject = null;
+
+    if (hadLocalAudio) {
+      this.zone.run(() => session.callbacks.onAudioStateChanged?.(false));
+    }
 
     if (notifyWaiting) {
       this.zone.run(() => session.callbacks.onWaiting?.());
+    }
+  }
+
+  private async disconnectAudio(session: CameraStreamSession): Promise<void> {
+    const stream = session.localAudioStream;
+    session.localAudioStream = null;
+
+    try {
+      await session.audioSender?.replaceTrack(null);
+    } finally {
+      stream?.getTracks().forEach((track) => track.stop());
+      if (stream) {
+        session.callbacks.onAudioStateChanged?.(false);
+      }
+      await this.sendSignal(session, { type: 'audio-state', enabled: false });
     }
   }
 
