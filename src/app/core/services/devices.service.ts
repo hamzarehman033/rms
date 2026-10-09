@@ -51,6 +51,30 @@ export interface DeviceInfrastructurePayload {
   powerSources: string[];
 }
 
+type DeviceCommandType = 'siren' | 'flash' | 'door';
+
+interface DeviceCommandPayload {
+  targetId: number;
+  action: 0 | 1;
+  channel: number;
+  durationSeconds: number;
+}
+
+const DEVICE_COMMAND_TARGET_IDS: Record<DeviceCommandType, number> = {
+  siren: 256,
+  flash: 257,
+  door: 258,
+};
+
+function mapDeviceCommand(command: DeviceCommandType, active: boolean): DeviceCommandPayload {
+  return {
+    targetId: DEVICE_COMMAND_TARGET_IDS[command],
+    action: active ? 1 : 0,
+    channel: 0,
+    durationSeconds: 0,
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -88,14 +112,10 @@ export class DevicesService {
   //   return this.http.post<any>(`${this.baseUrl}/device/${encodeURIComponent(String(id))}/mqtt/unsubscribe`, {});
   // }
 
-  sendDeviceCommand(deviceId: number | string, command: 'siren' | 'flash' | 'door', active: boolean): Observable<any> {
-    const payload = command === 'door'
-      ? { action: active ? 'open' : 'close' }
-      : { enabled: active };
-
+  sendDeviceCommand(deviceId: number | string, command: DeviceCommandType, active: boolean): Observable<any> {
     return this.http.post<any>(
       `${this.baseUrl}${this.url}/${encodeURIComponent(String(deviceId))}/commands`,
-      { command, payload }
+      mapDeviceCommand(command, active)
     );
   }
 
