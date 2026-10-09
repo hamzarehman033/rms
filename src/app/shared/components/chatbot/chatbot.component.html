@@ -33,40 +33,16 @@
 
   <div class="chatbot-error text-sm" *ngIf="error">{{ error }}</div>
 
-  <div class="chatbot-pills" *ngIf="!pendingQuestion">
-    <button
-      type="button"
-      class="chatbot-pill"
-      *ngFor="let question of questions"
-      (click)="selectQuestion(question)"
-      [disabled]="isLoading"
-    >
-      {{ question.text }}
-    </button>
-  </div>
-
-  <div class="chatbot-pills" *ngIf="pendingQuestion">
-    <div class="muted text-sm chatbot-pills-label">Select a device for: {{ pendingQuestion.text }}</div>
-    <div class="muted text-sm" *ngIf="isLoadingDevices">Loading devices…</div>
-    <button
-      type="button"
-      class="chatbot-pill"
-      *ngFor="let device of devices"
-      (click)="selectDevice(device)"
-      [disabled]="isLoading"
-    >
-      {{ device.name }}
-    </button>
-  </div>
-
   <div class="chatbot-composer">
     <input
-      type="text"
       class="input"
-      disabled
-      placeholder="Select a question"
+      [(ngModel)]="draft"
+      [disabled]="isLoading"
+      (keydown)="onComposerKeydown($event)"
+      placeholder="Type a message..."
+      rows="2"
     />
-    <button type="button" class="btn primary" disabled>
+    <button type="button" class="btn primary" [disabled]="!draft.trim() || isLoading" (click)="send()">
       Send
     </button>
   </div>
