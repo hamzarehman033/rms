@@ -313,7 +313,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           audio,
           () => { camera.hasVideo = true; },
           () => { camera.hasVideo = false; },
-          () => { camera.isAudioConnected = false; }
+          (enabled) => { camera.isAudioConnected = enabled; },
+          (message) => { toast.error(message); }
         );
         camera.isStreaming = true;
       }
@@ -336,7 +337,6 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     camera.isAudioBusy = true;
     try {
       await this.cameraStreamService.setAudioEnabled(this.deviceId, camera.cameraIndex, enabled);
-      camera.isAudioConnected = enabled;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to update camera audio';
       toast.error(message);

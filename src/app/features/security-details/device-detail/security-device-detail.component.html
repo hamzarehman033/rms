@@ -107,7 +107,7 @@
                   *ngIf="camera.isStreaming"
                   type="button"
                   class="icon-btn"
-                  [disabled]="camera.isBusy || camera.isAudioBusy"
+                  [disabled]="camera.isBusy || camera.isAudioBusy || !camera.hasVideo"
                   [attr.aria-busy]="camera.isAudioBusy"
                   [attr.aria-label]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
                   [title]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
@@ -136,14 +136,16 @@
                 playsinline
                 muted
               ></video>
-              <audio
-                #cameraAudio
-                class="camera-audio"
-                [attr.data-camera-index]="camera.cameraIndex"
-                autoplay
-                playsinline
-              ></audio>
             </div>
+            <audio
+              #cameraAudio
+              class="camera-audio w-full"
+              [hidden]="!camera.isAudioConnected"
+              controls
+              [attr.data-camera-index]="camera.cameraIndex"
+              autoplay
+              playsinline
+            ></audio>
             <div class="text-xs" *ngIf="!camera.hasVideo">
               {{ cameraViewportLabel(camera) }}
             </div>
