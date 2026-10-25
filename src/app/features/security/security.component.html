@@ -52,15 +52,15 @@
           <div class="sec-title"><i class="pi pi-wifi"></i> Online Site Status</div>
           <div class="status-row">
             <a routerLink="/sites" [queryParams]="{ status: 'healthy' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#3fb950"></div>
+              <div class="s-card-bar" style="background:#0ea5e9"></div>
               <div class="s-lbl">Total AI Sites</div>
-              <div class="s-num" style="color:#3fb950">{{ getHealthySitesCount() }}</div>
+              <div class="s-num" style="color:#0ea5e9 ">{{ getHealthySitesCount() }}</div>
               <div class="s-sub">{{ getFleetPercentageText(getHealthySitesCount()) }} of fleet</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'outage' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#f85149"></div>
+              <div class="s-card-bar" style="background:#3fb950"></div>
               <div class="s-lbl">Healthy</div>
-              <div class="s-num" style="color:#f85149">{{ getPowerOutageSitesCount() }}</div>
+              <div class="s-num" style="color:#3fb950">{{ getPowerOutageSitesCount() }}</div>
               <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'critical' }" class="s-card online-card status-link">
