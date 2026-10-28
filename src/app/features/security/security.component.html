@@ -64,21 +64,21 @@
               <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'critical' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#ff7b72"></div>
+              <div class="s-card-bar" style="background:#e37d2f"></div>
               <div class="s-lbl">Approved access</div>
-              <div class="s-num" style="color:#ff7b72">{{ getCriticalAlarmCount() }}</div>
+              <div class="s-num" style="color:#e37d2f">{{ getCriticalAlarmCount() }}</div>
               <div class="s-sub">Approved access events</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'major' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#d29922"></div>
+              <div class="s-card-bar" style="background:#f0c15b"></div>
               <div class="s-lbl">Guard</div>
-              <div class="s-num" style="color:#d29922">{{ getMajorAlarmCount() }}</div>
+              <div class="s-num" style="color:#f0c15b">{{ getMajorAlarmCount() }}</div>
               <div class="s-sub">Guard appearance events</div>
             </a>
             <a routerLink="/sites" [queryParams]="{ status: 'minor' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#6b7280"></div>
+              <div class="s-card-bar" style="background:#dc2626"></div>
               <div class="s-lbl">Intruders</div>
-              <div class="s-num" style="color:#6b7280">{{ getMinorAlarmCount() }}</div>
+              <div class="s-num" style="color:#dc2626">{{ getMinorAlarmCount() }}</div>
               <div class="s-sub">Intruder detections</div>
             </a>
           </div>
