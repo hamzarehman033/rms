@@ -114,8 +114,8 @@
                 <tr>
                   <th>Device</th>
                   <th>Type</th>
-                  <th>AI Connectivity</th>
-                  <th>Security Status</th>
+                  <th>Connectivity</th>
+                  <th>Status</th>
                   <th>Region</th>
                   <th>Sub Region</th>
                   <th>Zone</th>
@@ -133,8 +133,8 @@
                   </td>
                   <td>{{ device.type || '—' }}</td>
                   <td>
-                    <span class="security-connectivity-pill" [ngClass]="getAiDeviceStatus(device)"
-                          [title]="getAiDeviceStatus(device) === 'unknown' ? 'No recent AI Vision heartbeat/alert received (or realtime connection unavailable)' : 'Derived from recent AI Vision heartbeat/alert packets, not RMS telemetry'">
+                    <span class="badge security-connectivity-pill" [ngClass]="getAiDeviceStatus(device)"
+                          [title]="getAiDeviceStatus(device) === 'online' ? 'Recent AI heartbeat or alert received' : 'No fresh AI connectivity evidence available; realtime feed may be disconnected'">
                       ● {{ getAiDeviceStatus(device) | titlecase }}
                     </span>
                   </td>

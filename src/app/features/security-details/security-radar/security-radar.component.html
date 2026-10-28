@@ -1,46 +1,44 @@
 <div class="security-radar-card" [class.has-intrusion]="!!incident">
   <div class="radar-heading">
-    <div>
-      <span class="radar-heading-label"><i class="pi pi-compass"></i> Security Radar</span>
-      <div class="radar-heading-sub">180° view · camera-triggered display</div>
-    </div>
+    <span class="radar-heading-label"><i class="pi pi-compass"></i> Security Radar</span>
     <span class="radar-status" [class.alert]="!!incident">{{ incident ? 'DETECTION' : 'SCANNING' }}</span>
   </div>
 
   <div class="radar-screen" role="img"
-       [attr.aria-label]="incident ? 'Intrusion detected from ' + cameraDescription + '; location not measured' : '180 degree radar view, no active intrusion'">
-    <svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+       [attr.aria-label]="incident ? 'Intrusion alert; pulses indicate detection, not a target position' : 'Radar scanning; no active intrusion'">
+    <!-- The grid, needle and alarm pulses share exactly the same SVG origin. -->
+    <svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
       <defs>
-        <radialGradient id="securityRadarGlow" cx="50%" cy="100%" r="100%">
+        <radialGradient id="securityRadarGlow" gradientUnits="userSpaceOnUse" cx="180" cy="190" r="174">
           <stop offset="0%" stop-color="#14532d" stop-opacity="0.56"/>
           <stop offset="100%" stop-color="#06140d" stop-opacity="0.08"/>
         </radialGradient>
+        <clipPath id="securityRadarClip" clipPathUnits="userSpaceOnUse">
+          <path d="M6 190 A174 174 0 0 1 354 190 Z"/>
+        </clipPath>
       </defs>
-      <path d="M6 190 A174 174 0 0 1 354 190 L180 190 Z" fill="url(#securityRadarGlow)" stroke="#2f9b53" stroke-width="1.5"/>
+
+      <path d="M6 190 A174 174 0 0 1 354 190 Z" fill="url(#securityRadarGlow)" stroke="#2f9b53" stroke-width="1.5"/>
       <path d="M47 190 A133 133 0 0 1 313 190 M89 190 A91 91 0 0 1 271 190 M133 190 A47 47 0 0 1 227 190" fill="none" stroke="#256a3e" stroke-width="1"/>
       <path d="M6 190 H354 M180 16 V190 M56 67 L180 190 M304 67 L180 190 M94 39 L180 190 M266 39 L180 190" stroke="#27693d" stroke-width="0.8"/>
-      <circle cx="180" cy="190" r="3" fill="#94ffaf"/>
-      <!-- Pulsing alert indicator is intentionally non-positional and moves with each event. -->
-      <g *ngIf="incident" class="radar-alert-marker">
-        <circle class="radar-alert-halo" [attr.cx]="alertX" [attr.cy]="alertY" r="23" />
-        <circle class="radar-alert-ring" [attr.cx]="alertX" [attr.cy]="alertY" r="13" />
-        <circle class="radar-alert-core" [attr.cx]="alertX" [attr.cy]="alertY" r="5" />
+
+      <g clip-path="url(#securityRadarClip)">
+        <g class="radar-sweep">
+          <path d="M180 190 L138 21 A174 174 0 0 1 180 16 Z" fill="rgba(83, 238, 139, 0.12)"/>
+          <line class="radar-needle" x1="180" y1="190" x2="180" y2="16"/>
+        </g>
+        <!-- Expanding semicircles communicate an alarm, never a measured location. -->
+        <g *ngIf="incident" class="radar-origin-alert">
+          <circle class="radar-alert-wave" cx="180" cy="190" r="174" vector-effect="non-scaling-stroke"/>
+          <circle class="radar-alert-wave radar-alert-wave-delayed" cx="180" cy="190" r="174" vector-effect="non-scaling-stroke"/>
+        </g>
       </g>
+      <circle class="radar-origin" cx="180" cy="190" r="3"/>
     </svg>
-    <div class="radar-sweep" aria-hidden="true"></div>
-    <div *ngIf="incident" class="radar-intrusion-wash" aria-hidden="true"></div>
+
     <div *ngIf="incident" class="radar-intrusion-label">
       <i class="pi pi-exclamation-triangle"></i>
       INTRUSION ALERT
     </div>
   </div>
-
-  <div class="radar-readout" *ngIf="incident; else radarIdle">
-    <span class="radar-camera">{{ cameraDescription }}</span>
-    <span>Last detected: {{ lastDetectedAt }}</span>
-  </div>
-  <ng-template #radarIdle>
-    <div class="radar-readout"><span>No active intrusion alert</span></div>
-  </ng-template>
-  <p class="radar-note">Visual event indicator only. Target distance and bearing are not available from camera MQTT alerts.</p>
 </div>

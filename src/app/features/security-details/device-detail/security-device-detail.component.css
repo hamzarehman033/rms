@@ -389,13 +389,20 @@
 /* Equal-height first row: Camera 1 | Camera 2 | Radar. No fixed pixel matching. */
 .security-monitor-layout {
 	display: grid;
-	grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+	grid-template-columns: minmax(0, 2.35fr) minmax(280px, 1fr);
 	grid-template-areas:
 		'cameras radar'
 		'evidence alerts'
 		'details activities';
 	gap: 14px;
 	align-items: stretch;
+}
+/* Matching heading height/gap aligns the radar card with both camera cards. */
+.security-monitor-main > section:first-child > .sec-title,
+.security-monitor-side > section:first-child > .right-sec-title {
+	line-height: 21px;
+	min-height: 21px;
+	margin: 0 0 9px;
 }
 .security-monitor-main, .security-monitor-side { display: contents; }
 .security-monitor-main > section:nth-child(1) { grid-area: cameras; display: flex; flex-direction: column; min-width: 0; }

@@ -5,7 +5,7 @@ import { AiVisionPacketApiModel } from './vision.service';
 import { CustomerService } from './customer.service';
 import { SignalrService } from './signalr.service';
 
-export type SecurityConnectivityStatus = 'online' | 'offline' | 'unknown';
+export type SecurityConnectivityStatus = 'online' | 'offline';
 
 type PresenceRecord = { lastSeenMs: number; timeoutMs: number; heartbeatObserved: boolean };
 
@@ -14,8 +14,10 @@ type PresenceRecord = { lastSeenMs: number; timeoutMs: number; heartbeatObserved
  * do not prove whether the AI edge device is connected.
  *
  * A live heartbeat (messageType=2) or alert (messageType=1) is evidence of life.
- * No packet evidence means UNKNOWN, not OFFLINE. A previously observed device
- * becomes OFFLINE after 3 heartbeat periods without another packet (60-300s).
+ * The UI has two states: ONLINE while fresh AI evidence is available, otherwise
+ * OFFLINE (also when the realtime hub is unavailable). Offline is a browser-level
+ * indication, not proof that the physical gateway has lost power or network.
+ * Previously observed devices expire after 3 heartbeat periods (60-300s).
  * The hub must forward Vision heartbeats for an idle but online device to be
  * continuously reported online. This is browser-observed status, not server SLA.
  */
@@ -60,12 +62,12 @@ export class SecurityConnectivityService implements OnDestroy {
   }
 
   getDeviceStatus(deviceId: number | string): SecurityConnectivityStatus {
-    if (!this.hubConnected) return 'unknown';
+    if (!this.hubConnected) return 'offline';
     const id = Number(deviceId);
     const last = this.seen.get(id);
-    if (!last) return 'unknown';
+    if (!last) return 'offline';
     if (Date.now() - last.lastSeenMs <= last.timeoutMs) return 'online';
-    return last.heartbeatObserved ? 'offline' : 'unknown';
+    return 'offline';
   }
 
   /** Aggregate all edge devices belonging to a physical security site. */
@@ -75,8 +77,7 @@ export class SecurityConnectivityService implements OnDestroy {
       .filter(id => Number.isInteger(id) && id > 0)
       .map(id => this.getDeviceStatus(id));
     if (statuses.includes('online')) return 'online';
-    if (statuses.length && statuses.every(status => status === 'offline')) return 'offline';
-    return 'unknown';
+    return 'offline';
   }
 
   /** A recent stored AI alert provides evidence of life after page refresh. */
