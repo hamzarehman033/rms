@@ -386,16 +386,13 @@
 .site-action.site-light.active i,
 .site-action.site-light.active .site-action-state { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); }
 
-/* Equal-height first row: Camera 1 | Camera 2 | Radar. No fixed pixel matching. */
+/* Independent columns keep the radar compact without resizing the camera panels. */
 .security-monitor-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 2.35fr) minmax(280px, 1fr);
-	grid-template-areas:
-		'cameras radar'
-		'evidence alerts'
-		'details activities';
+	grid-template-areas: 'main side';
 	gap: 14px;
-	align-items: stretch;
+	align-items: start;
 }
 /* Matching heading height/gap aligns the radar card with both camera cards. */
 .security-monitor-main > section:first-child > .sec-title,
@@ -404,7 +401,9 @@
 	min-height: 21px;
 	margin: 0 0 9px;
 }
-.security-monitor-main, .security-monitor-side { display: contents; }
+.security-monitor-main, .security-monitor-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.security-monitor-main { grid-area: main; }
+.security-monitor-side { grid-area: side; }
 .security-monitor-main > section:nth-child(1) { grid-area: cameras; display: flex; flex-direction: column; min-width: 0; }
 .security-monitor-main > section:nth-child(2) { grid-area: evidence; min-width: 0; }
 .security-monitor-main > section:nth-child(3) { grid-area: details; min-width: 0; }
@@ -462,9 +461,9 @@
 .security-review-actions button:hover { border-color: var(--primary); }
 .security-review-actions .review-access i { color: var(--info); margin-right: 5px; }
 .security-review-actions .review-guard i { color: var(--warning); margin-right: 5px; }
-.security-review-note { color:var(--muted-foreground); font-size:10px; width:100%; }
 
 @media (max-width: 1199px) {
+	.security-monitor-main, .security-monitor-side { display: contents; }
 	.security-monitor-layout {
 		grid-template-columns: 1fr;
 		grid-template-areas:

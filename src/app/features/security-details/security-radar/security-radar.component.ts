@@ -11,4 +11,9 @@ import { SecuritySiteIncident } from '../../../core/services/security-incident.s
 })
 export class SecurityRadarComponent {
   @Input() incident: SecuritySiteIncident | null = null;
+
+  // Reviewed incidents stay in the service until expiry, but are not intruder alarms.
+  get hasActiveIntrusion(): boolean {
+    return this.incident?.category === 'intruder';
+  }
 }

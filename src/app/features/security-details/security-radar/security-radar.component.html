@@ -1,11 +1,11 @@
-<div class="security-radar-card" [class.has-intrusion]="!!incident">
+<div class="security-radar-card" [class.has-intrusion]="hasActiveIntrusion">
   <div class="radar-heading">
     <span class="radar-heading-label"><i class="pi pi-compass"></i> Security Radar</span>
-    <span class="radar-status" [class.alert]="!!incident">{{ incident ? 'DETECTION' : 'SCANNING' }}</span>
+    <span class="radar-status" [class.alert]="hasActiveIntrusion">{{ hasActiveIntrusion ? 'DETECTION' : 'SCANNING' }}</span>
   </div>
 
   <div class="radar-screen" role="img"
-       [attr.aria-label]="incident ? 'Intrusion alert; pulses indicate detection, not a target position' : 'Radar scanning; no active intrusion'">
+       [attr.aria-label]="hasActiveIntrusion ? 'Intrusion alert; pulses indicate detection, not a target position' : 'Radar scanning; no active intrusion'">
     <!-- The grid, needle and alarm pulses share exactly the same SVG origin. -->
     <svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
       <defs>
@@ -28,7 +28,7 @@
           <line class="radar-needle" x1="180" y1="190" x2="180" y2="16"/>
         </g>
         <!-- Expanding semicircles communicate an alarm, never a measured location. -->
-        <g *ngIf="incident" class="radar-origin-alert">
+        <g *ngIf="hasActiveIntrusion" class="radar-origin-alert">
           <circle class="radar-alert-wave" cx="180" cy="190" r="174" vector-effect="non-scaling-stroke"/>
           <circle class="radar-alert-wave radar-alert-wave-delayed" cx="180" cy="190" r="174" vector-effect="non-scaling-stroke"/>
         </g>
@@ -36,7 +36,7 @@
       <circle class="radar-origin" cx="180" cy="190" r="3"/>
     </svg>
 
-    <div *ngIf="incident" class="radar-intrusion-label">
+    <div *ngIf="hasActiveIntrusion" class="radar-intrusion-label">
       <i class="pi pi-exclamation-triangle"></i>
       INTRUSION ALERT
     </div>
