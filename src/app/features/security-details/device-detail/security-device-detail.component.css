@@ -45,9 +45,9 @@
 }
 
 .site-actions-bar {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
 }
 
 .site-action {
@@ -136,17 +136,6 @@
 .site-action.door.active .site-action-state {
 	background: color-mix(in srgb, var(--info) 18%, transparent);
 	color: var(--info);
-}
-
-.site-action.site-light.active {
-    border-color: var(--success);
-    background: color-mix(in srgb, var(--success) 14%, var(--card));
-}
-
-.site-action.site-light.active i,
-.site-action.site-light.active .site-action-state {
-    background: color-mix(in srgb, var(--success) 18%, transparent);
-    color: var(--success);
 }
 
 @media (max-width: 768px) {
@@ -391,4 +380,85 @@
 	.body-layout {
 		grid-template-columns: 1fr;
 	}
+}
+
+.site-action.site-light.active { border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, var(--card)); }
+.site-action.site-light.active i,
+.site-action.site-light.active .site-action-state { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); }
+
+/* Security monitoring: camera 1 | camera 2 | 180-degree radar. */
+.security-monitor-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+	gap: 14px;
+	align-items: start;
+}
+.security-monitor-main, .security-monitor-side {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	min-width: 0;
+}
+.security-monitor-side > section { min-width: 0; }
+.security-monitor-main .camera-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.security-monitor-main .camera-card { min-width: 0; }
+.security-monitor-main .camera-card .hstack { flex-wrap: wrap; }
+.security-monitor-main .camera-viewport { min-height: 130px; }
+.security-alert-list { max-height: 290px; overflow-y: auto; }
+.security-monitor-side .alert-item { align-items:flex-start; gap: 8px; }
+.security-monitor-side .alert-item .meta { overflow-wrap:anywhere; }
+.security-review-bar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px 16px;
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 12px 16px;
+	box-shadow: var(--shadow-card);
+}
+.security-review-heading {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	font-size: 12px;
+	font-weight: 600;
+}
+.security-review-heading small { color: var(--muted-foreground); font-weight: 400; }
+.security-category {
+	padding: 4px 9px;
+	border-radius: 12px;
+	font-size: 11px;
+	background: color-mix(in srgb, var(--success) 15%, var(--card));
+	color: var(--success);
+}
+.security-category.intruder { background:color-mix(in srgb, var(--destructive) 15%, var(--card)); color:var(--destructive); }
+.security-category.approved-access { background:color-mix(in srgb, var(--info) 15%, var(--card)); color:var(--info); }
+.security-category.guard { background:color-mix(in srgb, var(--warning) 15%, var(--card)); color:var(--warning); }
+.security-review-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.security-review-actions button {
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 8px 12px;
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--foreground);
+	background: var(--surface-1);
+	cursor: pointer;
+}
+.security-review-actions button:hover { border-color: var(--primary); }
+.security-review-actions .review-access i { color: var(--info); margin-right: 5px; }
+.security-review-actions .review-guard i { color: var(--warning); margin-right: 5px; }
+.security-review-note { color:var(--muted-foreground); font-size:10px; width:100%; }
+
+@media (max-width: 1199px) {
+	.security-monitor-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+	.security-monitor-main .camera-grid { grid-template-columns: 1fr; }
+	.security-monitor-main .event-details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

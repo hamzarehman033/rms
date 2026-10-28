@@ -1,6 +1,7 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs/operators';
+import { catchError, finalize, mergeMap } from 'rxjs/operators';
+import { from, of } from 'rxjs';
 import { DEVICE_TYPE_OPTIONS } from '../../core/constants/device-type';
 import { CustomerService } from '../../core/services/customer.service';
 import { DevicesService } from '../../core/services/devices.service';
@@ -12,8 +13,10 @@ import {
 } from '../../core/services/realtime-data-source.service';
 import { TenantService } from '../../core/services/tenant.service';
 import { RecentSitesFilterRequest, StatisticsService } from '../../core/services/statistics.service';
+import { SecurityIncidentService, SecuritySiteCategory } from '../../core/services/security-incident.service';
+import { VisionService } from '../../core/services/vision.service';
 
-type AiDeviceFilterTab = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+type AiDeviceFilterTab = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 interface RecentAnomaly {
   title: string;
@@ -157,6 +160,7 @@ export class SecurityComponent implements OnInit {
   aiDevices: any[] = [];
   isLoadingAiDevices = false;
   selectedTab: AiDeviceFilterTab = 0;
+  private readonly hydratedSecurityDeviceIds = new Set<number>();
 
   constructor(
     private customerService: CustomerService,
@@ -164,7 +168,9 @@ export class SecurityComponent implements OnInit {
     private locationsService: LocationsService,
     private statisticsService: StatisticsService,
     private realtimeDataSourceService: RealtimeDataSourceService,
-    private tenantService: TenantService
+    private tenantService: TenantService,
+    private securityIncidents: SecurityIncidentService,
+    private visionService: VisionService
   ) {}
   // Live Telemetry Chart Data
   telemetryChartOptions = {
@@ -252,11 +258,15 @@ export class SecurityComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeRealtimeDataSource();
+    this.securityIncidents.states$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => { this.aiDevices = this.getFilteredAiDevices(); });
 
     this.customerService.activeCustomer$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(activeCustomer => {
         this.hasActiveCustomer = !!activeCustomer?.id;
+        this.hydratedSecurityDeviceIds.clear();
 
         if (this.hasActiveCustomer) {
           this.loadLocationTree();
@@ -313,7 +323,9 @@ export class SecurityComponent implements OnInit {
           this.generatorInstalledDeviceIds = this.extractGeneratorInstalledDeviceIds(devices);
           this.distributionDonutData = this.buildFleetDistributionDonutData(this.fleetDistribution);
           this.allAiDevices = devices.filter(device => !!device?.aiSecurityInstalled);
+          this.securityIncidents.registerDevices(this.allAiDevices);
           this.aiDevices = this.getFilteredAiDevices();
+          this.hydrateRecentSecurityHistory();
         },
         error: () => {
           this.fleetDistribution = {
@@ -336,6 +348,26 @@ export class SecurityComponent implements OnInit {
           this.aiDevices = [];
         }
       });
+  }
+
+  private hydrateRecentSecurityHistory(): void {
+    // No fleet summary endpoint is present in this frontend. Use the existing Vision
+    // history endpoint, limiting concurrent requests to reduce server load.
+    const ids = [...new Set(this.allAiDevices
+      .map(device => this.toAiDeviceNumericId(device))
+      .filter((id): id is number => id !== null && !this.hydratedSecurityDeviceIds.has(id)))];
+    ids.forEach(id => this.hydratedSecurityDeviceIds.add(id));
+
+    from(ids).pipe(
+      mergeMap(id => this.visionService.getAiVisionData(id, '1d').pipe(
+        catchError(() => of([])),
+        // Keep the identity attached when results arrive out of order.
+        mergeMap(packets => of({ id, packets }))
+      ), 3),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(({ id, packets }) => {
+      this.securityIncidents.ingestHistory(id, packets);
+    });
   }
 
   private extractGeneratorInstalledDeviceIds(devices: any[]): Set<number> {
@@ -1185,6 +1217,7 @@ export class SecurityComponent implements OnInit {
 
   applyFilters(): void {
     this.onFilterChange();
+    this.aiDevices = this.getFilteredAiDevices();
   }
 
   onTabChange(tab: AiDeviceFilterTab): void {
@@ -1192,41 +1225,74 @@ export class SecurityComponent implements OnInit {
     this.aiDevices = this.getFilteredAiDevices();
   }
 
+  selectSecurityCard(tab: AiDeviceFilterTab): void {
+    this.onTabChange(tab);
+    document.getElementById('security-ai-devices')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   onSearchChange(value: string): void {
     this.searchTerm = value;
     this.aiDevices = this.getFilteredAiDevices();
   }
 
+  private getAiSiteGroups(): any[][] {
+    const groups = new Map<string, any[]>();
+    for (const device of this.allAiDevices) {
+      const id = this.toAiDeviceNumericId(device);
+      if (id === null) continue;
+      const key = this.securityIncidents.siteKeyForDevice(id);
+      groups.set(key, [...(groups.get(key) ?? []), device]);
+    }
+    return [...groups.values()];
+  }
+
+  private countSecuritySites(category: SecuritySiteCategory): number {
+    return this.getAiSiteGroups().filter(group =>
+      this.getAiSecurityCategory(group[0]) === category
+    ).length;
+  }
+
   getAiAllCount(): number {
-    return this.allAiDevices.length;
+    return this.getAiSiteGroups().length;
   }
 
   getAiOnlineCount(): number {
-    return this.allAiDevices.filter(device => this.isOnlineStatus(this.getAiDeviceStatus(device))).length;
+    return this.getAiSiteGroups().filter(group => group.some(device =>
+      this.isOnlineStatus(this.getAiDeviceStatus(device))
+    )).length;
   }
 
   getAiOfflineCount(): number {
-    return this.allAiDevices.filter(device => this.isOfflineStatus(this.getAiDeviceStatus(device))).length;
+    return Math.max(0, this.getAiAllCount() - this.getAiOnlineCount());
   }
 
   getAiHealthyCount(): number {
-    return this.allAiDevices.filter(device => this.isHealthyAiDevice(device)).length;
+    return this.countSecuritySites('healthy');
   }
 
-  getAiOutageCount(): number {
-    return this.allAiDevices.filter(device => this.isOutageAiDevice(device)).length;
+  getAiApprovedAccessCount(): number {
+    return this.countSecuritySites('approved-access');
   }
 
-  getAiCriticalCount(): number {
-    return this.allAiDevices.filter(device => this.getAiRealtimeMetric(device)?.systemStatusCode === 2).length;
+  getAiGuardCount(): number {
+    return this.countSecuritySites('guard');
   }
 
-  getAiMajorCount(): number {
-    return this.allAiDevices.filter(device => this.getAiRealtimeMetric(device)?.systemStatusCode === 1).length;
+  getAiIntruderCount(): number {
+    return this.countSecuritySites('intruder');
   }
 
-  getAiMinorCount(): number {
-    return this.allAiDevices.filter(device => this.getAiRealtimeMetric(device)?.systemStatusCode === 3).length;
+  getAiSecurityCategory(device: any): SecuritySiteCategory {
+    const id = this.toAiDeviceNumericId(device);
+    return id === null ? 'healthy' : this.securityIncidents.getCategory(id);
+  }
+
+  getAiSecurityStatusLabel(device: any): string {
+    const category = this.getAiSecurityCategory(device);
+    if (category === 'approved-access') return 'Approved Access';
+    if (category === 'guard') return 'Guard';
+    if (category === 'intruder') return 'Intruder';
+    return 'Healthy';
   }
 
   getAiDeviceStatus(device: any): string {
@@ -1237,46 +1303,75 @@ export class SecurityComponent implements OnInit {
   }
 
   private getFilteredAiDevices(): any[] {
-    let filteredDevices = this.allAiDevices;
+    let filteredDevices = this.allAiDevices.filter(device => this.matchesSecurityFilters(device));
 
     if (this.selectedTab === 1) {
-      filteredDevices = filteredDevices.filter(device => this.isOnlineStatus(this.getAiDeviceStatus(device)));
-    }
-
-    if (this.selectedTab === 2) {
-      filteredDevices = filteredDevices.filter(device => this.isOfflineStatus(this.getAiDeviceStatus(device)));
-    }
-
-    if (this.selectedTab === 3) {
-      filteredDevices = filteredDevices.filter(device => this.isHealthyAiDevice(device));
-    }
-
-    if (this.selectedTab === 4) {
-      filteredDevices = filteredDevices.filter(device => this.isOutageAiDevice(device));
-    }
-
-    if (this.selectedTab === 5) {
-      filteredDevices = filteredDevices.filter(device => this.getAiRealtimeMetric(device)?.systemStatusCode === 2);
-    }
-
-    if (this.selectedTab === 6) {
-      filteredDevices = filteredDevices.filter(device => this.getAiRealtimeMetric(device)?.systemStatusCode === 1);
-    }
-
-    if (this.selectedTab === 7) {
-      filteredDevices = filteredDevices.filter(device => this.getAiRealtimeMetric(device)?.systemStatusCode === 3);
+      filteredDevices = filteredDevices.filter(device => this.getSiteDevices(device).some(item =>
+        this.isOnlineStatus(this.getAiDeviceStatus(item))
+      ));
+    } else if (this.selectedTab === 2) {
+      filteredDevices = filteredDevices.filter(device => !this.getSiteDevices(device).some(item =>
+        this.isOnlineStatus(this.getAiDeviceStatus(item))
+      ));
+    } else if (this.selectedTab >= 3) {
+      const categoryByTab: Record<3 | 4 | 5 | 6, SecuritySiteCategory> = {
+        3: 'healthy', 4: 'approved-access', 5: 'guard', 6: 'intruder'
+      };
+      filteredDevices = filteredDevices.filter(device =>
+        this.getAiSecurityCategory(device) === categoryByTab[this.selectedTab as 3 | 4 | 5 | 6]
+      );
     }
 
     const term = this.searchTerm.trim().toLowerCase();
-    if (!term) {
-      return filteredDevices;
+    if (term) {
+      filteredDevices = filteredDevices.filter(device =>
+        String(device?.name ?? device?.siteName ?? '').toLowerCase().includes(term) ||
+        String(device?.code ?? device?.siteCode ?? '').toLowerCase().includes(term) ||
+        String(device?.id ?? device?.deviceId ?? device?.siteId ?? '').toLowerCase().includes(term)
+      );
     }
+    // The Security Summary categorizes physical sites, not individual edge devices.
+    // Keep one navigable row per site so the table agrees with the site counters.
+    const listedSites = new Set<string>();
+    return filteredDevices.filter(device => {
+      const id = this.toAiDeviceNumericId(device);
+      const key = id === null
+        ? `unmapped:${String(device?.id ?? device?.code ?? '')}`
+        : this.securityIncidents.siteKeyForDevice(id);
+      if (listedSites.has(key)) return false;
+      listedSites.add(key);
+      return true;
+    });
+  }
 
-    return filteredDevices.filter(device =>
-      String(device?.name ?? device?.siteName ?? '').toLowerCase().includes(term) ||
-      String(device?.code ?? device?.siteCode ?? '').toLowerCase().includes(term) ||
-      String(device?.id ?? device?.deviceId ?? device?.siteId ?? '').toLowerCase().includes(term)
-    );
+  private getSiteDevices(device: any): any[] {
+    const id = this.toAiDeviceNumericId(device);
+    if (id === null) return [device];
+    const key = this.securityIncidents.siteKeyForDevice(id);
+    return this.allAiDevices.filter(item => {
+      const otherId = this.toAiDeviceNumericId(item);
+      return otherId !== null && this.securityIncidents.siteKeyForDevice(otherId) === key;
+    });
+  }
+
+  /** Existing location/tenant selectors also narrow the security device table. */
+  private matchesSecurityFilters(device: any): boolean {
+    const matchLocation = (selected: string, deviceId: unknown, deviceName: unknown, options: FilterOption[]): boolean => {
+      if (!selected) return true;
+      if (String(deviceId ?? '') === selected) return true;
+      const selectedName = options.find(option => String(option.id) === selected)?.name;
+      return !!selectedName && String(deviceName ?? '').trim().toLowerCase() === selectedName.trim().toLowerCase();
+    };
+
+    if (!matchLocation(this.selectedRegions, device?.regionId, device?.regionName, this.regionOptions)) return false;
+    if (!matchLocation(this.selectedSubRegions, device?.subRegionId, device?.subRegionName, this.subRegionOptions)) return false;
+    if (!matchLocation(this.selectedZones, device?.zoneId, device?.zoneName, this.zoneOptions)) return false;
+    if (this.selectedDeviceType && String(device?.type ?? '').toLowerCase() !== this.selectedDeviceType.toLowerCase()) return false;
+    if (this.selectedTenant) {
+      const ids = device?.tenantIds ?? (device?.tenantId != null ? [device.tenantId] : []);
+      if (!Array.isArray(ids) || !ids.some((id: unknown) => String(id) === this.selectedTenant)) return false;
+    }
+    return true;
   }
 
   private isOnlineStatus(status: any): boolean {
@@ -1289,16 +1384,6 @@ export class SecurityComponent implements OnInit {
     return normalized === 'offline' || normalized === 'inactive' || normalized === 'down';
   }
 
-  private isHealthyAiDevice(device: any): boolean {
-    const metric = this.getAiRealtimeMetric(device);
-    return !!metric && metric.systemStatusCode === 0;
-  }
-
-  private isOutageAiDevice(device: any): boolean {
-    const dcBusVoltage = this.getAiRealtimeMetric(device)?.dcBusVoltage;
-    return Number.isFinite(dcBusVoltage) && (dcBusVoltage as number) < 40;
-  }
-
   private getAiRealtimeMetric(device: any): DeviceRealtimeData | null {
     const deviceId = this.toAiDeviceNumericId(device);
     if (deviceId === null) {
@@ -1309,7 +1394,7 @@ export class SecurityComponent implements OnInit {
   }
 
   private toAiDeviceNumericId(device: any): number | null {
-    const parsed = Number(device?.deviceId ?? device?.id ?? device?.siteId);
+    const parsed = Number(device?.id ?? device?.deviceId ?? device?.siteId);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
 

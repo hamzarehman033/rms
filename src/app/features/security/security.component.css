@@ -341,3 +341,28 @@ select:focus {
     height: 1px;
     background: var(--border)
 }
+/* Security-only filters/cards (do not reuse RMS alarm categories). */
+.security-status-card {
+  text-align:left;
+  color:var(--foreground);
+  background:var(--card);
+  width:100%;
+  cursor:pointer;
+  font:inherit;
+}
+.security-status-card.selected { border-color:var(--primary); }
+.security-status-card:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+.security-status-pill {
+  display:inline-block;
+  white-space:nowrap;
+  border-radius:20px;
+  padding:4px 9px;
+  font-size:11px;
+  font-weight:700;
+  background:color-mix(in srgb,var(--success) 14%,var(--card));
+  color:var(--success);
+}
+.security-status-pill.intruder { background:color-mix(in srgb,var(--destructive) 14%,var(--card)); color:var(--destructive); }
+.security-status-pill.approved-access { background:color-mix(in srgb,var(--info) 14%,var(--card)); color:var(--info); }
+.security-status-pill.guard { background:color-mix(in srgb,var(--warning) 14%,var(--card)); color:var(--warning); }
+#security-ai-devices { scroll-margin-top: 16px; }

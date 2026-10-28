@@ -1,0 +1,30 @@
+:host { display: block; }
+.security-radar-card {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 12px;
+  min-width: 0;
+}
+.radar-heading { display:flex; justify-content:space-between; align-items:flex-start; gap: 8px; margin-bottom: 10px; }
+.radar-heading-label { font-size: 13px; font-weight: 700; }
+.radar-heading-label i { color:#38b66e; margin-right: 4px; }
+.radar-heading-sub { margin-top: 4px; font-size: 10px; color: var(--muted-foreground); }
+.radar-status { color:#43cd80; border:1px solid #245b3e; background:#102a1c; padding:4px 7px; font-size:9px; font-weight:700; border-radius:20px; letter-spacing:.06em; white-space:nowrap; }
+.radar-status.alert { color:#ff7777; background:#381817; border-color:#ae3333; }
+.radar-screen { position:relative; overflow:hidden; background:radial-gradient(ellipse at 50% 100%,#0b3620 0%,#061910 58%,#06130d 100%); border-radius:9px; border:1px solid #175a33; width:100%; aspect-ratio: 1.8; min-height:138px; }
+.radar-screen svg { display:block; width:100%; height:100%; }
+.radar-sweep { position:absolute; left:50%; bottom:5%; width:2px; height:83%; transform-origin:50% 100%; background:linear-gradient(to top,#73fab4,rgba(115,250,180,0)); box-shadow:0 0 13px 4px rgba(35,206,104,.22); animation:security-radar-scan 5.5s ease-in-out infinite alternate; pointer-events:none; }
+@keyframes security-radar-scan { 0% { transform: translateX(-50%) rotate(-89deg); } 100% { transform: translateX(-50%) rotate(89deg); } }
+.radar-intrusion-wash { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 72%,rgba(239,68,68,.34) 0%,rgba(220,38,38,.13) 46%,transparent 83%); animation:security-intrusion-pulse 1.4s ease-in-out infinite alternate; pointer-events:none; }
+@keyframes security-intrusion-pulse { from { opacity:.35; } to { opacity:1; } }
+.radar-intrusion-label { position:absolute; top:46%; left:0; right:0; text-align:center; color:#ff7777; font-size:12px; font-weight:800; letter-spacing:.09em; text-shadow:0 0 9px #a52121,0 1px 2px #051109; pointer-events:none; }
+.radar-intrusion-label i { margin-right:5px; }
+.radar-readout { display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; margin-top:9px; color:var(--muted-foreground); font-size:11px; }
+.radar-camera { color:#e16464; font-weight:700; }
+.radar-note { color:var(--muted-foreground); font-size:10px; line-height:1.4; margin:8px 0 0; }
+@media (prefers-reduced-motion:reduce) {
+  .radar-sweep, .radar-intrusion-wash { animation:none; }
+}

@@ -75,174 +75,154 @@
         <span class="site-action-state">{{ doorOpen ? 'Open' : 'Closed' }}</span>
       </span>
     </button>
-    <button
-      type="button"
-      class="site-action site-light"
-      [class.active]="siteLightOn"
+    <button type="button" class="site-action site-light" [class.active]="siteLightOn"
       [disabled]="!deviceId || isSiteActionBusy('siteLight')"
-      [attr.aria-busy]="isSiteActionBusy('siteLight')"
-      (click)="toggleSiteAction('siteLight')"
-    >
+      (click)="toggleSiteAction('siteLight')">
       <i class="pi pi-lightbulb"></i>
       <span class="site-action-copy">
         <span class="site-action-name">Site Light</span>
-        <span class="site-action-state">
-          {{ siteLightOn ? 'On' : 'Off' }}
-        </span>
+        <span class="site-action-state">{{ siteLightOn ? 'On' : 'Off' }}</span>
       </span>
     </button>
   </section>
 
-  <!-- Body: cameras (left) + alerts (right) -->
-  <div class="body-layout">
-    <div class="left-col">
-      <div>
+  <!-- Site-wide review applies to all active camera intrusion events. -->
+  <section class="security-review-bar" aria-label="Security classification">
+    <div class="security-review-heading">
+      <span>Security Status</span>
+      <strong class="security-category" [ngClass]="securityCategory">{{ securityCategoryLabel }}</strong>
+      <small *ngIf="activeSecurityIncident as incident">
+        Expires {{ incident.expiresAt | date:'shortTime' }} · {{ incident.cameraIds.length }} camera(s)
+      </small>
+    </div>
+    <div class="security-review-actions" *ngIf="securityCategory === 'intruder'">
+      <button type="button" class="review-access" (click)="reviewIntrusion('approved-access')">
+        <i class="pi pi-check-circle"></i> Mark Approved Access
+      </button>
+      <button type="button" class="review-guard" (click)="reviewIntrusion('guard')">
+        <i class="pi pi-shield"></i> Mark Guard
+      </button>
+    </div>
+    <small class="security-review-note" *ngIf="securityCategory !== 'healthy'">
+      Local browser review only; server synchronization requires backend support.
+    </small>
+  </section>
+
+  <!-- Cameras 1 & 2 to the left, 180-degree radar/alerts/activities to the right. -->
+  <div class="security-monitor-layout">
+    <div class="security-monitor-main">
+      <section>
         <div class="sec-title"><i class="pi pi-video"></i> Live Camera Monitoring</div>
         <div class="camera-grid" *ngIf="cameras.length; else noCameras">
           <div class="card camera-card" *ngFor="let camera of cameras" [attr.data-camera-index]="camera.cameraIndex">
             <div class="hstack justify-between items-start mb-2">
-              <div>
-                <div class="font-medium">{{ camera.name }}</div>
-              </div>
+              <div class="font-medium">{{ camera.name }}</div>
               <div class="hstack items-center gap-2">
-                
                 <span class="badge" [class.online]="camera.isStreaming" [class.offline]="!camera.isStreaming">
                   ● {{ cameraStatusLabel(camera) }}
                 </span>
-                <button
-                  type="button"
-                  class="icon-btn"
+                <button type="button" class="icon-btn"
                   [disabled]="!camera.isEnabled || camera.isBusy"
                   [attr.aria-label]="camera.isStreaming ? 'Stop camera' : 'Play camera'"
                   [title]="camera.isStreaming ? 'Stop' : 'Play'"
-                  (click)="toggleCameraStream(camera)"
-                >
+                  (click)="toggleCameraStream(camera)">
                   <i class="pi" [ngClass]="camera.isStreaming ? 'pi-stop' : 'pi-play'"></i>
                 </button>
-                <button
-                  *ngIf="camera.isStreaming"
-                  type="button"
-                  class="icon-btn"
+                <button *ngIf="camera.isStreaming" type="button" class="icon-btn"
                   [disabled]="camera.isBusy || camera.isAudioBusy || !camera.hasVideo"
                   [attr.aria-busy]="camera.isAudioBusy"
                   [attr.aria-label]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
                   [title]="camera.isAudioConnected ? 'Disconnect audio' : 'Connect audio'"
-                  (click)="toggleCameraAudio(camera)"
-                >
+                  (click)="toggleCameraAudio(camera)">
                   <span class="camera-mic-icon" [class.mic-off]="!camera.isAudioConnected"><i class="pi pi-microphone"></i></span>
                 </button>
-                <button
-                  *ngIf="camera.isStreaming"
-                  type="button"
-                  class="icon-btn"
+                <button *ngIf="camera.isStreaming" type="button" class="icon-btn"
                   [attr.aria-label]="isCameraFullscreen(camera) ? 'Exit full screen' : 'Full screen'"
                   [title]="isCameraFullscreen(camera) ? 'Exit full screen' : 'Full screen'"
-                  (click)="toggleCameraFullscreen(camera)"
-                >
+                  (click)="toggleCameraFullscreen(camera)">
                   <i class="pi" [ngClass]="isCameraFullscreen(camera) ? 'pi-window-minimize' : 'pi-window-maximize'"></i>
                 </button>
               </div>
             </div>
             <div class="camera-viewport">
-              <video
-                class="w-full h-full object-cover"
-                #cameraVideo
-                [attr.data-camera-index]="camera.cameraIndex"
-                autoplay
-                playsinline
-                muted
-              ></video>
+              <video class="w-full h-full object-cover" #cameraVideo
+                [attr.data-camera-index]="camera.cameraIndex" autoplay playsinline muted></video>
             </div>
-            <audio
-              #cameraAudio
-              class="camera-audio w-full"
-              [hidden]="!camera.isAudioConnected"
-              controls
-              [attr.data-camera-index]="camera.cameraIndex"
-              autoplay
-              playsinline
-            ></audio>
-            <div class="text-xs" *ngIf="!camera.hasVideo">
-              {{ cameraViewportLabel(camera) }}
-            </div>
+            <audio #cameraAudio class="camera-audio w-full" [hidden]="!camera.isAudioConnected"
+              controls [attr.data-camera-index]="camera.cameraIndex" autoplay playsinline></audio>
+            <div class="text-xs" *ngIf="!camera.hasVideo">{{ cameraViewportLabel(camera) }}</div>
           </div>
         </div>
         <ng-template #noCameras>
-          <div class="card camera-card">
-            <div class="camera-viewport muted text-xs">No cameras configured</div>
-          </div>
+          <div class="card camera-card"><div class="camera-viewport muted text-xs">No cameras configured</div></div>
         </ng-template>
-      </div>
-    </div>
+      </section>
 
-    <div class="right-col">
-      <div class="right-sec-title"><i class="pi pi-calendar" style="font-size:11px"></i> Scheduled Activities</div>
-      <app-scheduled-activities [deviceId]="activityDeviceId"></app-scheduled-activities>
-    </div>
-  </div>
-
-  <!-- Evidence preview + alerts -->
-  <div class="body-layout">
-    <div class="left-col">
-      <div class="card">
+      <section class="card">
         <div class="hstack justify-between items-start mb-2">
           <div>
             <div class="sec-title" style="margin-bottom:4px"><i class="pi pi-image"></i> Violation Evidence Preview</div>
             <p class="muted text-xs">Snapshot image attached with event</p>
           </div>
         </div>
-
         <div class="evidence-viewport">
           <div class="hstack justify-between evidence-overlays">
             <span class="badge critical">{{ selectedEvent.violationLabel }}</span>
             <span class="badge info">{{ selectedEvent.cameraTime }}</span>
           </div>
-          <img *ngIf="evidenceImageSrc; else noEvidenceImage" class="evidence-image" [src]="evidenceImageSrc" alt="Violation evidence snapshot">
+          <img *ngIf="evidenceImageSrc; else noEvidenceImage" class="evidence-image"
+            [src]="evidenceImageSrc" alt="Violation evidence snapshot">
           <ng-template #noEvidenceImage>
             <div class="muted text-xs evidence-placeholder">No evidence image</div>
           </ng-template>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="right-col">
-      <div class="right-sec-title"><i class="pi pi-bell" style="font-size:11px"></i> Alerts</div>
-      <div class="card">
-        <div class="hstack justify-between items-center mb-3">
-          <div class="sub">Timestamp, violation details, snapshot, team</div>
-          <select class="timespan-select" [value]="selectedTimeSpan" (change)="onTimeSpanChange($event)">
-            <option *ngFor="let option of timeSpanOptions" [value]="option.value">{{ option.label }}</option>
-          </select>
-        </div>
-
-        <div *ngIf="aiAlerts.length; else noAiAlerts" style="max-height: 250px; overflow-y: auto;">
-          <div class="alert-item" *ngFor="let alert of aiAlerts" (click)="onAlertClick(alert)" [class.alert-item-selected]="selectedAlertId === alert.id">
-            <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
-            <div class="flex-1">
-              <div class="font-medium text-sm">{{ alert.title }}</div>
-              <div class="meta">{{ alert.meta }}</div>
-            </div>
-            <div class="muted text-xs mono">{{ alert.time }}</div>
+      <section>
+        <div class="right-sec-title"><i class="pi pi-info-circle" style="font-size:11px"></i> Event Details</div>
+        <div class="event-details-grid">
+          <div class="card event-detail-item" *ngFor="let item of selectedEventDetails">
+            <div class="info-label">{{ item.label }}</div>
+            <div class="info-value" [ngClass]="item.valueClass">{{ item.value }}</div>
           </div>
         </div>
-
-        <ng-template #noAiAlerts>
-          <div class="text-sm muted">No alerts</div>
-        </ng-template>
-      </div>
+      </section>
     </div>
-  </div>
 
-  <!-- Evidence preview + selected event details -->
-  <div class="body-layout">
-    <div class="left-col">
-      <div class="right-sec-title"><i class="pi pi-info-circle" style="font-size:11px"></i> Event Details</div>
-      <div class="event-details-grid">
-        <div class="card event-detail-item" *ngFor="let item of selectedEventDetails">
-          <div class="info-label">{{ item.label }}</div>
-          <div class="info-value" [ngClass]="item.valueClass">{{ item.value }}</div>
+    <aside class="security-monitor-side">
+      <section>
+        <div class="right-sec-title"><i class="pi pi-compass"></i> Radar View</div>
+        <app-security-radar [incident]="activeSecurityIncident"></app-security-radar>
+      </section>
+
+      <section>
+        <div class="right-sec-title"><i class="pi pi-bell"></i> Alerts</div>
+        <div class="card">
+          <div class="hstack justify-between items-center mb-3">
+            <div class="sub">Timestamp, violation details, snapshot, team</div>
+            <select class="timespan-select" [value]="selectedTimeSpan" (change)="onTimeSpanChange($event)">
+              <option *ngFor="let option of timeSpanOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+          <div *ngIf="aiAlerts.length; else noAiAlerts" class="security-alert-list">
+            <div class="alert-item" *ngFor="let alert of aiAlerts"
+              (click)="onAlertClick(alert)" [class.alert-item-selected]="selectedAlertId === alert.id">
+              <div class="sev-bar" [ngClass]="alert.severity || 'major'"></div>
+              <div class="flex-1">
+                <div class="font-medium text-sm">{{ alert.title }}</div>
+                <div class="meta">{{ alert.meta }}</div>
+              </div>
+              <div class="muted text-xs mono">{{ alert.time }}</div>
+            </div>
+          </div>
+          <ng-template #noAiAlerts><div class="text-sm muted">No alerts</div></ng-template>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <section>
+        <div class="right-sec-title"><i class="pi pi-calendar"></i> Scheduled Activities</div>
+        <app-scheduled-activities [deviceId]="activityDeviceId"></app-scheduled-activities>
+      </section>
+    </aside>
   </div>
 </main>

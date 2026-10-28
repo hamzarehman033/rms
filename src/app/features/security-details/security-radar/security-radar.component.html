@@ -1,0 +1,40 @@
+<div class="security-radar-card" [class.has-intrusion]="!!incident">
+  <div class="radar-heading">
+    <div>
+      <span class="radar-heading-label"><i class="pi pi-compass"></i> Security Radar</span>
+      <div class="radar-heading-sub">180° view · camera-triggered display</div>
+    </div>
+    <span class="radar-status" [class.alert]="!!incident">{{ incident ? 'DETECTION' : 'SCANNING' }}</span>
+  </div>
+
+  <div class="radar-screen" role="img"
+       [attr.aria-label]="incident ? 'Intrusion detected from ' + cameraDescription + '; location not measured' : '180 degree radar view, no active intrusion'">
+    <svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+      <defs>
+        <radialGradient id="securityRadarGlow" cx="50%" cy="100%" r="100%">
+          <stop offset="0%" stop-color="#14532d" stop-opacity="0.56"/>
+          <stop offset="100%" stop-color="#06140d" stop-opacity="0.08"/>
+        </radialGradient>
+      </defs>
+      <path d="M6 190 A174 174 0 0 1 354 190 L180 190 Z" fill="url(#securityRadarGlow)" stroke="#2f9b53" stroke-width="1.5"/>
+      <path d="M47 190 A133 133 0 0 1 313 190 M89 190 A91 91 0 0 1 271 190 M133 190 A47 47 0 0 1 227 190" fill="none" stroke="#256a3e" stroke-width="1"/>
+      <path d="M6 190 H354 M180 16 V190 M56 67 L180 190 M304 67 L180 190 M94 39 L180 190 M266 39 L180 190" stroke="#27693d" stroke-width="0.8"/>
+      <circle cx="180" cy="190" r="3" fill="#94ffaf"/>
+    </svg>
+    <div class="radar-sweep" aria-hidden="true"></div>
+    <div *ngIf="incident" class="radar-intrusion-wash" aria-hidden="true"></div>
+    <div *ngIf="incident" class="radar-intrusion-label">
+      <i class="pi pi-exclamation-triangle"></i>
+      INTRUSION ALERT
+    </div>
+  </div>
+
+  <div class="radar-readout" *ngIf="incident; else radarIdle">
+    <span class="radar-camera">{{ cameraDescription }}</span>
+    <span>Last detected: {{ lastDetectedAt }}</span>
+  </div>
+  <ng-template #radarIdle>
+    <div class="radar-readout"><span>No active intrusion alert</span></div>
+  </ng-template>
+  <p class="radar-note">Visual event indicator only. Target distance and bearing are not available from camera MQTT alerts.</p>
+</div>

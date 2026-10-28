@@ -47,56 +47,60 @@
       <!-- ══ LEFT COLUMN ══ -->
       <div class="left-col">
 
-        <!-- ROW 1: ONLINE SITE STATUS -->
+        <!-- Security classifications are independent of RMS alarm severity. -->
         <div>
-          <div class="sec-title"><i class="pi pi-wifi"></i> Online Site Status</div>
+          <div class="sec-title"><i class="pi pi-shield"></i> AI Security Site Status</div>
           <div class="status-row">
-            <a routerLink="/sites" [queryParams]="{ status: 'healthy' }" class="s-card online-card status-link">
+            <button type="button" class="s-card online-card status-link security-status-card"
+              [class.selected]="selectedTab === 0" (click)="selectSecurityCard(0)">
               <div class="s-card-bar" style="background:#0ea5e9"></div>
               <div class="s-lbl">Total AI Sites</div>
-              <div class="s-num" style="color:#0ea5e9 ">{{ getHealthySitesCount() }}</div>
-              <div class="s-sub">{{ getFleetPercentageText(getHealthySitesCount()) }} of fleet</div>
-            </a>
-            <a routerLink="/sites" [queryParams]="{ status: 'outage' }" class="s-card online-card status-link">
+              <div class="s-num" style="color:#0ea5e9">{{ getAiAllCount() }}</div>
+              <div class="s-sub">Security-enabled sites</div>
+            </button>
+            <button type="button" class="s-card online-card status-link security-status-card"
+              [class.selected]="selectedTab === 3" (click)="selectSecurityCard(3)">
               <div class="s-card-bar" style="background:#3fb950"></div>
               <div class="s-lbl">Healthy</div>
-              <div class="s-num" style="color:#3fb950">{{ getPowerOutageSitesCount() }}</div>
-              <div class="s-sub">{{ getFleetPercentageText(getPowerOutageSitesCount()) }} of fleet</div>
-            </a>
-            <a routerLink="/sites" [queryParams]="{ status: 'critical' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#e37d2f"></div>
-              <div class="s-lbl">Approved access</div>
-              <div class="s-num" style="color:#e37d2f">{{ getCriticalAlarmCount() }}</div>
-              <div class="s-sub">Approved access events</div>
-            </a>
-            <a routerLink="/sites" [queryParams]="{ status: 'major' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#f0c15b"></div>
+              <div class="s-num" style="color:#3fb950">{{ getAiHealthyCount() }}</div>
+              <div class="s-sub">No active intrusion</div>
+            </button>
+            <button type="button" class="s-card online-card status-link security-status-card"
+              [class.selected]="selectedTab === 4" (click)="selectSecurityCard(4)">
+              <div class="s-card-bar" style="background:#0ea5e9"></div>
+              <div class="s-lbl">Approved Access</div>
+              <div class="s-num" style="color:#0ea5e9">{{ getAiApprovedAccessCount() }}</div>
+              <div class="s-sub">Verified authorized access</div>
+            </button>
+            <button type="button" class="s-card online-card status-link security-status-card"
+              [class.selected]="selectedTab === 5" (click)="selectSecurityCard(5)">
+              <div class="s-card-bar" style="background:#d29922"></div>
               <div class="s-lbl">Guard</div>
-              <div class="s-num" style="color:#f0c15b">{{ getMajorAlarmCount() }}</div>
-              <div class="s-sub">Guard appearance events</div>
-            </a>
-            <a routerLink="/sites" [queryParams]="{ status: 'minor' }" class="s-card online-card status-link">
-              <div class="s-card-bar" style="background:#dc2626"></div>
+              <div class="s-num" style="color:#d29922">{{ getAiGuardCount() }}</div>
+              <div class="s-sub">Verified guard presence</div>
+            </button>
+            <button type="button" class="s-card online-card status-link security-status-card"
+              [class.selected]="selectedTab === 6" (click)="selectSecurityCard(6)">
+              <div class="s-card-bar" style="background:#f85149"></div>
               <div class="s-lbl">Intruders</div>
-              <div class="s-num" style="color:#dc2626">{{ getMinorAlarmCount() }}</div>
-              <div class="s-sub">Intruder detections</div>
-            </a>
+              <div class="s-num" style="color:#f85149">{{ getAiIntruderCount() }}</div>
+              <div class="s-sub">Active unverified sites</div>
+            </button>
           </div>
         </div>
 
         <!-- ROW 2: AI SECURITY DEVICES -->
         <div>
           <div class="sec-title"><i class="pi pi-lock"></i> AI Security Devices</div>
-          <div class="hstack justify-between flex-wrap gap-3 mb-3">
+          <div class="hstack justify-between flex-wrap gap-3 mb-3" id="security-ai-devices">
             <div class="tabs">
               <button [ngClass]="{ 'active': selectedTab === 0 }" (click)="onTabChange(0)">All <span class="muted">{{ getAiAllCount() }}</span></button>
               <button [ngClass]="{ 'active': selectedTab === 1 }" (click)="onTabChange(1)">Online <span class="muted">{{ getAiOnlineCount() }}</span></button>
               <button [ngClass]="{ 'active': selectedTab === 2 }" (click)="onTabChange(2)">Offline <span class="muted">{{ getAiOfflineCount() }}</span></button>
               <button [ngClass]="{ 'active': selectedTab === 3 }" (click)="onTabChange(3)">Healthy <span class="muted">{{ getAiHealthyCount() }}</span></button>
-              <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="onTabChange(4)">Outage <span class="muted">{{ getAiOutageCount() }}</span></button>
-              <button [ngClass]="{ 'active': selectedTab === 5 }" (click)="onTabChange(5)">Critical <span class="muted">{{ getAiCriticalCount() }}</span></button>
-              <button [ngClass]="{ 'active': selectedTab === 6 }" (click)="onTabChange(6)">Major <span class="muted">{{ getAiMajorCount() }}</span></button>
-              <button [ngClass]="{ 'active': selectedTab === 7 }" (click)="onTabChange(7)">Minor <span class="muted">{{ getAiMinorCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 4 }" (click)="onTabChange(4)">Approved Access <span class="muted">{{ getAiApprovedAccessCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 5 }" (click)="onTabChange(5)">Guard <span class="muted">{{ getAiGuardCount() }}</span></button>
+              <button [ngClass]="{ 'active': selectedTab === 6 }" (click)="onTabChange(6)">Intruder <span class="muted">{{ getAiIntruderCount() }}</span></button>
             </div>
           </div>
           <div class="card p-0">
@@ -128,7 +132,12 @@
                     </a>
                   </td>
                   <td>{{ device.type || '—' }}</td>
-                  <td><span style="text-wrap-mode: nowrap;" [ngClass]="'badge ' + getAiDeviceStatus(device)">● {{ getAiDeviceStatus(device) | titlecase }}</span></td>
+                  <td>
+                    <span class="security-status-pill" [ngClass]="getAiSecurityCategory(device)">
+                      ● {{ getAiSecurityStatusLabel(device) }}
+                    </span>
+                    <div class="muted text-xs">{{ getAiDeviceStatus(device) | titlecase }}</div>
+                  </td>
                   <td>{{ device.regionName || '—' }}</td>
                   <td>{{ device.subRegionName || '—' }}</td>
                   <td>{{ device.zoneName || '—' }}</td>
@@ -148,7 +157,7 @@
               </ng-template>
               <ng-template pTemplate="emptymessage">
                 <tr>
-                  <td colspan="9" class="text-center py-6 muted">No devices with AI Security installed</td>
+                  <td colspan="9" class="text-center py-6 muted">No AI Security sites match the selected filter</td>
                 </tr>
               </ng-template>
             </p-table>

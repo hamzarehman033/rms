@@ -6,6 +6,7 @@ import { DeviceCameraPayload, DevicesService } from '../../../core/services/devi
 import { CameraStreamService } from '../../../core/services/camera-stream.service';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
 import { SignalrService } from '../../../core/services/signalr.service';
+import { SecurityIncidentService, SecuritySiteCategory, SecuritySiteIncident, SecurityReviewCategory } from '../../../core/services/security-incident.service';
 import { ActivatedRoute } from '@angular/router';
 import { toast } from '../../../utils/global-toast';
 
@@ -43,6 +44,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   doorOpen = false;
   siteLightOn = false;
   private readonly busyActions = new Set<'siren' | 'flash' | 'door' | 'siteLight'>();
+  activeSecurityIncident: SecuritySiteIncident | null = null;
+  securityCategory: SecuritySiteCategory = 'healthy';
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
   @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
@@ -53,16 +56,23 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     private devicesService: DevicesService,
     private cameraStreamService: CameraStreamService,
     private signalrService: SignalrService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private securityIncidents: SecurityIncidentService
   ) {}
 
   ngOnInit(): void {
+    this.loadSecuritySiteMapping();
+    this.securityIncidents.states$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.syncSecurityState());
+
     this.signalrService.onVisionDetection$
       .pipe(takeUntil(this.destroy$))
       .subscribe(payload => this.applyLiveVisionPacket(payload));
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.deviceId = Number(params['id']);
+      this.syncSecurityState();
 
       if (this.deviceId) {
         void this.cameraStreamService.stopAll();
@@ -79,15 +89,68 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Resolve all cameras/devices at the current physical site even when opened directly. */
+  private loadSecuritySiteMapping(): void {
+    this.devicesService.getDevices()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: response => {
+          const payload = response?.data?.pageData ?? response?.data ?? response ?? [];
+          if (!Array.isArray(payload)) return;
+          const devices: any[] = payload.filter((device: any) => !!device?.aiSecurityInstalled);
+          this.securityIncidents.registerDevices(devices);
+          this.syncSecurityState();
+          // The site can contain multiple AI edge devices. Hydrate their recent
+          // events without altering the selected device's evidence panel.
+          const currentKey = this.securityIncidents.siteKeyForDevice(this.deviceId);
+          for (const device of devices) {
+            const otherId = Number(device?.id ?? device?.deviceId);
+            if (!Number.isInteger(otherId) || otherId <= 0 || otherId === this.deviceId ||
+                this.securityIncidents.siteKeyForDevice(otherId) !== currentKey) continue;
+            this.visionService.getAiVisionData(otherId, '1d')
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: packets => this.securityIncidents.ingestHistory(otherId, packets),
+                error: () => { /* Live events continue even if history is unavailable. */ }
+              });
+          }
+        },
+        error: () => { /* The selected device's live alerts still work. */ }
+      });
+  }
+
   get activityDeviceId(): number | null {
     const id = Number(this.deviceId || this.selectedDeviceDetails?.id || this.selectedDeviceDetails?.deviceId);
     return Number.isFinite(id) && id > 0 ? id : null;
   }
 
   getAiVisionData(): void {
-    this.visionService.getAiVisionData(this.deviceId, this.selectedTimeSpan).pipe(takeUntil(this.destroy$)).subscribe(data => {
+    const id = this.deviceId;
+    this.visionService.getAiVisionData(id, this.selectedTimeSpan).pipe(takeUntil(this.destroy$)).subscribe(data => {
+      if (id !== this.deviceId) return;
+      this.securityIncidents.ingestHistory(id, data);
       this.applyHistoryFromApi(data);
     });
+  }
+
+  get securityCategoryLabel(): string {
+    if (this.securityCategory === 'approved-access') return 'Approved Access';
+    if (this.securityCategory === 'guard') return 'Guard';
+    if (this.securityCategory === 'intruder') return 'Intruder';
+    return 'Healthy';
+  }
+
+  reviewIntrusion(category: SecurityReviewCategory): void {
+    if (!this.securityIncidents.classifySite(this.deviceId, category)) {
+      toast.error('This intrusion is no longer active or has already been classified');
+      return;
+    }
+    toast.success(category === 'guard' ? 'Site marked as Guard' : 'Site marked as Approved Access');
+  }
+
+  private syncSecurityState(): void {
+    this.activeSecurityIncident = this.securityIncidents.getIncident(this.deviceId);
+    this.securityCategory = this.activeSecurityIncident?.category ?? 'healthy';
   }
 
   onTimeSpanChange(event: Event): void {
@@ -188,16 +251,11 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     if (!this.deviceId || this.busyActions.has(action)) {
       return;
     }
-  
+
     const deviceId = this.deviceId;
-  
-    const nextValue = action === 'door' ? !this.doorOpen
-      : action === 'siren' ? !this.sirenOn
-      : action === 'flash' ? !this.flashOn
-      : !this.siteLightOn;
-  
+    const nextValue = action === 'door' ? !this.doorOpen : action === 'siren' ? !this.sirenOn : action === 'flash' ? !this.flashOn : !this.siteLightOn;
+
     this.busyActions.add(action);
-  
     this.devicesService.sendDeviceCommand(deviceId, action, nextValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -205,7 +263,6 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           if (this.deviceId !== deviceId) {
             return;
           }
-  
           this.busyActions.delete(action);
           this.setSiteActionState(action, nextValue);
           toast.success(this.siteActionLabel(action, nextValue));
@@ -214,59 +271,40 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           if (this.deviceId !== deviceId) {
             return;
           }
-  
           this.busyActions.delete(action);
           toast.error(`Failed to ${nextValue ? 'activate' : 'deactivate'} ${action}`);
         }
       });
   }
-  
+
   isSiteActionBusy(action: 'siren' | 'flash' | 'door' | 'siteLight'): boolean {
     return this.busyActions.has(action);
   }
-  
-  private setSiteActionState(
-    action: 'siren' | 'flash' | 'door' | 'siteLight',
-    active: boolean
-  ): void {
+
+  private setSiteActionState(action: 'siren' | 'flash' | 'door' | 'siteLight', active: boolean): void {
     if (action === 'siren') {
       this.sirenOn = active;
       return;
     }
-  
     if (action === 'flash') {
       this.flashOn = active;
       return;
     }
-  
-    if (action === 'door') {
-      this.doorOpen = active;
-      return;
-    }
-  
-    this.siteLightOn = active;
+    if (action === 'siteLight') { this.siteLightOn = active; return; }
+    this.doorOpen = active;
   }
-  
-  private siteActionLabel(
-    action: 'siren' | 'flash' | 'door' | 'siteLight',
-    active: boolean
-  ): string {
+
+  private siteActionLabel(action: 'siren' | 'flash' | 'door' | 'siteLight', active: boolean): string {
     if (action === 'door') {
       return active ? 'Door opened' : 'Door closed';
     }
-  
     if (action === 'siren') {
       return active ? 'Siren on' : 'Siren off';
     }
-  
-    if (action === 'siteLight') {
-      return active ? 'Site light on' : 'Site light off';
-    }
-  
+    if (action === 'siteLight') return active ? 'Site light on' : 'Site light off';
     return active ? 'Flash on' : 'Flash off';
   }
 
-  
   getActiveCameraCount(): number {
     return this.latestVisionPayload?.activeCameraCount ?? this.cameras.filter(camera => camera.isStreaming).length;
   }
@@ -426,6 +464,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     this.devicesService.getDeviceById(this.deviceId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: unknown) => {
         this.selectedDeviceDetails = (response as { data?: unknown })?.data ?? response ?? null;
+        this.securityIncidents.registerDevices([this.selectedDeviceDetails]);
+        this.syncSecurityState();
         this.cameras = this.mapLiveCameras(response);
       },
       error: () => {
