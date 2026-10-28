@@ -45,9 +45,9 @@
 }
 
 .site-actions-bar {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .site-action {
@@ -136,6 +136,17 @@
 .site-action.door.active .site-action-state {
 	background: color-mix(in srgb, var(--info) 18%, transparent);
 	color: var(--info);
+}
+
+.site-action.site-light.active {
+    border-color: var(--success);
+    background: color-mix(in srgb, var(--success) 14%, var(--card));
+}
+
+.site-action.site-light.active i,
+.site-action.site-light.active .site-action-state {
+    background: color-mix(in srgb, var(--success) 18%, transparent);
+    color: var(--success);
 }
 
 @media (max-width: 768px) {

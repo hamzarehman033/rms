@@ -41,7 +41,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   sirenOn = false;
   flashOn = false;
   doorOpen = false;
-  private readonly busyActions = new Set<'siren' | 'flash' | 'door'>();
+  siteLightOn = false;
+  private readonly busyActions = new Set<'siren' | 'flash' | 'door' | 'siteLight'>();
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
   @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
@@ -69,6 +70,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         this.sirenOn = false;
         this.flashOn = false;
         this.doorOpen = false;
+        this.siteLightOn = false;
         this.busyActions.clear();
         this.loadCameras();
         this.getAiVisionData();
@@ -182,15 +184,20 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleSiteAction(action: 'siren' | 'flash' | 'door'): void {
+  toggleSiteAction(action: 'siren' | 'flash' | 'door' | 'siteLight'): void {
     if (!this.deviceId || this.busyActions.has(action)) {
       return;
     }
-
+  
     const deviceId = this.deviceId;
-    const nextValue = action === 'door' ? !this.doorOpen : action === 'siren' ? !this.sirenOn : !this.flashOn;
-
+  
+    const nextValue = action === 'door' ? !this.doorOpen
+      : action === 'siren' ? !this.sirenOn
+      : action === 'flash' ? !this.flashOn
+      : !this.siteLightOn;
+  
     this.busyActions.add(action);
+  
     this.devicesService.sendDeviceCommand(deviceId, action, nextValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -198,6 +205,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           if (this.deviceId !== deviceId) {
             return;
           }
+  
           this.busyActions.delete(action);
           this.setSiteActionState(action, nextValue);
           toast.success(this.siteActionLabel(action, nextValue));
@@ -206,38 +214,59 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           if (this.deviceId !== deviceId) {
             return;
           }
+  
           this.busyActions.delete(action);
           toast.error(`Failed to ${nextValue ? 'activate' : 'deactivate'} ${action}`);
         }
       });
   }
-
-  isSiteActionBusy(action: 'siren' | 'flash' | 'door'): boolean {
+  
+  isSiteActionBusy(action: 'siren' | 'flash' | 'door' | 'siteLight'): boolean {
     return this.busyActions.has(action);
   }
-
-  private setSiteActionState(action: 'siren' | 'flash' | 'door', active: boolean): void {
+  
+  private setSiteActionState(
+    action: 'siren' | 'flash' | 'door' | 'siteLight',
+    active: boolean
+  ): void {
     if (action === 'siren') {
       this.sirenOn = active;
       return;
     }
+  
     if (action === 'flash') {
       this.flashOn = active;
       return;
     }
-    this.doorOpen = active;
+  
+    if (action === 'door') {
+      this.doorOpen = active;
+      return;
+    }
+  
+    this.siteLightOn = active;
   }
-
-  private siteActionLabel(action: 'siren' | 'flash' | 'door', active: boolean): string {
+  
+  private siteActionLabel(
+    action: 'siren' | 'flash' | 'door' | 'siteLight',
+    active: boolean
+  ): string {
     if (action === 'door') {
       return active ? 'Door opened' : 'Door closed';
     }
+  
     if (action === 'siren') {
       return active ? 'Siren on' : 'Siren off';
     }
+  
+    if (action === 'siteLight') {
+      return active ? 'Site light on' : 'Site light off';
+    }
+  
     return active ? 'Flash on' : 'Flash off';
   }
 
+  
   getActiveCameraCount(): number {
     return this.latestVisionPayload?.activeCameraCount ?? this.cameras.filter(camera => camera.isStreaming).length;
   }

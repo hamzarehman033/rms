@@ -75,6 +75,22 @@
         <span class="site-action-state">{{ doorOpen ? 'Open' : 'Closed' }}</span>
       </span>
     </button>
+    <button
+      type="button"
+      class="site-action site-light"
+      [class.active]="siteLightOn"
+      [disabled]="!deviceId || isSiteActionBusy('siteLight')"
+      [attr.aria-busy]="isSiteActionBusy('siteLight')"
+      (click)="toggleSiteAction('siteLight')"
+    >
+      <i class="pi pi-lightbulb"></i>
+      <span class="site-action-copy">
+        <span class="site-action-name">Site Light</span>
+        <span class="site-action-state">
+          {{ siteLightOn ? 'On' : 'Off' }}
+        </span>
+      </span>
+    </button>
   </section>
 
   <!-- Body: cameras (left) + alerts (right) -->

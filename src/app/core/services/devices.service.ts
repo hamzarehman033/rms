@@ -51,7 +51,7 @@ export interface DeviceInfrastructurePayload {
   powerSources: string[];
 }
 
-type DeviceCommandType = 'siren' | 'flash' | 'door';
+type DeviceCommandType = 'siren' | 'flash' | 'door' | 'siteLight';
 
 interface DeviceCommandPayload {
   targetId: number;
@@ -64,6 +64,7 @@ const DEVICE_COMMAND_TARGET_IDS: Record<DeviceCommandType, number> = {
   siren: 256,
   flash: 257,
   door: 258,
+  siteLight: 260, 
 };
 
 function mapDeviceCommand(command: DeviceCommandType, active: boolean): DeviceCommandPayload {
