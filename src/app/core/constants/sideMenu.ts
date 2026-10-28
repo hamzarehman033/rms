@@ -16,7 +16,7 @@ export enum Menu {
 
 
 export const MenuOptions = [
-  { id: Menu.Overview, label: 'Overview', icon: 'pi pi-home' },
+  { id: Menu.Overview, label: 'RMS', icon: 'pi pi-home' },
   { id: Menu.Sites, label: 'Sites', icon: 'pi pi-building' },
   { id: Menu.Telemetry, label: 'Telemetry', icon: 'pi pi-chart-line' },
   { id: Menu.Alarms, label: 'Alarms', icon: 'pi pi-bell' },
@@ -33,7 +33,7 @@ export const MenuOptions = [
 
 
 export const MenuMapper = {
-  [Menu.Overview]: 'Overview',
+  [Menu.Overview]: 'RMS',
   [Menu.Sites]: 'Sites',
   [Menu.Telemetry]: 'Telemetry',
   [Menu.Alarms]: 'Alarms',

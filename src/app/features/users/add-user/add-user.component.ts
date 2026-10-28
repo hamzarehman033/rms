@@ -24,7 +24,7 @@ export class AddUserComponent implements OnInit, OnChanges {
   customerOptions: Array<{ name: string; id: number | string }> = [];
   
   modules = [
-    { id: Menu.RMS, label: 'RMS', value: 'dashboard', icon: 'pi pi-chart-bar', selected: false },
+    { id: Menu.Overview, label: 'RMS', value: 'dashboard', icon: 'pi pi-chart-bar', selected: false },
     { id: Menu.EHS, label: 'EHS', value: 'ehs', icon: 'pi pi-shield', selected: false },
     { id: Menu.Security, label: 'Security', value: 'security', icon: 'pi pi-lock', selected: false },
     { id: Menu.Sites, label: 'Sites', value: 'devices', icon: 'pi pi-server', selected: false },
