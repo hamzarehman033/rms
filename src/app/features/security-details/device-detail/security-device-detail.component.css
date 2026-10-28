@@ -386,26 +386,28 @@
 .site-action.site-light.active i,
 .site-action.site-light.active .site-action-state { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); }
 
-/* Security monitoring: camera 1 | camera 2 | 180-degree radar. */
+/* Equal-height first row: Camera 1 | Camera 2 | Radar. No fixed pixel matching. */
 .security-monitor-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+	grid-template-areas:
+		'cameras radar'
+		'evidence alerts'
+		'details activities';
 	gap: 14px;
-	align-items: start;
+	align-items: stretch;
 }
-.security-monitor-main, .security-monitor-side {
-	display: flex;
-	flex-direction: column;
-	gap: 14px;
-	min-width: 0;
-}
-.security-monitor-side > section { min-width: 0; }
-.security-monitor-main .camera-grid {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.security-monitor-main .camera-card { min-width: 0; }
+.security-monitor-main, .security-monitor-side { display: contents; }
+.security-monitor-main > section:nth-child(1) { grid-area: cameras; display: flex; flex-direction: column; min-width: 0; }
+.security-monitor-main > section:nth-child(2) { grid-area: evidence; min-width: 0; }
+.security-monitor-main > section:nth-child(3) { grid-area: details; min-width: 0; }
+.security-monitor-side > section:nth-child(1) { grid-area: radar; display: flex; flex-direction: column; min-width: 0; }
+.security-monitor-side > section:nth-child(2) { grid-area: alerts; min-width: 0; }
+.security-monitor-side > section:nth-child(3) { grid-area: activities; min-width: 0; }
+.security-monitor-main .camera-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; align-items: stretch; }
+.security-monitor-main .camera-card { min-width: 0; height: 100%; }
 .security-monitor-main .camera-card .hstack { flex-wrap: wrap; }
-.security-monitor-main .camera-viewport { min-height: 130px; }
+.security-monitor-main .camera-viewport { aspect-ratio: auto; min-height: 280px; flex: 1; }
 .security-alert-list { max-height: 290px; overflow-y: auto; }
 .security-monitor-side .alert-item { align-items:flex-start; gap: 8px; }
 .security-monitor-side .alert-item .meta { overflow-wrap:anywhere; }
@@ -456,7 +458,16 @@
 .security-review-note { color:var(--muted-foreground); font-size:10px; width:100%; }
 
 @media (max-width: 1199px) {
-	.security-monitor-layout { grid-template-columns: 1fr; }
+	.security-monitor-layout {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			'cameras'
+			'radar'
+			'alerts'
+			'activities'
+			'evidence'
+			'details';
+	}
 }
 @media (max-width: 700px) {
 	.security-monitor-main .camera-grid { grid-template-columns: 1fr; }

@@ -366,3 +366,17 @@ select:focus {
 .security-status-pill.approved-access { background:color-mix(in srgb,var(--info) 14%,var(--card)); color:var(--info); }
 .security-status-pill.guard { background:color-mix(in srgb,var(--warning) 14%,var(--card)); color:var(--warning); }
 #security-ai-devices { scroll-margin-top: 16px; }
+
+/* Connectivity in the Security table comes from AI Vision packets, not RMS status. */
+.security-connectivity-pill {
+  display:inline-block;
+  white-space:nowrap;
+  border-radius:20px;
+  padding:4px 9px;
+  font-size:11px;
+  font-weight:700;
+  background:color-mix(in srgb,var(--warning) 14%,var(--card));
+  color:var(--warning);
+}
+.security-connectivity-pill.online { background:color-mix(in srgb,var(--success) 14%,var(--card)); color:var(--success); }
+.security-connectivity-pill.offline { background:color-mix(in srgb,var(--destructive) 14%,var(--card)); color:var(--destructive); }

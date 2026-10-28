@@ -14,6 +14,7 @@ import {
 import { TenantService } from '../../core/services/tenant.service';
 import { RecentSitesFilterRequest, StatisticsService } from '../../core/services/statistics.service';
 import { SecurityIncidentService, SecuritySiteCategory } from '../../core/services/security-incident.service';
+import { SecurityConnectivityService, SecurityConnectivityStatus } from '../../core/services/security-connectivity.service';
 import { VisionService } from '../../core/services/vision.service';
 
 type AiDeviceFilterTab = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -170,6 +171,7 @@ export class SecurityComponent implements OnInit {
     private realtimeDataSourceService: RealtimeDataSourceService,
     private tenantService: TenantService,
     private securityIncidents: SecurityIncidentService,
+    private securityConnectivity: SecurityConnectivityService,
     private visionService: VisionService
   ) {}
   // Live Telemetry Chart Data
@@ -259,6 +261,9 @@ export class SecurityComponent implements OnInit {
   ngOnInit(): void {
     this.initializeRealtimeDataSource();
     this.securityIncidents.states$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => { this.aiDevices = this.getFilteredAiDevices(); });
+    this.securityConnectivity.updates$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => { this.aiDevices = this.getFilteredAiDevices(); });
 
@@ -367,6 +372,7 @@ export class SecurityComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ id, packets }) => {
       this.securityIncidents.ingestHistory(id, packets);
+      this.securityConnectivity.seedRecentAlerts(id, packets);
     });
   }
 
@@ -1257,13 +1263,15 @@ export class SecurityComponent implements OnInit {
   }
 
   getAiOnlineCount(): number {
-    return this.getAiSiteGroups().filter(group => group.some(device =>
-      this.isOnlineStatus(this.getAiDeviceStatus(device))
-    )).length;
+    return this.getAiSiteGroups().filter(group =>
+      this.securityConnectivity.getSiteStatus(group) === 'online'
+    ).length;
   }
 
   getAiOfflineCount(): number {
-    return Math.max(0, this.getAiAllCount() - this.getAiOnlineCount());
+    return this.getAiSiteGroups().filter(group =>
+      this.securityConnectivity.getSiteStatus(group) === 'offline'
+    ).length;
   }
 
   getAiHealthyCount(): number {
@@ -1295,24 +1303,17 @@ export class SecurityComponent implements OnInit {
     return 'Healthy';
   }
 
-  getAiDeviceStatus(device: any): string {
-    const deviceId = this.toAiDeviceNumericId(device);
-    return deviceId !== null && this.realtimeDevices.some(item => Number(item.deviceId) === deviceId)
-      ? 'active'
-      : 'offline';
+  getAiDeviceStatus(device: any): SecurityConnectivityStatus {
+    return this.securityConnectivity.getSiteStatus(this.getSiteDevices(device));
   }
 
   private getFilteredAiDevices(): any[] {
     let filteredDevices = this.allAiDevices.filter(device => this.matchesSecurityFilters(device));
 
     if (this.selectedTab === 1) {
-      filteredDevices = filteredDevices.filter(device => this.getSiteDevices(device).some(item =>
-        this.isOnlineStatus(this.getAiDeviceStatus(item))
-      ));
+      filteredDevices = filteredDevices.filter(device => this.getAiDeviceStatus(device) === 'online');
     } else if (this.selectedTab === 2) {
-      filteredDevices = filteredDevices.filter(device => !this.getSiteDevices(device).some(item =>
-        this.isOnlineStatus(this.getAiDeviceStatus(item))
-      ));
+      filteredDevices = filteredDevices.filter(device => this.getAiDeviceStatus(device) === 'offline');
     } else if (this.selectedTab >= 3) {
       const categoryByTab: Record<3 | 4 | 5 | 6, SecuritySiteCategory> = {
         3: 'healthy', 4: 'approved-access', 5: 'guard', 6: 'intruder'

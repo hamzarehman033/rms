@@ -1,4 +1,4 @@
-:host { display: block; }
+:host { display: flex; flex: 1; min-height: 0; }
 .security-radar-card {
   background: var(--card);
   color: var(--foreground);
@@ -7,6 +7,12 @@
   box-shadow: var(--shadow-card);
   padding: 12px;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .radar-heading { display:flex; justify-content:space-between; align-items:flex-start; gap: 8px; margin-bottom: 10px; }
 .radar-heading-label { font-size: 13px; font-weight: 700; }
@@ -14,10 +20,17 @@
 .radar-heading-sub { margin-top: 4px; font-size: 10px; color: var(--muted-foreground); }
 .radar-status { color:#43cd80; border:1px solid #245b3e; background:#102a1c; padding:4px 7px; font-size:9px; font-weight:700; border-radius:20px; letter-spacing:.06em; white-space:nowrap; }
 .radar-status.alert { color:#ff7777; background:#381817; border-color:#ae3333; }
-.radar-screen { position:relative; overflow:hidden; background:radial-gradient(ellipse at 50% 100%,#0b3620 0%,#061910 58%,#06130d 100%); border-radius:9px; border:1px solid #175a33; width:100%; aspect-ratio: 1.8; min-height:138px; }
+.radar-screen { position:relative; overflow:hidden; background:radial-gradient(ellipse at 50% 100%,#0b3620 0%,#061910 58%,#06130d 100%); border-radius:9px; border:1px solid #175a33; width:100%; min-height:280px; flex:1; }
 .radar-screen svg { display:block; width:100%; height:100%; }
 .radar-sweep { position:absolute; left:50%; bottom:5%; width:2px; height:83%; transform-origin:50% 100%; background:linear-gradient(to top,#73fab4,rgba(115,250,180,0)); box-shadow:0 0 13px 4px rgba(35,206,104,.22); animation:security-radar-scan 5.5s ease-in-out infinite alternate; pointer-events:none; }
 @keyframes security-radar-scan { 0% { transform: translateX(-50%) rotate(-89deg); } 100% { transform: translateX(-50%) rotate(89deg); } }
+/* Beacon is not a claimed camera coordinate: range/angle are not transmitted. */
+.radar-alert-halo { fill:rgba(255,55,55,.18); stroke:rgba(255,65,65,.45); stroke-width:2; animation:radar-beacon-halo 1.6s ease-in-out infinite; }
+.radar-alert-ring { fill:rgba(255,53,53,.22); stroke:#ff4444; stroke-width:2.5; animation:radar-beacon-ring 1.1s ease-in-out infinite alternate; }
+.radar-alert-core { fill:#ff3535; stroke:#ffd1d1; stroke-width:1.5; filter:drop-shadow(0 0 5px #ff1717); animation:radar-beacon-core .8s ease-in-out infinite alternate; }
+@keyframes radar-beacon-halo { 0%,100% { opacity:.25; } 50% { opacity:1; } }
+@keyframes radar-beacon-ring { from { opacity:.55; stroke-width:2; } to { opacity:1; stroke-width:5; } }
+@keyframes radar-beacon-core { from { opacity:.65; } to { opacity:1; } }
 .radar-intrusion-wash { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 72%,rgba(239,68,68,.34) 0%,rgba(220,38,38,.13) 46%,transparent 83%); animation:security-intrusion-pulse 1.4s ease-in-out infinite alternate; pointer-events:none; }
 @keyframes security-intrusion-pulse { from { opacity:.35; } to { opacity:1; } }
 .radar-intrusion-label { position:absolute; top:46%; left:0; right:0; text-align:center; color:#ff7777; font-size:12px; font-weight:800; letter-spacing:.09em; text-shadow:0 0 9px #a52121,0 1px 2px #051109; pointer-events:none; }
@@ -26,5 +39,5 @@
 .radar-camera { color:#e16464; font-weight:700; }
 .radar-note { color:var(--muted-foreground); font-size:10px; line-height:1.4; margin:8px 0 0; }
 @media (prefers-reduced-motion:reduce) {
-  .radar-sweep, .radar-intrusion-wash { animation:none; }
+  .radar-sweep, .radar-intrusion-wash, .radar-alert-halo, .radar-alert-ring, .radar-alert-core { animation:none; }
 }

@@ -114,11 +114,11 @@
                 <tr>
                   <th>Device</th>
                   <th>Type</th>
-                  <th>Status</th>
+                  <th>AI Connectivity</th>
+                  <th>Security Status</th>
                   <th>Region</th>
                   <th>Sub Region</th>
                   <th>Zone</th>
-                  <th>Power Source</th>
                   <th>Cameras</th>
                   <th>Actions</th>
                 </tr>
@@ -133,15 +133,19 @@
                   </td>
                   <td>{{ device.type || '—' }}</td>
                   <td>
+                    <span class="security-connectivity-pill" [ngClass]="getAiDeviceStatus(device)"
+                          [title]="getAiDeviceStatus(device) === 'unknown' ? 'No recent AI Vision heartbeat/alert received (or realtime connection unavailable)' : 'Derived from recent AI Vision heartbeat/alert packets, not RMS telemetry'">
+                      ● {{ getAiDeviceStatus(device) | titlecase }}
+                    </span>
+                  </td>
+                  <td>
                     <span class="security-status-pill" [ngClass]="getAiSecurityCategory(device)">
                       ● {{ getAiSecurityStatusLabel(device) }}
                     </span>
-                    <div class="muted text-xs">{{ getAiDeviceStatus(device) | titlecase }}</div>
                   </td>
                   <td>{{ device.regionName || '—' }}</td>
                   <td>{{ device.subRegionName || '—' }}</td>
                   <td>{{ device.zoneName || '—' }}</td>
-                  <td>{{ device.powerSources?.join(', ') || '—' }}</td>
                   <td class="mono">{{ device.camerasInstalledCount ?? '—' }}</td>
                   <td>
                     <button
