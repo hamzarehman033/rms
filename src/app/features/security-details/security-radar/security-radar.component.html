@@ -2,7 +2,6 @@
   <div class="radar-heading">
     <div>
       <span class="radar-heading-label"><i class="pi pi-compass"></i> Security Radar</span>
-      <div class="radar-heading-sub">180° view · camera-triggered display</div>
     </div>
     <span class="radar-status" [class.alert]="!!incident">{{ incident ? 'DETECTION' : 'SCANNING' }}</span>
   </div>
@@ -36,5 +35,4 @@
   <ng-template #radarIdle>
     <div class="radar-readout"><span>No active intrusion alert</span></div>
   </ng-template>
-  <p class="radar-note">Visual event indicator only. Target distance and bearing are not available from camera MQTT alerts.</p>
 </div>
