@@ -139,7 +139,7 @@
                     </span>
                   </td>
                   <td>
-                    <span class="badge security-status-pill" [ngClass]="getAiSecurityCategory(device)">
+                    <span *ngIf="getAiDeviceStatus(device) === 'online'" class="badge security-status-pill" [ngClass]="getAiSecurityCategory(device)">
                       ● {{ getAiSecurityStatusLabel(device) }}
                     </span>
                   </td>
