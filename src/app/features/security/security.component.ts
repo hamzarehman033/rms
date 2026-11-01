@@ -1295,6 +1295,14 @@ export class SecurityComponent implements OnInit {
     return id === null ? 'healthy' : this.securityIncidents.getCategory(id);
   }
 
+  getAiSecurityStatusTitle(device: any): string {
+    const id = this.toAiDeviceNumericId(device);
+    const access = id === null ? null : this.securityIncidents.getAccessSession(id);
+    return access
+      ? `Activity access: ${access.activity.name} | ${access.activity.team} | Ends ${new Date(access.expiresAt).toLocaleString()}`
+      : this.getAiSecurityStatusLabel(device);
+  }
+
   getAiSecurityStatusLabel(device: any): string {
     const category = this.getAiSecurityCategory(device);
     if (category === 'approved-access') return 'Approved Access';

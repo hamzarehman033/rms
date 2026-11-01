@@ -1,6 +1,7 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { ActivityService } from '../../../core/services/activity.service';
+import { Activity, ActivityService } from '../../../core/services/activity.service';
 
 @Component({
   selector: 'app-scheduled-activities',
@@ -9,22 +10,33 @@ import { ActivityService } from '../../../core/services/activity.service';
   templateUrl: './scheduled-activities.component.html',
   styleUrl: './scheduled-activities.component.css'
 })
-export class ScheduledActivitiesComponent implements OnChanges {
+export class ScheduledActivitiesComponent implements OnChanges, OnDestroy {
   @Input() deviceId: number | null = null;
+  // Opt-in on Security Details only. Other callers retain their existing appearance.
+  @Input() enableAccessSelection = false;
+  @Input() canSelectAccess = false;
+  @Input() activeAccessActivityId: number | null = null;
+  @Output() accessRequested = new EventEmitter<Activity>();
+  private request?: Subscription;
 
   isLoading = false;
   activities: any[] = [];
 
   constructor(private activityService: ActivityService) {}
 
-  ngOnChanges(): void {
+  ngOnDestroy(): void { this.request?.unsubscribe(); }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['deviceId']) return;
+    this.request?.unsubscribe();
     if (!this.deviceId) {
+      this.isLoading = false;
       this.activities = [];
       return;
     }
 
     this.isLoading = true;
-    this.activityService.getActivities({
+    this.request = this.activityService.getActivities({
       pagesize: 10,
       pagenumber: 1,
       filters: [{ key: 'deviceId', value: this.deviceId, operator: 'equals' }]

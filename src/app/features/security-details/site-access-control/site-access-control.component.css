@@ -1,0 +1,60 @@
+:host { display: block; min-width: 0; --access-info: var(--info); --access-warning: var(--warning); --access-danger: var(--destructive); }
+:host-context([data-theme="light"]) { --access-info: #0369a1; --access-warning: #92400e; --access-danger: #b91c1c; }
+.access-card { background: var(--card); color: var(--foreground); border: 1px solid var(--border); border-radius: 12px; padding: 15px; box-shadow: var(--shadow-card); min-width: 0; }
+.access-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.access-heading { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+.access-heading i { color: var(--access-info); }
+.access-state { display: inline-block; border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--muted-foreground); }
+.access-state.is-active { color: var(--access-info); border-color: color-mix(in srgb, var(--access-info) 45%, transparent); background: color-mix(in srgb, var(--access-info) 10%, var(--card)); }
+.access-state.is-expiring { color: var(--access-warning); border-color: var(--access-warning); }
+.access-intro, .access-hint { font-size: 11px; line-height: 1.55; color: var(--muted-foreground); margin: 8px 0; overflow-wrap: anywhere; }
+.access-activity-name { font-size: 14px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+.access-team { font-size: 11px; color: var(--muted-foreground); margin: 4px 0 12px; overflow-wrap: anywhere; }
+.access-countdown { display: flex; flex-direction: column; gap: 5px; padding: 13px; border: 1px solid color-mix(in srgb, var(--access-info) 30%, var(--border)); background: color-mix(in srgb, var(--access-info) 5%, var(--card)); border-radius: 8px; }
+.access-eyebrow { font-size: 10px; letter-spacing: .08em; color: var(--muted-foreground); font-weight: 700; }
+.access-countdown strong { font-size: 28px; line-height: 1.25; font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--access-info); }
+.access-countdown > span:last-child { font-size: 11px; color: var(--muted-foreground); }
+.access-countdown.is-expiring strong { color: var(--access-warning); }
+.access-meta { margin: 12px 0; font-size: 11px; }
+.access-meta > div { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; margin-top: 8px; }
+.access-meta dt { color: var(--muted-foreground); }
+.access-meta dd { margin: 0; text-align: right; overflow-wrap: anywhere; max-width: 100%; }
+.access-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.access-actions > button { flex: 1 1 110px; }
+.access-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border); background: var(--surface-1, var(--card)); color: var(--foreground); border-radius: 7px; padding: 9px 10px; min-height: 38px; font-size: 11px; font-weight: 600; line-height: 1.4; cursor: pointer; max-width: 100%; }
+.access-button:hover:not(:disabled) { border-color: var(--access-info); }
+.access-button:focus-visible, .access-link:focus-visible, summary:focus-visible { outline: 2px solid var(--access-info); outline-offset: 3px; }
+.access-primary { background: color-mix(in srgb, var(--access-info) 14%, var(--card)); border-color: color-mix(in srgb, var(--access-info) 55%, transparent); color: var(--access-info); }
+.access-danger { background: color-mix(in srgb, var(--access-danger) 9%, var(--card)); border-color: color-mix(in srgb, var(--access-danger) 50%, transparent); color: var(--access-danger); }
+.access-full { width: 100%; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.access-closed { display: flex; gap: 9px; padding: 10px; margin: 10px 0; background: var(--surface-1, var(--card)); border-radius: 7px; font-size: 11px; }
+.access-closed i { color: var(--success); margin-top: 2px; }
+.access-closed strong, .access-closed span { display: block; }
+.access-closed span { color: var(--muted-foreground); margin-top: 5px; line-height: 1.5; overflow-wrap: anywhere; }
+.access-form { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+fieldset { min-width: 0; border: 0; margin: 0; padding: 0; }
+legend { font-size: 12px; font-weight: 700; margin-bottom: 10px; padding: 0; }
+.access-form label:not(.access-check) { display: block; margin: 10px 0 6px; font-size: 11px; font-weight: 600; }
+.access-form input:not([type=checkbox]), .access-form select, .access-form textarea { box-sizing: border-box; display: block; width: 100%; min-width: 0; max-width: 100%; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-1, var(--card)); color: var(--foreground); padding: 9px; font: inherit; font-size: 12px; line-height: 1.4; }
+.access-form textarea { resize: vertical; }
+.access-form input:focus, .access-form select:focus, .access-form textarea:focus { outline: 2px solid var(--access-info); outline-offset: 1px; }
+.access-form input[readonly] { color: var(--muted-foreground); }
+.access-list-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.access-link { border: 0; background: transparent; padding: 4px 0; font-size: 11px; color: var(--access-info); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.access-schedule { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; padding: 10px; border-left: 2px solid var(--access-info); background: color-mix(in srgb, var(--access-info) 5%, var(--card)); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.access-schedule > span:last-child { color: var(--muted-foreground); }
+.access-check { display: flex; align-items: flex-start; gap: 9px; margin-top: 14px; font-size: 11px; line-height: 1.55; cursor: pointer; }
+.access-check input { flex: 0 0 auto; margin: 3px 0 0; width: 15px; height: 15px; accent-color: var(--access-info); }
+.access-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.access-presets button { flex: 1; min-height: 32px; padding: 6px; font-size: 10px; }
+.access-error, .access-warning { margin: 10px 0; border: 1px solid color-mix(in srgb, var(--access-danger) 40%, transparent); border-radius: 7px; background: color-mix(in srgb, var(--access-danger) 7%, var(--card)); padding: 10px; font-size: 11px; line-height: 1.5; color: var(--access-danger); overflow-wrap: anywhere; }
+.access-warning { color: var(--access-warning); border-color: color-mix(in srgb, var(--access-warning) 40%, transparent); background: color-mix(in srgb, var(--access-warning) 7%, var(--card)); }
+.access-history { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 12px; font-size: 11px; }
+.access-history summary { cursor: pointer; font-weight: 600; }
+.access-history summary span { margin-left: 5px; color: var(--muted-foreground); font-weight: 400; }
+.access-history-entry { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; line-height: 1.5; }
+.access-history-entry:last-child { border-bottom: 0; padding-bottom: 0; }
+.access-history-entry strong span, .access-history-entry > span { color: var(--muted-foreground); font-weight: 400; }
+.access-history-entry p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { :host { scroll-behavior: auto; } }

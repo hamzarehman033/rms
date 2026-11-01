@@ -1,0 +1,124 @@
+<div class="access-card" [class.access-active]="active" [class.access-expiring]="!!warning" [attr.aria-busy]="busy">
+  <div class="access-header">
+    <div class="access-heading"><i class="pi pi-shield" aria-hidden="true"></i><span>Activity Access</span></div>
+    <span class="access-state" [class.is-active]="active" [class.is-expiring]="!!warning">{{ stateLabel }}</span>
+  </div>
+
+  <p class="access-intro" *ngIf="!active && action === 'none'">Authorize the team's actual arrival. Scheduled times remain unchanged.</p>
+  <div class="access-error" role="alert" *ngIf="access.storageError">{{ access.storageError }}</div>
+  <p class="access-hint" *ngIf="!siteKey">Resolving site identity. Access controls will be available once this site is loaded.</p>
+  <p class="access-hint" *ngIf="siteKey && !access.canManage()">An Admin, Manager or SysAdmin with Security access can manage activity access.</p>
+
+  <ng-container *ngIf="active && session as current">
+    <div class="access-activity-name">{{ current.activity.name }}</div>
+    <p class="access-team">{{ current.activity.team }} <span aria-hidden="true">&middot;</span> {{ current.activity.persons }} persons</p>
+    <div class="access-countdown" [class.is-expiring]="!!warning">
+      <span class="access-eyebrow">AUTHORIZED TIME REMAINING</span>
+      <strong role="timer" aria-label="Authorized time remaining">{{ timeRemaining }}</strong>
+      <span>Ends {{ current.expiresAt | date:'dd MMM y, HH:mm' }}</span>
+    </div>
+    <dl class="access-meta">
+      <div><dt>Actual start</dt><dd>{{ current.startedAt | date:'dd MMM, HH:mm' }}</dd></div>
+      <div><dt>Authorized by</dt><dd>{{ current.grantedBy.name }}</dd></div>
+      <div><dt>Linked activity</dt><dd>{{ current.activity.id ? '#' + current.activity.id : 'Unscheduled visit' }}</dd></div>
+    </dl>
+    <div class="access-warning" *ngIf="warning" role="status"><i class="pi pi-clock" aria-hidden="true"></i> {{ warning }}</div>
+    <p class="access-hint">Whole-site approval is active. Camera detections and evidence continue.</p>
+    <div class="access-actions" *ngIf="action === 'none'">
+      <button type="button" class="access-button access-primary" (click)="openExtend()" [disabled]="!canManage || busy"><i class="pi pi-clock" aria-hidden="true"></i> Extend Access</button>
+      <button type="button" class="access-button access-danger" (click)="openEnd()" [disabled]="!canManage || busy"><i class="pi pi-stop-circle" aria-hidden="true"></i> End Access</button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!active && action === 'none'">
+    <div class="access-closed" *ngIf="session">
+      <i class="pi pi-lock" aria-hidden="true"></i>
+      <div><strong>Monitoring re-armed</strong><span>{{ session.activity.name }} &middot; {{ (session.endedAt || session.expiresAt) | date:'dd MMM, HH:mm' }}</span></div>
+    </div>
+    <button type="button" class="access-button access-primary access-full" (click)="openGrant()" [disabled]="!canManage || busy"><i class="pi pi-check-circle" aria-hidden="true"></i> Grant Access</button>
+  </ng-container>
+
+  <form *ngIf="action === 'grant'" class="access-form" (ngSubmit)="submitGrant()">
+    <fieldset [disabled]="busy">
+      <legend>Authorize an actual arrival</legend>
+      <label for="access-activity">Linked activity</label>
+      <select id="access-activity" name="activity" [(ngModel)]="selectedActivityId" (ngModelChange)="onActivityChange()">
+        <option value="manual">Unscheduled / emergency visit</option>
+        <option *ngFor="let activity of activities" [value]="activity.id" [disabled]="activity.isActive === false">{{ activity.name }} &middot; {{ activity.date | date:'dd MMM' }}</option>
+      </select>
+      <div class="access-list-actions">
+        <button type="button" class="access-link" [disabled]="loadingActivities" (click)="loadActivities(true)">{{ loadingActivities ? 'Loading activities...' : 'Refresh activities' }}</button>
+        <button type="button" class="access-link" *ngIf="moreActivities" [disabled]="loadingActivities" (click)="loadActivities()">Load more</button>
+      </div>
+      <p class="access-error" *ngIf="activityError">{{ activityError }}</p>
+      <div class="access-schedule" *ngIf="selectedActivity as linked">
+        <span class="access-eyebrow">SCHEDULED WINDOW</span>
+        <strong>{{ linked.date | date:'dd MMM y' }} &middot; {{ linked.startTime }} - {{ linked.endTime }}</strong>
+        <span>Reference only. Access begins when you confirm below.</span>
+      </div>
+      <label for="access-name">Activity name</label>
+      <input id="access-name" name="activityName" [(ngModel)]="activityName" [readonly]="selectedActivityId !== 'manual'" maxlength="100" required>
+      <label for="access-team">Verified team</label>
+      <input id="access-team" name="team" [(ngModel)]="team" [readonly]="selectedActivityId !== 'manual'" maxlength="100" required>
+      <label for="access-persons">Actual team size</label>
+      <input id="access-persons" name="persons" type="number" [(ngModel)]="persons" min="1" max="999" step="1" required>
+      <label for="access-expiry">Authorization ends <span class="access-hint">(your local time)</span></label>
+      <input id="access-expiry" name="expiry" type="datetime-local" [(ngModel)]="expiresLocal" [max]="maxExpiryLocal" required>
+      <div class="access-presets" aria-label="Authorization duration from now">
+        <button type="button" class="access-button" (click)="setDuration(30)">30 min</button>
+        <button type="button" class="access-button" (click)="setDuration(60)">1 hour</button>
+        <button type="button" class="access-button" (click)="setDuration(120)">2 hours</button>
+      </div>
+      <label for="access-reason">Authorization reason</label>
+      <textarea id="access-reason" name="reason" [(ngModel)]="reason" maxlength="500" rows="2" required></textarea>
+      <label class="access-check"><input name="verified" type="checkbox" [(ngModel)]="teamVerified" required><span>I verified the team and approve the entire site's current activity, including any active intrusion.</span></label>
+      <div class="access-actions">
+        <button type="submit" class="access-button access-primary" [disabled]="!canManage || !teamVerified || busy">{{ busy ? 'Saving...' : 'Confirm Grant' }}</button>
+        <button type="button" class="access-button" (click)="cancel()">Cancel</button>
+      </div>
+    </fieldset>
+  </form>
+
+  <form *ngIf="action === 'extend' && active" class="access-form" (ngSubmit)="submitExtend()">
+    <fieldset [disabled]="busy">
+      <legend>Extend the approved deadline</legend>
+      <label for="access-extension">Add to the current expiry</label>
+      <select id="access-extension" name="extensionMinutes" [(ngModel)]="extensionMinutes" [disabled]="extensionCustom">
+        <option [ngValue]="30">30 minutes</option><option [ngValue]="60">60 minutes</option><option [ngValue]="120">2 hours</option>
+      </select>
+      <label class="access-check"><input name="custom" type="checkbox" [(ngModel)]="extensionCustom"><span>Choose a custom end time</span></label>
+      <input *ngIf="extensionCustom" aria-label="New authorization expiry in local time" name="customExpiry" type="datetime-local" [(ngModel)]="expiresLocal" [max]="maxExpiryLocal" required>
+      <p class="access-hint" *ngIf="validExtensionExpiry as newExpiry">New expiry: <strong>{{ newExpiry | date:'dd MMM y, HH:mm' }}</strong></p>
+      <label for="access-extension-reason">Reason for extension</label>
+      <textarea id="access-extension-reason" name="extensionReason" [(ngModel)]="reason" maxlength="500" rows="2" required></textarea>
+      <div class="access-actions">
+        <button type="submit" class="access-button access-primary" [disabled]="!canManage || busy">{{ busy ? 'Saving...' : 'Confirm Extension' }}</button>
+        <button type="button" class="access-button" (click)="cancel()">Cancel</button>
+      </div>
+    </fieldset>
+  </form>
+
+  <form *ngIf="action === 'end' && active" class="access-form" (ngSubmit)="submitEnd()">
+    <fieldset [disabled]="busy">
+      <legend>End access and re-arm</legend>
+      <p class="access-hint">New detections will immediately follow the normal intrusion rules. This does not operate the door or any physical output.</p>
+      <label for="access-close-reason">Closure note</label>
+      <textarea id="access-close-reason" name="closureReason" [(ngModel)]="reason" maxlength="500" rows="2" required></textarea>
+      <label class="access-check"><input name="departed" type="checkbox" [(ngModel)]="departureConfirmed" required><span>I confirmed that the team has left and access should end now.</span></label>
+      <div class="access-actions">
+        <button type="submit" class="access-button access-danger" [disabled]="!canManage || !departureConfirmed || busy">{{ busy ? 'Saving...' : 'End Access Now' }}</button>
+        <button type="button" class="access-button" (click)="cancel()">Keep Active</button>
+      </div>
+    </fieldset>
+  </form>
+
+  <div class="access-error" role="alert" *ngIf="error">{{ error }}</div>
+  <details class="access-history" *ngIf="session">
+    <summary>Session history <span>{{ session.audit.length }} action(s)</span></summary>
+    <div class="access-history-entry" *ngIf="!active && session.endedAt === null"><strong>Expired automatically</strong><span>{{ session.expiresAt | date:'dd MMM y, HH:mm' }} &middot; Authorization deadline reached</span></div>
+    <div class="access-history-entry" *ngFor="let entry of recentAudit">
+      <strong>{{ entry.action | titlecase }} <span>&middot; {{ entry.operator.name }}</span></strong>
+      <span>{{ entry.at | date:'dd MMM y, HH:mm' }}</span><p>{{ entry.reason }}</p>
+    </div>
+  </details>
+</div>

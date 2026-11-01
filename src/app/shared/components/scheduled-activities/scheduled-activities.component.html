@@ -5,6 +5,13 @@
       <div class="sev-bar info"></div>
       <div class="flex-1">
         <div class="font-medium text-sm">{{ activity.name }}</div>
+        <div class="scheduled-access-action" *ngIf="enableAccessSelection">
+          <span *ngIf="activity.id === activeAccessActivityId; else selectForAccess" class="badge info">Access active</span>
+          <ng-template #selectForAccess>
+            <button type="button" class="scheduled-access-button" [disabled]="!canSelectAccess || activity.isActive === false"
+              (click)="accessRequested.emit(activity)" [attr.aria-label]="'Use ' + activity.name + ' for activity access'">Use for access</button>
+          </ng-template>
+        </div>
         <div class="meta">{{ activity.team }} · {{ activity.persons }} persons</div>
       </div>
       <div class="text-right">

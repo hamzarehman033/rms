@@ -1,0 +1,6 @@
+
+/* Optional controls are enabled only on Security Details. */
+.scheduled-access-action { margin: 5px 0; }
+.scheduled-access-button { border: 1px solid var(--border); border-radius: 5px; background: transparent; color: var(--info); padding: 5px 7px; font-size: 10px; line-height: 1.4; cursor: pointer; }
+.scheduled-access-button:disabled { opacity: .5; cursor: not-allowed; }
+.scheduled-access-button:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }

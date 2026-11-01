@@ -4,6 +4,8 @@ import { VisionDecodedPayload } from '../constants/device-message.model';
 import { AiVisionPacketApiModel } from './vision.service';
 import { CustomerService } from './customer.service';
 import { SignalrService } from './signalr.service';
+import { SiteAccessService } from './site-access.service';
+import { SiteAccessSession } from './site-access.model';
 
 export type SecuritySiteCategory = 'healthy' | 'intruder' | 'approved-access' | 'guard';
 export type SecurityReviewCategory = 'approved-access' | 'guard';
@@ -50,7 +52,8 @@ export class SecurityIncidentService implements OnDestroy {
 
   constructor(
     private readonly signalr: SignalrService,
-    private readonly customers: CustomerService
+    private readonly customers: CustomerService,
+    private readonly siteAccess: SiteAccessService
   ) {
     this.scope = String(this.customers.getActiveCustomerId() || 'default');
     this.statesSubject.next(this.readStorage());
@@ -68,6 +71,11 @@ export class SecurityIncidentService implements OnDestroy {
       if (payload) {
         this.acceptEvent(payload, false);
       }
+    }));
+
+    // Recompute views on Grant, Extend, End, expiry and changes from another tab.
+    this.subscriptions.add(this.siteAccess.changes$.subscribe(() => {
+      this.statesSubject.next(this.statesSubject.value);
     }));
 
     window.addEventListener('storage', this.onStorage);
@@ -113,12 +121,19 @@ export class SecurityIncidentService implements OnDestroy {
 
   getIncident(deviceId: number | string): SecuritySiteIncident | null {
     const key = this.siteKeyForDevice(deviceId);
+    if (this.siteAccess.getActive(key)) return null;
     const incident = this.statesSubject.value[key];
-    return incident && incident.expiresAt > Date.now() ? incident : null;
+    return incident && incident.expiresAt > Date.now() &&
+      incident.lastDetectedAt > this.siteAccess.rearmAfter(key) ? incident : null;
   }
 
   getCategory(deviceId: number | string): SecuritySiteCategory {
+    if (this.getAccessSession(deviceId)) return 'approved-access';
     return this.getIncident(deviceId)?.category ?? 'healthy';
+  }
+
+  getAccessSession(deviceId: number | string): SiteAccessSession | null {
+    return this.siteAccess.getActive(this.siteKeyForDevice(deviceId));
   }
 
   /** Review ALL currently active intrusions at the site, not just a selected camera. */
@@ -185,18 +200,30 @@ export class SecurityIncidentService implements OnDestroy {
 
     const eventAt = historical ? occurredAt : now;
     const siteKey = this.siteKeyForDevice(id);
+    // This affects classification only. The detail page still receives every alert
+    // and retains camera evidence through the existing Vision handlers.
+    if (this.siteAccess.getActive(siteKey)) return null;
+    const rearmAfter = this.siteAccess.rearmAfter(siteKey);
+    const rawTime = Number(event.timestampUtc ?? 0);
+    const timestamp = rawTime > 1e12 ? rawTime : rawTime * 1000;
+    const sourceTime = Number.isFinite(timestamp) && timestamp > 0 && timestamp <= now + 60_000
+      ? timestamp : occurredAt;
+    // Late history/replays from a completed authorization must not reopen it.
+    if (rearmAfter && Number.isFinite(sourceTime) && sourceTime > 0 && sourceTime <= rearmAfter) return null;
+    // Missing/invalid live timestamps are treated as new receipt-time detections,
+    // not silently ignored. A backend timestamp is needed for exact replay ordering.
     const saved = state[siteKey];
     // Keep a short-lived reviewed tombstone to prevent a later history fetch
     // from reopening the same, already-reviewed incident after its expiry.
     if (historical && saved?.reviewedAt && saved.expiresAt <= now && eventAt <= saved.expiresAt) return null;
-    const previous = saved?.expiresAt > now ? saved : null;
+    const previous = saved?.expiresAt > now && saved.lastDetectedAt > rearmAfter ? saved : null;
     const eventKey = this.eventKey(id, event);
     // Also ignore duplicate MQTT deliveries after a reviewed incident expires,
     // while its short-lived deduplication record remains in storage.
     if (saved?.eventKeys.includes(eventKey)) return null;
 
     // A manual decision freezes the existing 10-minute window. Additional detections
-    // can still light the radar but will NOT undo the decision or extend that window.
+    // remain in event history but will NOT undo the decision or extend that window.
     // An unreviewed intrusion extends the window with every NEW detection.
     const expiresAt = previous?.category !== 'intruder' && previous
       ? previous.expiresAt

@@ -91,6 +91,9 @@
     <div class="security-review-heading">
       <span>Security Status</span>
       <strong class="security-category" [ngClass]="securityCategory">{{ securityCategoryLabel }}</strong>
+      <small *ngIf="activeAccessSession as access">
+        Activity access until {{ access.expiresAt | date:'shortTime' }}
+      </small>
       <small *ngIf="activeSecurityIncident as incident">
         Expires {{ incident.expiresAt | date:'shortTime' }} · {{ incident.cameraIds.length }} camera(s)
       </small>
@@ -218,7 +221,17 @@
 
       <section>
         <div class="right-sec-title"><i class="pi pi-calendar"></i> Scheduled Activities</div>
-        <app-scheduled-activities [deviceId]="activityDeviceId"></app-scheduled-activities>
+        <app-scheduled-activities [deviceId]="activityDeviceId"
+          [enableAccessSelection]="true"
+          [canSelectAccess]="!!accessSiteKey && siteAccess.canManage() && !siteAccess.storageError && !activeAccessSession && !activityAccess.busy"
+          [activeAccessActivityId]="activeAccessSession?.activity?.id ?? null"
+          (accessRequested)="activityAccess.selectActivity($event)"></app-scheduled-activities>
+      </section>
+
+      <section class="site-access-section">
+        <div class="right-sec-title"><i class="pi pi-shield"></i> Site Access Control</div>
+        <app-site-access-control #activityAccess [deviceId]="activityDeviceId"
+          [siteKey]="accessSiteKey" [siteLabel]="accessSiteLabel"></app-site-access-control>
       </section>
     </aside>
   </div>

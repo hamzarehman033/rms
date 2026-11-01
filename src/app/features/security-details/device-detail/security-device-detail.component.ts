@@ -8,6 +8,8 @@ import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vi
 import { SignalrService } from '../../../core/services/signalr.service';
 import { SecurityIncidentService, SecuritySiteCategory, SecuritySiteIncident, SecurityReviewCategory } from '../../../core/services/security-incident.service';
 import { ActivatedRoute } from '@angular/router';
+import { SiteAccessService } from '../../../core/services/site-access.service';
+import { SiteAccessSession } from '../../../core/services/site-access.model';
 import { toast } from '../../../utils/global-toast';
 
 interface LiveCamera {
@@ -45,6 +47,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   siteLightOn = false;
   private readonly busyActions = new Set<'siren' | 'flash' | 'door' | 'siteLight'>();
   activeSecurityIncident: SecuritySiteIncident | null = null;
+  activeAccessSession: SiteAccessSession | null = null;
+  private securitySiteDevices: any[] = [];
   securityCategory: SecuritySiteCategory = 'healthy';
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
@@ -57,7 +61,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     private cameraStreamService: CameraStreamService,
     private signalrService: SignalrService,
     private route: ActivatedRoute,
-    private securityIncidents: SecurityIncidentService
+    private securityIncidents: SecurityIncidentService,
+    public readonly siteAccess: SiteAccessService
   ) {}
 
   ngOnInit(): void {
@@ -98,6 +103,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
           const payload = response?.data?.pageData ?? response?.data ?? response ?? [];
           if (!Array.isArray(payload)) return;
           const devices: any[] = payload.filter((device: any) => !!device?.aiSecurityInstalled);
+          this.securitySiteDevices = devices;
           this.securityIncidents.registerDevices(devices);
           this.syncSecurityState();
           // The site can contain multiple AI edge devices. Hydrate their recent
@@ -117,6 +123,16 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         },
         error: () => { /* The selected device's live alerts still work. */ }
       });
+  }
+
+  get accessSiteKey(): string {
+    const found = this.securitySiteDevices.some(device => Number(device.id ?? device.deviceId) === this.deviceId);
+    return found ? this.securityIncidents.siteKeyForDevice(this.deviceId) : '';
+  }
+
+  get accessSiteLabel(): string {
+    const device = this.securitySiteDevices.find(item => Number(item.id ?? item.deviceId) === this.deviceId);
+    return String(device?.siteName ?? device?.name ?? device?.code ?? `Device ${this.deviceId}`);
   }
 
   get activityDeviceId(): number | null {
@@ -150,7 +166,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
 
   private syncSecurityState(): void {
     this.activeSecurityIncident = this.securityIncidents.getIncident(this.deviceId);
-    this.securityCategory = this.activeSecurityIncident?.category ?? 'healthy';
+    this.activeAccessSession = this.securityIncidents.getAccessSession(this.deviceId);
+    this.securityCategory = this.securityIncidents.getCategory(this.deviceId);
   }
 
   onTimeSpanChange(event: Event): void {

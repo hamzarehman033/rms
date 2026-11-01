@@ -410,6 +410,7 @@
 .security-monitor-side > section:nth-child(1) { grid-area: radar; display: flex; flex-direction: column; min-width: 0; }
 .security-monitor-side > section:nth-child(2) { grid-area: alerts; min-width: 0; }
 .security-monitor-side > section:nth-child(3) { grid-area: activities; min-width: 0; }
+.security-monitor-side > .site-access-section { grid-area: access; min-width: 0; }
 .security-monitor-main .camera-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; align-items: stretch; }
 .security-monitor-main .camera-card { min-width: 0; height: 100%; }
 .security-monitor-main .camera-card .hstack { flex-wrap: wrap; }
@@ -471,6 +472,7 @@
 			'radar'
 			'alerts'
 			'activities'
+			'access'
 			'evidence'
 			'details';
 	}
