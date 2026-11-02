@@ -176,10 +176,19 @@ export class CameraStreamService {
     }
 
     const peer = session.peer;
-    const sender = session.audioSender;
-    if (!peer || !sender) {
+    if (!peer) {
       throw new Error('Audio channel is not ready. Wait for the stream, then try again.');
     }
+
+    await session.signalQueue;
+    if (this.sessions.get(key) !== session || session.peer !== peer) {
+      throw new Error('Camera stream is no longer active');
+    }
+    const sender = session.audioSender;
+    if (!sender) {
+      throw new Error('Publisher offer did not negotiate a bidirectional audio channel.');
+    }
+
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error('Microphone access requires HTTPS or localhost and a supported browser');
     }
