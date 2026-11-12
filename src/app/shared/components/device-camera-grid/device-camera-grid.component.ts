@@ -53,6 +53,11 @@ export class DeviceCameraGridComponent implements OnDestroy {
 
   liveCameras: LiveCamera[] = [];
 
+  /** 5+ cameras: 3 per row with smaller tiles. */
+  get isCompact(): boolean {
+    return this.liveCameras.length > 4;
+  }
+
   @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
   @ViewChildren('cameraAudio') private cameraAudios?: QueryList<ElementRef<HTMLAudioElement>>;
 

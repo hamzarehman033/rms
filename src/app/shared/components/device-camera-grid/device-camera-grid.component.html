@@ -1,4 +1,4 @@
-<div class="camera-grid" *ngIf="liveCameras.length; else noCameras">
+<div class="camera-grid" [class.compact]="isCompact" *ngIf="liveCameras.length; else noCameras">
   <div class="card camera-card" *ngFor="let camera of liveCameras" [attr.data-camera-index]="camera.cameraIndex">
     <div class="hstack justify-between items-start mb-2">
       <div class="font-medium">{{ camera.name }}</div>

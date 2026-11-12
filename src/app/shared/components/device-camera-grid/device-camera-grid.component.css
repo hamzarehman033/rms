@@ -85,3 +85,19 @@
 @media (max-width: 700px) {
 	:host(.fill-height) .camera-grid { grid-template-columns: 1fr; }
 }
+
+/* Compact (5+ cameras): 3 per row, smaller tiles. */
+:host .camera-grid.compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+:host .camera-grid.compact .camera-card:not(:fullscreen) .camera-viewport {
+	aspect-ratio: 16 / 10;
+	min-height: 0;
+	flex: none;
+}
+
+@media (max-width: 1100px) {
+	:host .camera-grid.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+	:host .camera-grid.compact { grid-template-columns: 1fr; }
+}
