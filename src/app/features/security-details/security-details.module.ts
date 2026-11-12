@@ -8,6 +8,7 @@ import { DockModule } from 'primeng/dock';
 import { SecurityDetailsTabsComponent } from './security-details-tabs.component';
 import { SecurityDeviceDetailComponent } from './device-detail/security-device-detail.component';
 import { ScheduledActivitiesComponent } from '../../shared/components/scheduled-activities/scheduled-activities.component';
+import { DeviceCameraGridComponent } from '../../shared/components/device-camera-grid/device-camera-grid.component';
 import { SecurityRadarComponent } from './security-radar/security-radar.component';
 import { SiteAccessControlComponent } from './site-access-control/site-access-control.component';
 
@@ -28,6 +29,7 @@ const routes: Routes = [
     ScheduledActivitiesComponent,
     SecurityRadarComponent,
     SiteAccessControlComponent,
+    DeviceCameraGridComponent,
   ],
 })
 export class SecurityDetailsModule {}

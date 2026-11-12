@@ -8,6 +8,7 @@ import { DockModule } from 'primeng/dock';
 import { EhsDetailsTabsComponent } from './ehs-details-tabs.component';
 import { EhsDeviceDetailComponent } from './device-detail/ehs-device-detail.component';
 import { ScheduledActivitiesComponent } from '../../shared/components/scheduled-activities/scheduled-activities.component';
+import { DeviceCameraGridComponent } from '../../shared/components/device-camera-grid/device-camera-grid.component';
 
 const routes: Routes = [
   { path: '', component: EhsDetailsTabsComponent },
@@ -24,6 +25,7 @@ const routes: Routes = [
     TabsModule,
     DockModule,
     ScheduledActivitiesComponent,
+    DeviceCameraGridComponent,
   ],
 })
 export class EhsDetailsModule {}

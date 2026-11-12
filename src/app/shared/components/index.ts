@@ -13,3 +13,4 @@ export * from './modal-dialog/modal-dialog.component';
 export * from './device-view/device-view.component';
 export * from './scheduled-activities/scheduled-activities.component';
 export * from './chatbot/chatbot.component';
+export * from './device-camera-grid/device-camera-grid.component';

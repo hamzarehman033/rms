@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DeviceType } from '../constants/device-type';
 
@@ -83,7 +83,22 @@ export class DevicesService {
   private readonly baseUrl = environment.baseUrl;
   private readonly url = '/Device';
 
+  private maxCamerasPerDevice$?: Observable<number>;
+
   constructor(private http: HttpClient) {}
+
+  /** Max cameras per device, from the backend. Cached; failures are retried. */
+  getMaxCamerasPerDevice(): Observable<number> {
+    this.maxCamerasPerDevice$ ??= this.http.get<any>(`${this.baseUrl}${this.url}/camera-settings`).pipe(
+      map((response) => Number(response?.data?.maxCamerasPerDevice) || 0),
+      catchError((error) => {
+        this.maxCamerasPerDevice$ = undefined;
+        return throwError(() => error);
+      }),
+      shareReplay(1)
+    );
+    return this.maxCamerasPerDevice$;
+  }
 
   getDevices(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}${this.url}`);

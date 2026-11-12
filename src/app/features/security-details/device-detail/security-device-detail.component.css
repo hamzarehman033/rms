@@ -230,68 +230,6 @@
 	background: var(--border);
 }
 
-/* Page-specific: camera placeholders only */
-.camera-grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 10px;
-}
-
-@media (min-width: 900px) {
-	.camera-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-}
-
-.camera-card {
-	display: flex;
-	flex-direction: column;
-}
-
-.camera-card:fullscreen,
-.camera-card:-webkit-full-screen {
-	width: 100%;
-	height: 100%;
-	box-sizing: border-box;
-	padding: 16px;
-	border-radius: 0;
-	background: #000;
-	color: #fff;
-}
-
-.camera-card:fullscreen .icon-btn,
-.camera-card:-webkit-full-screen .icon-btn {
-	color: #fff;
-	border-color: rgba(255, 255, 255, 0.28);
-}
-
-.camera-viewport {
-	aspect-ratio: 16 / 10;
-	border-radius: 8px;
-	border: 1px solid var(--border);
-	background: var(--surface-1);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	overflow: hidden;
-}
-
-.camera-card:fullscreen .camera-viewport,
-.camera-card:-webkit-full-screen .camera-viewport {
-	flex: 1;
-	aspect-ratio: auto;
-	min-height: 0;
-	border: none;
-	background: #000;
-}
-
-.camera-card:fullscreen video,
-.camera-card:-webkit-full-screen video {
-	width: 100%;
-	height: 100%;
-	object-fit: contain;
-}
-
 .camera-footer {
 	margin-top: 8px;
 }
@@ -411,10 +349,6 @@
 .security-monitor-side > section:nth-child(2) { grid-area: alerts; min-width: 0; }
 .security-monitor-side > section:nth-child(3) { grid-area: activities; min-width: 0; }
 .security-monitor-side > .site-access-section { grid-area: access; min-width: 0; }
-.security-monitor-main .camera-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; align-items: stretch; }
-.security-monitor-main .camera-card { min-width: 0; height: 100%; }
-.security-monitor-main .camera-card .hstack { flex-wrap: wrap; }
-.security-monitor-main .camera-viewport { aspect-ratio: auto; min-height: 280px; flex: 1; }
 .security-alert-list { max-height: 290px; overflow-y: auto; }
 .security-monitor-side .alert-item { align-items:flex-start; gap: 8px; }
 .security-monitor-side .alert-item .meta { overflow-wrap:anywhere; }
@@ -478,6 +412,5 @@
 	}
 }
 @media (max-width: 700px) {
-	.security-monitor-main .camera-grid { grid-template-columns: 1fr; }
 	.security-monitor-main .event-details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
