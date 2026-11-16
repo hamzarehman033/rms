@@ -91,17 +91,17 @@
     <div class="security-review-heading">
       <span>Security Status</span>
       <strong class="security-category" [ngClass]="securityCategory">{{ securityCategoryLabel }}</strong>
-      <small *ngIf="activeAccessSession as access">
-        Activity access until {{ access.expiresAt | date:'shortTime' }}
+      <small *ngIf="activeAccessSummary.approved">
+        {{ activeAccessSummary.authorized.length }} authorized work order(s) &middot; Next deadline {{ activeAccessSummary.validUntil | date:'shortTime' }}
+      </small>
+      <small *ngIf="activeAccessSummary.attention.length">
+        Work-order approval paused &middot; {{ activeAccessSummary.attention.length }} team(s) need review
       </small>
       <small *ngIf="activeSecurityIncident as incident">
         Expires {{ incident.expiresAt | date:'shortTime' }} · {{ incident.cameraIds.length }} camera(s)
       </small>
     </div>
     <div class="security-review-actions" *ngIf="securityCategory === 'intruder'">
-      <button type="button" class="review-access" (click)="reviewIntrusion('approved-access')">
-        <i class="pi pi-check-circle"></i> Mark Approved Access
-      </button>
       <button type="button" class="review-guard" (click)="reviewIntrusion('guard')">
         <i class="pi pi-shield"></i> Mark Guard
       </button>
@@ -185,16 +185,15 @@
 
       <section>
         <div class="right-sec-title"><i class="pi pi-calendar"></i> Scheduled Activities</div>
-        <app-scheduled-activities [deviceId]="activityDeviceId"
+        <app-scheduled-activities [deviceId]="activityDeviceId" [deviceIds]="accessDeviceIds" [siteKey]="accessSiteKey"
           [enableAccessSelection]="true"
-          [canSelectAccess]="!!accessSiteKey && siteAccess.canManage() && !siteAccess.storageError && !activeAccessSession && !activityAccess.busy"
-          [activeAccessActivityId]="activeAccessSession?.activity?.id ?? null"
+          [canSelectAccess]="!!accessSiteKey && siteAccess.canManage() && !siteAccess.storageError && !activityAccess.busy"
           (accessRequested)="activityAccess.selectActivity($event)"></app-scheduled-activities>
       </section>
 
       <section class="site-access-section">
         <div class="right-sec-title"><i class="pi pi-shield"></i> Site Access Control</div>
-        <app-site-access-control #activityAccess [deviceId]="activityDeviceId"
+        <app-site-access-control #activityAccess [deviceId]="activityDeviceId" [deviceIds]="accessDeviceIds"
           [siteKey]="accessSiteKey" [siteLabel]="accessSiteLabel"></app-site-access-control>
       </section>
     </aside>

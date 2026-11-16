@@ -8,7 +8,7 @@ import { SignalrService } from '../../../core/services/signalr.service';
 import { SecurityIncidentService, SecuritySiteCategory, SecuritySiteIncident, SecurityReviewCategory } from '../../../core/services/security-incident.service';
 import { ActivatedRoute } from '@angular/router';
 import { SiteAccessService } from '../../../core/services/site-access.service';
-import { SiteAccessSession } from '../../../core/services/site-access.model';
+import { SiteAccessSession, SiteAccessSummary } from '../../../core/services/site-access.model';
 import { toast } from '../../../utils/global-toast';
 
 @Component({
@@ -36,7 +36,10 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   private readonly busyActions = new Set<'siren' | 'flash' | 'door' | 'siteLight'>();
   activeSecurityIncident: SecuritySiteIncident | null = null;
   activeAccessSession: SiteAccessSession | null = null;
+  accessDeviceIds: number[] = [];
+  activeAccessSummary: SiteAccessSummary = { sessions: [], authorized: [], attention: [], approved: false, validUntil: null };
   private securitySiteDevices: any[] = [];
+  private workOrderSiteDevices: any[] = [];
   securityCategory: SecuritySiteCategory = 'healthy';
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
@@ -87,6 +90,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         next: response => {
           const payload = response?.data?.pageData ?? response?.data ?? response ?? [];
           if (!Array.isArray(payload)) return;
+          this.workOrderSiteDevices = payload;
           const devices: any[] = payload.filter((device: any) => !!device?.aiSecurityInstalled);
           this.securitySiteDevices = devices;
           this.securityIncidents.registerDevices(devices);
@@ -146,12 +150,22 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       toast.error('This intrusion is no longer active or has already been classified');
       return;
     }
-    toast.success(category === 'guard' ? 'Site marked as Guard' : 'Site marked as Approved Access');
+    toast.success('Site marked as Guard');
   }
 
   private syncSecurityState(): void {
     this.activeSecurityIncident = this.securityIncidents.getIncident(this.deviceId);
     this.activeAccessSession = this.securityIncidents.getAccessSession(this.deviceId);
+    this.activeAccessSummary = this.securityIncidents.getAccessSummary(this.deviceId);
+    const key = this.securityIncidents.siteKeyForDevice(this.deviceId);
+    const ids = this.workOrderSiteDevices.filter(device => {
+      const id = Number(device.id ?? device.deviceId);
+      const site = device.siteId ?? device.site?.id;
+      const mappedKey = site !== null && site !== undefined && String(site).trim() !== '' && String(site) !== '0'
+        ? `site:${String(site).trim()}` : `device:${id}`;
+      return id > 0 && mappedKey === key;
+    }).map(device => Number(device.id ?? device.deviceId)).sort((a, b) => a - b);
+    if (ids.join(',') !== this.accessDeviceIds.join(',')) this.accessDeviceIds = ids;
     this.securityCategory = this.securityIncidents.getCategory(this.deviceId);
   }
 

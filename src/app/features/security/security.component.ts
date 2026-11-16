@@ -1297,10 +1297,10 @@ export class SecurityComponent implements OnInit {
 
   getAiSecurityStatusTitle(device: any): string {
     const id = this.toAiDeviceNumericId(device);
-    const access = id === null ? null : this.securityIncidents.getAccessSession(id);
-    return access
-      ? `Activity access: ${access.activity.name} | ${access.activity.team} | Ends ${new Date(access.expiresAt).toLocaleString()}`
-      : this.getAiSecurityStatusLabel(device);
+    const summary = id === null ? null : this.securityIncidents.getAccessSummary(id);
+    if (summary?.attention.length) return `Approval paused: ${summary.attention.length} work order(s) require NOC review. Intrusion monitoring is enabled.`;
+    if (summary?.approved) return `${summary.authorized.length} authorized work order(s): ${summary.authorized.map(s => s.activity.team).join(', ')} | Next deadline ${new Date(summary.validUntil!).toLocaleString()}`;
+    return this.getAiSecurityStatusLabel(device);
   }
 
   getAiSecurityStatusLabel(device: any): string {

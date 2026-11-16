@@ -5,10 +5,10 @@ import { AiVisionPacketApiModel } from './vision.service';
 import { CustomerService } from './customer.service';
 import { SignalrService } from './signalr.service';
 import { SiteAccessService } from './site-access.service';
-import { SiteAccessSession } from './site-access.model';
+import { SiteAccessSession, SiteAccessSummary } from './site-access.model';
 
 export type SecuritySiteCategory = 'healthy' | 'intruder' | 'approved-access' | 'guard';
-export type SecurityReviewCategory = 'approved-access' | 'guard';
+export type SecurityReviewCategory = 'guard';
 
 export interface SecuritySiteIncident {
   siteKey: string;
@@ -136,11 +136,15 @@ export class SecurityIncidentService implements OnDestroy {
     return this.siteAccess.getActive(this.siteKeyForDevice(deviceId));
   }
 
-  /** Review ALL currently active intrusions at the site, not just a selected camera. */
+  getAccessSummary(deviceId: number | string): SiteAccessSummary {
+    return this.siteAccess.getSummary(this.siteKeyForDevice(deviceId));
+  }
+
+  /** Guard review remains separate; team approval requires a work order. */
   classifySite(deviceId: number | string, category: SecurityReviewCategory): boolean {
     const key = this.siteKeyForDevice(deviceId);
     const incident = this.getIncident(deviceId);
-    if (!key || !incident || incident.category !== 'intruder') return false;
+    if (category !== 'guard' || !key || !incident || incident.category !== 'intruder') return false;
 
     this.publish({
       ...this.statesSubject.value,
@@ -210,6 +214,7 @@ export class SecurityIncidentService implements OnDestroy {
       ? timestamp : occurredAt;
     // Late history/replays from a completed authorization must not reopen it.
     if (rearmAfter && Number.isFinite(sourceTime) && sourceTime > 0 && sourceTime <= rearmAfter) return null;
+    if (Number.isFinite(sourceTime) && sourceTime > 0 && this.siteAccess.wasAuthorized(siteKey, sourceTime)) return null;
     // Missing/invalid live timestamps are treated as new receipt-time detections,
     // not silently ignored. A backend timestamp is needed for exact replay ordering.
     const saved = state[siteKey];
@@ -348,6 +353,12 @@ export class SecurityIncidentService implements OnDestroy {
             Number.isFinite(value.expiresAt) && Number.isFinite(keepUntil) && keepUntil > now &&
             ['intruder', 'approved-access', 'guard'].includes(value.category) &&
             Array.isArray(value.eventKeys) && Array.isArray(value.cameraIds);
+        }).map(([key, raw]) => {
+          const incident = raw as SecuritySiteIncident;
+          // Old standalone approvals cannot bypass the new work-order requirement.
+          if (incident.category !== 'approved-access') return [key, incident];
+          const { reviewedAt: _reviewedAt, ...rest } = incident;
+          return [key, { ...rest, category: 'intruder' as const }];
         })
       );
     } catch {

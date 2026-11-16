@@ -58,3 +58,14 @@ legend { font-size: 12px; font-weight: 700; margin-bottom: 10px; padding: 0; }
 .access-history-entry strong span, .access-history-entry > span { color: var(--muted-foreground); font-weight: 400; }
 .access-history-entry p { margin: 0; }
 @media (prefers-reduced-motion: reduce) { :host { scroll-behavior: auto; } }
+/* Per-work-order sessions; no fixed heights or layout changes outside this card. */
+.access-overview { display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:11px; color:var(--muted-foreground); margin:12px 0; }
+.access-session { margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:9px; min-width:0; }
+.access-session.session-attention { border-color:var(--access-warning); background:color-mix(in srgb,var(--access-warning) 3%,var(--card)); }
+.session-selected { outline:2px solid color-mix(in srgb,var(--access-info) 55%,transparent); outline-offset:2px; }
+.access-actions > .access-wide { flex-basis:100%; }
+.access-closed-visit { padding:12px 0; border-bottom:1px solid var(--border); overflow-wrap:anywhere; line-height:1.5; }
+.access-closed-visit p { color:var(--muted-foreground); margin:5px 0; }
+.access-state { white-space:normal; overflow-wrap:anywhere; }
+.access-form { scroll-margin-top:90px; }
+@media (max-width:400px) { .access-session { padding:10px; } .access-meta dd { text-align:left; } .access-meta > div { flex-direction:column; gap:2px; } }

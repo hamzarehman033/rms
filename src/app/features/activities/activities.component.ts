@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { ActivityService } from '../../core/services/activity.service';
+import { SiteAccessService } from '../../core/services/site-access.service';
 import { DevicesService } from '../../core/services/devices.service';
 import { toast } from '../../utils/global-toast';
 
@@ -23,7 +24,8 @@ export class ActivitiesComponent implements OnInit {
   constructor(
     private activityService: ActivityService,
     private devicesService: DevicesService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    public readonly siteAccess: SiteAccessService
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +79,8 @@ export class ActivitiesComponent implements OnInit {
           next: () => {
             this.isLoading = false;
             toast.success('Success', 'Activity deleted successfully.');
+            void this.siteAccess.recheckActivity(Number(activity.id), true).catch(error =>
+              toast.warning('Review work-order approval', error instanceof Error ? error.message : 'Recheck the active visit.'));
             this.loadActivities();
           },
           error: () => {
@@ -94,6 +98,9 @@ export class ActivitiesComponent implements OnInit {
   }
 
   onActivityUpdated(): void {
+    const editedId = Number(this.selectedActivityId);
+    if (editedId > 0) void this.siteAccess.recheckActivity(editedId).catch(error =>
+      toast.warning('Review work-order approval', error instanceof Error ? error.message : 'Recheck the active visit.'));
     this.displayAddActivityDialog = false;
     this.selectedActivityId = null;
     this.loadActivities();
@@ -112,7 +119,7 @@ export class ActivitiesComponent implements OnInit {
   }
 
   get pastActivities(): number {
-    return this.activities.filter(activity => this.getScheduleStatus(activity) === 'Past').length;
+    return this.activities.filter(activity => this.siteAccess.describeActivity(activity).rank === 5).length;
   }
 
   get filteredActivities(): any[] {
@@ -123,7 +130,7 @@ export class ActivitiesComponent implements OnInit {
     } else if (this.selectedTab === 2) {
       filtered = filtered.filter(activity => this.isToday(activity.date));
     } else if (this.selectedTab === 3) {
-      filtered = filtered.filter(activity => this.getScheduleStatus(activity) === 'Past');
+      filtered = filtered.filter(activity => this.siteAccess.describeActivity(activity).rank === 5);
     }
 
     if (this.searchTerm) {
@@ -136,24 +143,14 @@ export class ActivitiesComponent implements OnInit {
       );
     }
 
-    return filtered;
+    return [...filtered].sort((a, b) => {
+      const left = this.siteAccess.describeActivity(a), right = this.siteAccess.describeActivity(b);
+      return left.rank - right.rank || left.sortAt - right.sortAt || Number(a.id) - Number(b.id);
+    });
   }
 
   getScheduleStatus(activity: any): string {
-    const start = this.toDateTime(activity.date, activity.startTime);
-    const end = this.toDateTime(activity.date, activity.endTime);
-    if (!start) {
-      return 'Upcoming';
-    }
-
-    const now = Date.now();
-    if (end && now > end.getTime()) {
-      return 'Past';
-    }
-    if (now >= start.getTime() && (!end || now <= end.getTime())) {
-      return 'In Progress';
-    }
-    return 'Upcoming';
+    return this.siteAccess.describeActivity(activity).label;
   }
 
   formatTime(value: string): string {
