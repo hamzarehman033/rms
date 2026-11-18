@@ -1,0 +1,134 @@
+{
+  "feature": "Scheduled work-order access v2 - frontend preview",
+  "baseline_zip": "rms-main (1).zip",
+  "baseline_zip_sha256": "e4642c8e169c7724a504d952eb326fd27a9f4b9967ede7d085e431af12e0e53c",
+  "policy": {
+    "early_start_minutes": 60,
+    "presence_confirmation_minutes": 15,
+    "warning_minutes": 5,
+    "concurrent_work_orders": true,
+    "unscheduled_access": false
+  },
+  "validation": {
+    "focused_checks_passed": 66,
+    "layout_fixtures_passed": 64,
+    "full_angular_build_performed": false,
+    "live_backend_or_device_tests_performed": false
+  },
+  "files": [
+    {
+      "path": "docs/WORK_ORDER_ACCESS_V2.md",
+      "change": "added",
+      "baseline_sha256": null,
+      "updated_sha256": "525136d43673723e217dfecc637370854f6630186f6b1f7bfd5d33bc514cc55b"
+    },
+    {
+      "path": "docs/WORK_ORDER_ACCESS_V2_BACKEND.md",
+      "change": "added",
+      "baseline_sha256": null,
+      "updated_sha256": "f5331f3235c1a688b2c52d9b515ad3c6fe84fe4905d53b4de6e55e9722a06a31"
+    },
+    {
+      "path": "src/app/core/services/security-incident.service.ts",
+      "change": "modified",
+      "baseline_sha256": "892fcb6fdbf06a286e571ba38db060c08b43bbded09a6d46032d792854bae727",
+      "updated_sha256": "08d41b892bae65d883472682cacaae58469b434bff64aa3a1bd7069c3dc5192b"
+    },
+    {
+      "path": "src/app/core/services/site-access.model.ts",
+      "change": "modified",
+      "baseline_sha256": "bfbf019f91a26c47da9a2a77dbdc8217593d7eefd77c0fd4cb39c020257bb96c",
+      "updated_sha256": "3a962929cc5f38682c50ff96a0c14699e1b17dbb2ca8cfc659b887240154844d"
+    },
+    {
+      "path": "src/app/core/services/site-access.service.ts",
+      "change": "modified",
+      "baseline_sha256": "4da6efee4614e407a605a7a25dd1ccebf3eb53e4c32cec572f62af2bad43e636",
+      "updated_sha256": "b96d05376266d86336ac7783bd959d5d5a2c735e2169aa997f2f7bbc41cfba56"
+    },
+    {
+      "path": "src/app/core/services/work-order-catalog.ts",
+      "change": "added",
+      "baseline_sha256": null,
+      "updated_sha256": "075be51c72852ded4fbb0456791466ac8ec7a6b404fa33243bcbeb6b234f9093"
+    },
+    {
+      "path": "src/app/core/services/work-order-policy.ts",
+      "change": "added",
+      "baseline_sha256": null,
+      "updated_sha256": "08c16cdca9be0f6f645af94ca5c18e4f4cf399a37c256bb52c02325e77877e98"
+    },
+    {
+      "path": "src/app/features/activities/activities.component.html",
+      "change": "modified",
+      "baseline_sha256": "639a8b4bd7213c256e1662b05e89281e6d2eff8aeee6ac4e33600db08c5f84a1",
+      "updated_sha256": "36c70430cbf82f957933b1b9a6d373892812f9253862aa4b512a4808d23c53b5"
+    },
+    {
+      "path": "src/app/features/activities/activities.component.ts",
+      "change": "modified",
+      "baseline_sha256": "445e53b83b91a1c1cff7829e81b429327c14f8a0fd6eabf24f4345c9c02c6715",
+      "updated_sha256": "c77b0c62c68e8b00d6513d34a97862b2b864d3ea914c0aa6bf83a8807eb53057"
+    },
+    {
+      "path": "src/app/features/security-details/device-detail/security-device-detail.component.html",
+      "change": "modified",
+      "baseline_sha256": "ca0b55fcc057b046c1511843f15c40bc8cc6d715c699183348b6be510edd2ad0",
+      "updated_sha256": "8191486f9e6cfd9fc36a1a7eb3f3865d6c4bdae834e255b9730e50aafc340468"
+    },
+    {
+      "path": "src/app/features/security-details/device-detail/security-device-detail.component.ts",
+      "change": "modified",
+      "baseline_sha256": "79f7541e8bda846d18bf0f2d1e1ed354fff27d74cdca3714d637f3e51a63c977",
+      "updated_sha256": "becc0d64850f21df8ddad344cdc1427b641fbbba92ac0398c3b90e4592614d9c"
+    },
+    {
+      "path": "src/app/features/security-details/site-access-control/site-access-control.component.css",
+      "change": "modified",
+      "baseline_sha256": "7bc16ceebb198819703387696697f36851ddba015eb772a29c6061581473e1e6",
+      "updated_sha256": "38e3b9aa2b0e7764132f1712c3b9cdf7cd2c1e6894aa01cf44a16e104c3794c0"
+    },
+    {
+      "path": "src/app/features/security-details/site-access-control/site-access-control.component.html",
+      "change": "modified",
+      "baseline_sha256": "2b2905343d9baa9f355f008408b7f1f01a50b4d3814a755f20684f1533933408",
+      "updated_sha256": "d408953c68693b5280cd28b702f7be1e0850ebd9ddce5901a3b612da72250c87"
+    },
+    {
+      "path": "src/app/features/security-details/site-access-control/site-access-control.component.ts",
+      "change": "modified",
+      "baseline_sha256": "31ce33ad69f33ca3c3fe7e097af75f4562ca630dbff9535f20ce4c8afff82862",
+      "updated_sha256": "5b8c8e9d445fd09a313810e9e01dfe7c0863fd709deba0d80ad18736324b5b12"
+    },
+    {
+      "path": "src/app/features/security/security.component.ts",
+      "change": "modified",
+      "baseline_sha256": "9a642d7f97b1c4523e26eb69b5a3f6533ea20aa40e8089df2b24d6692e282fd3",
+      "updated_sha256": "a50ff27dea6f82f25c4b429235f8fe9912bf6f80b9a17376405b96a6745ce77a"
+    },
+    {
+      "path": "src/app/shared/components/scheduled-activities/scheduled-activities.component.css",
+      "change": "modified",
+      "baseline_sha256": "a6f8ab1c5b6fdea1f96d85231dedf0324fc5f5a07800654f666f686dbc8ba932",
+      "updated_sha256": "6921fa853fc4a717feeecf66589bead511bc93503e892690c9f860f9c5f29684"
+    },
+    {
+      "path": "src/app/shared/components/scheduled-activities/scheduled-activities.component.html",
+      "change": "modified",
+      "baseline_sha256": "2fcd7068109de66a44f5ca4f0a1e73f15c342cac0cc0b9ebd9d0358bb342b878",
+      "updated_sha256": "1e183c3592260ce6fea9790f687e9fc7daee30539aca7c3fac65cbecd8cc756a"
+    },
+    {
+      "path": "src/app/shared/components/scheduled-activities/scheduled-activities.component.ts",
+      "change": "modified",
+      "baseline_sha256": "c0b9a6ebe0ca71edbef9c296bbaa797c2d55a19baa4f9981d135e946196796a3",
+      "updated_sha256": "e0cc95b76aa372c6cd74ab42da1f890bd19a9f2c79d661482d407ffdfd15c05b"
+    },
+    {
+      "path": "tools/work-order-access-checks.cjs",
+      "change": "added",
+      "baseline_sha256": null,
+      "updated_sha256": "c7cc4a09a06e953b99f2c71b434af55c1ac0efdebdd4862a212b1dcc11b64d82"
+    }
+  ]
+}

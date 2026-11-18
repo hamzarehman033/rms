@@ -16,8 +16,6 @@ type InfrastructureSection = 'Battery' | 'Solar' | 'Generator';
   standalone: false,
 })
 export class SiteConfigurationComponent {
-  private static readonly maxCameras = 2;
-  private static readonly cameraIndexes = [1, 2] as const;
   @Input() site: Site | null = null;
   @Input() deviceId: string | number | null = null;
   @Output() siteConfigured = new EventEmitter<any>();
@@ -26,6 +24,8 @@ export class SiteConfigurationComponent {
   isLoadingConfiguration = false;
   isSaving = false;
   sectionEnabled: InfrastructureSection[] = [];
+  // From the backend; 0 until loaded.
+  maxCameras = 0;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -65,7 +65,7 @@ export class SiteConfigurationComponent {
   }
 
   get canAddCamera(): boolean {
-    return this.cameras.length < SiteConfigurationComponent.maxCameras;
+    return this.cameras.length < this.maxCameras;
   }
 
   cameraLabel(index: number): string {
@@ -85,6 +85,14 @@ export class SiteConfigurationComponent {
   }
 
   ngOnInit(): void {
+    this.devices.getMaxCamerasPerDevice().subscribe({
+      next: (max) => {
+        this.maxCameras = max;
+      },
+      error: () => {
+        toast.error('Failed to load camera settings');
+      }
+    });
     this.loadInfrastructure();
   }
 
@@ -242,7 +250,6 @@ export class SiteConfigurationComponent {
     rows
       .slice()
       .sort((left, right) => Number(left?.cameraIndex ?? 0) - Number(right?.cameraIndex ?? 0))
-      .slice(0, SiteConfigurationComponent.maxCameras)
       .forEach((camera) => {
         this.cameras.push(this.createCameraGroup({
           cameraIndex: this.resolveCameraIndex(camera?.cameraIndex),
@@ -264,18 +271,24 @@ export class SiteConfigurationComponent {
     }));
   }
 
+  /** Keeps a saved index if it's valid (1, 2, 3, …) and free; otherwise takes the next free one. */
   private resolveCameraIndex(value?: number): number {
     const parsed = Number(value);
-    if ((parsed === 1 || parsed === 2) && !this.isCameraIndexUsed(parsed)) {
+    if (Number.isInteger(parsed) && parsed >= 1 && !this.isCameraIndexUsed(parsed)) {
       return parsed;
     }
 
     return this.nextCameraIndex();
   }
 
+  /** Smallest free index starting at 1, e.g. used [1, 2, 4] → 3. */
   private nextCameraIndex(): number {
     const used = this.usedCameraIndexes();
-    return SiteConfigurationComponent.cameraIndexes.find((index) => !used.has(index)) ?? 2;
+    let index = 1;
+    while (used.has(index)) {
+      index++;
+    }
+    return index;
   }
 
   private isCameraIndexUsed(index: number): boolean {

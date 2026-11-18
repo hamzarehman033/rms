@@ -1,27 +1,15 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
 import { DeviceCameraPayload, DevicesService } from '../../../core/services/devices.service';
-import { CameraStreamService } from '../../../core/services/camera-stream.service';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
 import { SignalrService } from '../../../core/services/signalr.service';
 import { SecurityIncidentService, SecuritySiteCategory, SecuritySiteIncident, SecurityReviewCategory } from '../../../core/services/security-incident.service';
 import { ActivatedRoute } from '@angular/router';
 import { SiteAccessService } from '../../../core/services/site-access.service';
-import { SiteAccessSession } from '../../../core/services/site-access.model';
+import { SiteAccessSession, SiteAccessSummary } from '../../../core/services/site-access.model';
 import { toast } from '../../../utils/global-toast';
-
-interface LiveCamera {
-  cameraIndex: number;
-  name: string;
-  isEnabled: boolean;
-  isStreaming: boolean;
-  isBusy: boolean;
-  hasVideo: boolean;
-  isAudioConnected: boolean;
-  isAudioBusy: boolean;
-}
 
 @Component({
   selector: 'app-security-device-detail',
@@ -48,17 +36,17 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   private readonly busyActions = new Set<'siren' | 'flash' | 'door' | 'siteLight'>();
   activeSecurityIncident: SecuritySiteIncident | null = null;
   activeAccessSession: SiteAccessSession | null = null;
+  accessDeviceIds: number[] = [];
+  activeAccessSummary: SiteAccessSummary = { sessions: [], authorized: [], attention: [], approved: false, validUntil: null };
   private securitySiteDevices: any[] = [];
+  private workOrderSiteDevices: any[] = [];
   securityCategory: SecuritySiteCategory = 'healthy';
   private readonly historyPayloads = new Map<number, VisionDecodedPayload>();
   private readonly destroy$ = new Subject<void>();
-  @ViewChildren('cameraVideo') private cameraVideos?: QueryList<ElementRef<HTMLVideoElement>>;
-  @ViewChildren('cameraAudio') private cameraAudios?: QueryList<ElementRef<HTMLAudioElement>>;
 
   constructor(
     private visionService: VisionService,
     private devicesService: DevicesService,
-    private cameraStreamService: CameraStreamService,
     private signalrService: SignalrService,
     private route: ActivatedRoute,
     private securityIncidents: SecurityIncidentService,
@@ -80,8 +68,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       this.syncSecurityState();
 
       if (this.deviceId) {
-        void this.cameraStreamService.stopAll();
         this.cameras = [];
+        this.streamingCameraCount = 0;
         this.sirenOn = false;
         this.flashOn = false;
         this.doorOpen = false;
@@ -102,6 +90,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         next: response => {
           const payload = response?.data?.pageData ?? response?.data ?? response ?? [];
           if (!Array.isArray(payload)) return;
+          this.workOrderSiteDevices = payload;
           const devices: any[] = payload.filter((device: any) => !!device?.aiSecurityInstalled);
           this.securitySiteDevices = devices;
           this.securityIncidents.registerDevices(devices);
@@ -161,12 +150,22 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       toast.error('This intrusion is no longer active or has already been classified');
       return;
     }
-    toast.success(category === 'guard' ? 'Site marked as Guard' : 'Site marked as Approved Access');
+    toast.success('Site marked as Guard');
   }
 
   private syncSecurityState(): void {
     this.activeSecurityIncident = this.securityIncidents.getIncident(this.deviceId);
     this.activeAccessSession = this.securityIncidents.getAccessSession(this.deviceId);
+    this.activeAccessSummary = this.securityIncidents.getAccessSummary(this.deviceId);
+    const key = this.securityIncidents.siteKeyForDevice(this.deviceId);
+    const ids = this.workOrderSiteDevices.filter(device => {
+      const id = Number(device.id ?? device.deviceId);
+      const site = device.siteId ?? device.site?.id;
+      const mappedKey = site !== null && site !== undefined && String(site).trim() !== '' && String(site) !== '0'
+        ? `site:${String(site).trim()}` : `device:${id}`;
+      return id > 0 && mappedKey === key;
+    }).map(device => Number(device.id ?? device.deviceId)).sort((a, b) => a - b);
+    if (ids.join(',') !== this.accessDeviceIds.join(',')) this.accessDeviceIds = ids;
     this.securityCategory = this.securityIncidents.getCategory(this.deviceId);
   }
 
@@ -188,7 +187,8 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     { label: 'Stream Health', code: null, count: 0 },
   ];
 
-  cameras: LiveCamera[] = [];
+  cameras: DeviceCameraPayload[] = [];
+  streamingCameraCount = 0;
 
   aiAlerts: Array<{ id: number; title: string; meta: string; time: string; severity: string }> = [];
 
@@ -218,50 +218,9 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     { label: 'Status', value: '-' },
   ];
 
-  private fullscreenCameraIndex: number | null = null;
-
   ngOnDestroy(): void {
-    void this.exitCameraFullscreen();
-    void this.cameraStreamService.stopAll();
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  @HostListener('document:fullscreenchange')
-  @HostListener('document:webkitfullscreenchange')
-  onFullscreenChange(): void {
-    const element = this.getFullscreenElement();
-    if (!element) {
-      this.fullscreenCameraIndex = null;
-      return;
-    }
-
-    const index = Number(element.getAttribute('data-camera-index'));
-    this.fullscreenCameraIndex = Number.isFinite(index) ? index : null;
-  }
-
-  isCameraFullscreen(camera: LiveCamera): boolean {
-    return this.fullscreenCameraIndex === camera.cameraIndex;
-  }
-
-  async toggleCameraFullscreen(camera: LiveCamera): Promise<void> {
-    if (this.isCameraFullscreen(camera)) {
-      await this.exitCameraFullscreen();
-      return;
-    }
-
-    const card = this.getCameraCard(camera.cameraIndex);
-    if (!card) {
-      toast.error('Camera viewport is not ready');
-      return;
-    }
-
-    try {
-      await this.requestFullscreen(card);
-      this.fullscreenCameraIndex = camera.cameraIndex;
-    } catch {
-      toast.error('Unable to open full screen');
-    }
   }
 
   toggleSiteAction(action: 'siren' | 'flash' | 'door' | 'siteLight'): void {
@@ -323,158 +282,11 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   }
 
   getActiveCameraCount(): number {
-    return this.latestVisionPayload?.activeCameraCount ?? this.cameras.filter(camera => camera.isStreaming).length;
+    return this.latestVisionPayload?.activeCameraCount ?? this.streamingCameraCount;
   }
 
   getConfiguredCameraCount(): number {
     return this.latestVisionPayload?.configuredCameraCount ?? this.cameras.length;
-  }
-
-  cameraViewportLabel(camera: LiveCamera): string {
-    if (!camera.isEnabled) {
-      return 'Camera disabled';
-    }
-
-    if (camera.isBusy) {
-      return camera.isStreaming ? 'Stopping…' : 'Starting…';
-    }
-
-    if (camera.isStreaming) {
-      return camera.hasVideo ? 'Live' : 'Waiting for remote stream';
-    }
-
-    return 'Stream stopped';
-  }
-
-  cameraStatusLabel(camera: LiveCamera): string {
-    if (!camera.isEnabled) {
-      return 'Disabled';
-    }
-
-    if (camera.isBusy) {
-      return camera.isStreaming ? 'Stopping' : 'Starting';
-    }
-
-    if (camera.isStreaming) {
-      return camera.hasVideo ? 'Live' : 'Waiting';
-    }
-
-    return 'Stopped';
-  }
-
-  async toggleCameraStream(camera: LiveCamera): Promise<void> {
-    if (!this.deviceId || !camera.isEnabled || camera.isBusy) {
-      return;
-    }
-
-    camera.isBusy = true;
-
-    try {
-      if (camera.isStreaming) {
-        if (this.isCameraFullscreen(camera)) {
-          await this.exitCameraFullscreen();
-        }
-        await this.cameraStreamService.stop(this.deviceId, camera.cameraIndex);
-        camera.isStreaming = false;
-        camera.hasVideo = false;
-      } else {
-        const video = this.getCameraVideo(camera.cameraIndex);
-        const audio = this.getCameraAudio(camera.cameraIndex);
-        if (!video || !audio) {
-          throw new Error('Camera viewport is not ready');
-        }
-
-        console.log('[CameraStream] Camera', {
-          deviceId: this.deviceId,
-          cameraIndex: camera.cameraIndex,
-          name: camera.name,
-          isEnabled: camera.isEnabled
-        });
-        await this.cameraStreamService.start(
-          this.deviceId,
-          camera.cameraIndex,
-          video,
-          audio,
-          () => { camera.hasVideo = true; },
-          () => { camera.hasVideo = false; },
-          (enabled) => { camera.isAudioConnected = enabled; },
-          (message) => { toast.error(message); }
-        );
-        camera.isStreaming = true;
-      }
-    } catch (error: unknown) {
-      camera.isStreaming = false;
-      camera.hasVideo = false;
-      const message = error instanceof Error ? error.message : 'Failed to update camera stream';
-      toast.error(message);
-    } finally {
-      camera.isBusy = false;
-    }
-  }
-
-  async toggleCameraAudio(camera: LiveCamera): Promise<void> {
-    if (!this.deviceId || !camera.isStreaming || camera.isBusy || camera.isAudioBusy) {
-      return;
-    }
-
-    const enabled = !camera.isAudioConnected;
-    camera.isAudioBusy = true;
-    try {
-      await this.cameraStreamService.setAudioEnabled(this.deviceId, camera.cameraIndex, enabled);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update camera audio';
-      toast.error(message);
-    } finally {
-      camera.isAudioBusy = false;
-    }
-  }
-
-  private getCameraVideo(cameraIndex: number): HTMLVideoElement | null {
-    return this.cameraVideos?.find(
-      (ref) => Number(ref.nativeElement.getAttribute('data-camera-index')) === cameraIndex
-    )?.nativeElement ?? null;
-  }
-
-  private getCameraAudio(cameraIndex: number): HTMLAudioElement | null {
-    return this.cameraAudios?.find(
-      (ref) => Number(ref.nativeElement.getAttribute('data-camera-index')) === cameraIndex
-    )?.nativeElement ?? null;
-  }
-
-  private getCameraCard(cameraIndex: number): HTMLElement | null {
-    return this.getCameraVideo(cameraIndex)?.closest('.camera-card') as HTMLElement | null;
-  }
-
-  private getFullscreenElement(): HTMLElement | null {
-    const doc = document as Document & { webkitFullscreenElement?: Element | null };
-    return (document.fullscreenElement ?? doc.webkitFullscreenElement ?? null) as HTMLElement | null;
-  }
-
-  private requestFullscreen(element: HTMLElement): Promise<void> {
-    const target = element as HTMLElement & {
-      webkitRequestFullscreen?: () => Promise<void> | void;
-    };
-    const request = element.requestFullscreen?.bind(element) ?? target.webkitRequestFullscreen?.bind(element);
-    if (!request) {
-      return Promise.reject(new Error('Fullscreen is not supported'));
-    }
-    return Promise.resolve(request());
-  }
-
-  private exitCameraFullscreen(): Promise<void> {
-    const doc = document as Document & { webkitExitFullscreen?: () => Promise<void> | void };
-    if (!this.getFullscreenElement()) {
-      this.fullscreenCameraIndex = null;
-      return Promise.resolve();
-    }
-    const exit = document.exitFullscreen?.bind(document) ?? doc.webkitExitFullscreen?.bind(document);
-    if (!exit) {
-      this.fullscreenCameraIndex = null;
-      return Promise.resolve();
-    }
-    return Promise.resolve(exit()).then(() => {
-      this.fullscreenCameraIndex = null;
-    });
   }
 
   private loadCameras(): void {
@@ -483,7 +295,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
         this.selectedDeviceDetails = (response as { data?: unknown })?.data ?? response ?? null;
         this.securityIncidents.registerDevices([this.selectedDeviceDetails]);
         this.syncSecurityState();
-        this.cameras = this.mapLiveCameras(response);
+        this.cameras = this.extractCameras(response);
       },
       error: () => {
         this.cameras = [];
@@ -492,29 +304,12 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private mapLiveCameras(response: unknown): LiveCamera[] {
+  private extractCameras(response: unknown): DeviceCameraPayload[] {
     const responseData = (response as { data?: Record<string, unknown> } | Record<string, unknown>) ?? {};
     const data = (responseData as { data?: Record<string, unknown> }).data ?? responseData as Record<string, unknown>;
     const nested = (data['infrastructure'] ?? data['deviceInfrastructure'] ?? {}) as Record<string, unknown>;
-    const cameras = (data['cameras'] ?? nested['cameras'] ?? []) as DeviceCameraPayload[];
-    if (!Array.isArray(cameras)) {
-      return [];
-    }
-
-    return cameras
-      .slice()
-      .sort((left, right) => Number(left.cameraIndex) - Number(right.cameraIndex))
-      .slice(0, 2)
-      .map((camera) => ({
-        cameraIndex: Number(camera.cameraIndex),
-        name: camera.name?.trim() || `Camera ${camera.cameraIndex}`,
-        isEnabled: camera.isEnabled !== false,
-        isStreaming: false,
-        isBusy: false,
-        hasVideo: false,
-        isAudioConnected: false,
-        isAudioBusy: false,
-      }));
+    const cameras = data['cameras'] ?? nested['cameras'] ?? [];
+    return Array.isArray(cameras) ? cameras as DeviceCameraPayload[] : [];
   }
 
   onAlertClick(alert: { id: number }): void {

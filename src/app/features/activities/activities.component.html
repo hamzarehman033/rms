@@ -69,9 +69,7 @@
           <td>{{ activity.team }}</td>
           <td>{{ activity.persons }}</td>
           <td>
-            <span class="badge info" *ngIf="getScheduleStatus(activity) === 'Upcoming'">● Upcoming</span>
-            <span class="badge online" *ngIf="getScheduleStatus(activity) === 'In Progress'">● In Progress</span>
-            <span class="badge warning" *ngIf="getScheduleStatus(activity) === 'Past'">● Past</span>
+            <span class="badge" [ngClass]="siteAccess.describeActivity(activity).tone">{{ getScheduleStatus(activity) }}</span>
           </td>
           <td>
             <div class="flex items-center gap-2">

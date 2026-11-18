@@ -1,6 +1,17 @@
-
-/* Optional controls are enabled only on Security Details. */
-.scheduled-access-action { margin: 5px 0; }
-.scheduled-access-button { border: 1px solid var(--border); border-radius: 5px; background: transparent; color: var(--info); padding: 5px 7px; font-size: 10px; line-height: 1.4; cursor: pointer; }
-.scheduled-access-button:disabled { opacity: .5; cursor: not-allowed; }
-.scheduled-access-button:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
+:host { display:block; min-width:0; }
+.work-orders { min-width:0; }
+.wo-heading,.wo-topline,.wo-bottom { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.wo-heading { font-size:12px; font-weight:700; }
+.wo-link { background:none; border:0; color:var(--foreground); font-size:11px; text-decoration:underline; cursor:pointer; padding:5px; }
+.wo-hint,.wo-team,.wo-time { margin:6px 0; font-size:11px; line-height:1.5; color:var(--muted-foreground); overflow-wrap:anywhere; }
+.wo-list { max-height:480px; overflow-y:auto; padding:2px; }
+.wo-item { border:1px solid var(--border); border-radius:8px; padding:12px; margin-top:10px; }
+.wo-featured { border-color:var(--info); box-shadow:inset 3px 0 0 var(--info); background:color-mix(in srgb,var(--info) 4%,var(--card)); }
+.wo-attention { border-color:var(--warning); box-shadow:inset 3px 0 0 var(--warning); }
+.wo-id,.wo-priority { font-size:10px; font-weight:700; color:var(--muted-foreground); }
+.wo-name { display:block; margin-top:8px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.wo-topline .badge { white-space:normal; line-height:1.5; }
+.wo-start { border:1px solid var(--border); border-radius:6px; background:var(--surface-1,var(--card)); color:var(--foreground); padding:8px 10px; font-size:11px; font-weight:600; cursor:pointer; margin-left:auto; }
+.wo-start:disabled,.wo-link:disabled { opacity:.5; cursor:not-allowed; }
+.wo-start:focus-visible,.wo-link:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+.wo-warning { font-size:11px; line-height:1.5; padding:9px; border:1px solid var(--warning); border-radius:6px; overflow-wrap:anywhere; }

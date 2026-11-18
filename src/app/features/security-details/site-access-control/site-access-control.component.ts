@@ -1,237 +1,171 @@
 import { Component, ElementRef, Input, OnChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription, firstValueFrom, timeout } from 'rxjs';
-import { Activity, ActivityService } from '../../../core/services/activity.service';
+import { Subscription } from 'rxjs';
+import { Activity } from '../../../core/services/activity.service';
 import { SiteAccessService } from '../../../core/services/site-access.service';
-import { AccessActivity, SiteAccessSession, accessSessionState, MAX_ACCESS_DURATION_MS } from '../../../core/services/site-access.model';
+import { SiteAccessSession, SiteAccessSummary, accessSessionState } from '../../../core/services/site-access.model';
+import { MAX_ACCESS_DURATION_MS, PRESENCE_WARNING_MS, formatRemaining, startRestriction, workOrderWindow } from '../../../core/services/work-order-policy';
 import { toast } from '../../../utils/global-toast';
 
+type WorkAction = 'none' | 'start' | 'confirm' | 'extend' | 'resume' | 'suspend' | 'end';
 @Component({
   selector: 'app-site-access-control', standalone: true, imports: [CommonModule, FormsModule],
   templateUrl: './site-access-control.component.html', styleUrl: './site-access-control.component.css'
 })
 export class SiteAccessControlComponent implements OnChanges, OnDestroy {
   @Input() deviceId: number | null = null;
+  @Input() deviceIds: number[] = [];
   @Input() siteKey = '';
   @Input() siteLabel = '';
-  session: SiteAccessSession | null = null;
   now = Date.now();
-  action: 'none' | 'grant' | 'extend' | 'end' = 'none';
+  sessions: SiteAccessSession[] = [];
+  summary: SiteAccessSummary = { sessions: [], authorized: [], attention: [], approved: false, validUntil: null };
+  action: WorkAction = 'none';
   busy = false;
   error = '';
-  activityError = '';
-  activities: Activity[] = [];
-  loadingActivities = false;
-  moreActivities = false;
-  private page = 0;
-  private contextVersion = 0;
-  private destroyed = false;
-  private readonly subscriptions = new Subscription();
-  private activitiesRequest?: Subscription;
-  private readonly timer: ReturnType<typeof setInterval>;
-  private readonly notices = new Set<string>();
-  selectedActivityId = 'manual';
-  activityName = '';
-  team = '';
-  persons = 1;
-  expiresLocal = '';
   reason = '';
   teamVerified = false;
   departureConfirmed = false;
+  scheduleOverride = false;
+  expiresLocal = '';
   extensionMinutes = 30;
   extensionCustom = false;
-  private operationSession: SiteAccessSession | null = null;
+  selectedActivity: Activity | null = null;
+  selectedSessionId = '';
+  operationSession: SiteAccessSession | null = null;
+  private contextVersion = 0;
+  private account = '';
+  private destroyed = false;
+  private readonly subscriptions = new Subscription();
+  private readonly timer: ReturnType<typeof setInterval>;
 
-  constructor(public readonly access: SiteAccessService, private readonly activityApi: ActivityService,
-    private readonly host: ElementRef<HTMLElement>) {
+  constructor(public readonly access: SiteAccessService, private readonly host: ElementRef<HTMLElement>) {
+    this.account = this.access.contextKey;
     this.subscriptions.add(this.access.changes$.subscribe(() => this.sync()));
     this.timer = setInterval(() => this.sync(), 1000);
   }
-  ngOnChanges(): void {
-    this.contextVersion++;
-    this.activitiesRequest?.unsubscribe();
-    this.activities = []; this.page = 0; this.moreActivities = false;
-    this.loadingActivities = false; this.activityError = ''; this.error = '';
-    this.action = 'none'; this.busy = false; this.selectedActivityId = 'manual';
-    this.operationSession = null; this.sync();
-    if (this.deviceId) this.loadActivities(true);
-  }
-  ngOnDestroy(): void {
-    this.destroyed = true; this.contextVersion++;
-    clearInterval(this.timer); this.activitiesRequest?.unsubscribe(); this.subscriptions.unsubscribe();
-  }
-  get active(): boolean { return !this.access.storageError && !!this.session && accessSessionState(this.session, this.now) === 'active'; }
+  ngOnChanges(): void { this.contextVersion++; this.resetForm(); this.sync(); }
+  ngOnDestroy(): void { this.destroyed = true; this.contextVersion++; clearInterval(this.timer); this.subscriptions.unsubscribe(); }
   get canManage(): boolean { return !!this.siteKey && this.access.canManage() && !this.access.storageError; }
-  get remainingMs(): number { return this.active && this.session ? Math.max(0, this.session.expiresAt - this.now) : 0; }
-  get timeRemaining(): string {
-    const seconds = Math.max(0, Math.ceil(this.remainingMs / 1000));
-    return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(n => String(n).padStart(2, '0')).join(':');
+  get allowedDeviceIds(): number[] { return this.deviceIds.length ? this.deviceIds : this.deviceId ? [this.deviceId] : []; }
+  get openSessions(): SiteAccessSession[] {
+    return this.sessions.filter(s => s.endedAt === null).sort((a, b) =>
+      Number(accessSessionState(a, this.now) === 'active') - Number(accessSessionState(b, this.now) === 'active') ||
+      Math.min(a.expiresAt, a.confirmationDueAt) - Math.min(b.expiresAt, b.confirmationDueAt));
   }
-  get warning(): string {
-    if (!this.active || this.remainingMs > 600_000) return '';
-    return this.remainingMs <= 300_000 ? 'Less than 5 minutes left. Extend or confirm departure.' : 'Access expires soon. Check with the team.';
+  get closedSessions(): SiteAccessSession[] { return this.sessions.filter(s => s.endedAt !== null).sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0)); }
+  get selectedVisitClosed(): boolean { return this.closedSessions.some(s => s.id === this.selectedSessionId); }
+  get stateLabel(): string { return this.summary.attention.length ? 'REVIEW REQUIRED' : this.summary.approved ? 'APPROVED ACCESS' : 'NO ACTIVE VISIT'; }
+  state(s: SiteAccessSession) { return this.access.storageError && s.endedAt === null ? 'suspended' as const : accessSessionState(s, this.now); }
+  label(s: SiteAccessSession): string {
+    const state = this.state(s);
+    return state === 'active' ? 'Authorized' : state === 'ended' ? 'Completed' : state === 'expired' ? 'Deadline reached' : state === 'confirmation-overdue' ? 'Confirmation overdue' : 'Suspended';
   }
-  get stateLabel(): string {
-    if (this.active) return 'ACTIVE';
-    if (!this.session) return 'NOT ACTIVE';
-    return this.session.endedAt !== null ? 'ENDED' : 'EXPIRED';
+  remaining(s: SiteAccessSession): string { return formatRemaining(Math.min(s.expiresAt, s.confirmationDueAt), this.now); }
+  warning(s: SiteAccessSession): string {
+    if (this.access.storageError) return this.access.storageError;
+    if (this.state(s) !== 'active') return s.suspensionReason || (this.state(s) === 'expired' ? 'Work deadline reached. Review / Resume or confirm departure.' : 'Team confirmation missed. Approval is paused until NOC verifies this team.');
+    if (Math.min(s.expiresAt, s.confirmationDueAt) - this.now > PRESENCE_WARNING_MS) return '';
+    return s.expiresAt <= s.confirmationDueAt ? 'The work deadline is close. Extend or confirm departure.' : 'Presence check due within 5 minutes. Contact the team or verify the cameras.';
   }
-  get selectedActivity(): Activity | null {
-    return this.activities.find(a => String(a.id) === this.selectedActivityId) ?? null;
+  trackSession(_index: number, session: SiteAccessSession): string { return session.id; }
+  recentAudit(s: SiteAccessSession) { return [...s.audit].reverse(); }
+  get formTitle(): string {
+    return { none: '', start: 'Start scheduled work order', confirm: 'Confirm this team is still on site',
+      extend: 'Extend this work order', resume: 'Review and resume approval', suspend: 'Suspend this team approval', end: 'End this team visit' }[this.action];
   }
+  get submitLabel(): string {
+    return { none: '', start: 'Confirm Start', confirm: 'Confirm Presence', extend: 'Confirm Extension', resume: 'Reauthorize Now', suspend: 'Suspend Approval', end: 'Confirm Departure & End' }[this.action];
+  }
+  get needsTeamCheck(): boolean { return ['start', 'confirm', 'resume'].includes(this.action); }
+  get formActivity(): Activity | SiteAccessSession['activity'] | null { return this.selectedActivity ?? this.operationSession?.activity ?? null; }
+  get startBeyondSchedule(): boolean {
+    const window = this.selectedActivity ? workOrderWindow(this.selectedActivity) : null;
+    return !!window && (this.now >= window.end || this.parseLocal(this.expiresLocal) > window.end);
+  }
+  get maxExpiryLocal(): string { return this.toLocal((this.operationSession?.startedAt ?? this.now) + MAX_ACCESS_DURATION_MS); }
   get extensionExpiry(): number {
     return this.extensionCustom ? this.parseLocal(this.expiresLocal) : (this.operationSession?.expiresAt ?? this.now) + Number(this.extensionMinutes) * 60_000;
   }
-  get validExtensionExpiry(): number | null {
-    return Number.isFinite(this.extensionExpiry) ? this.extensionExpiry : null;
-  }
-  get maxExpiryLocal(): string {
-    return this.toLocal((this.action === 'extend' ? this.operationSession?.startedAt ?? this.now : this.now) + MAX_ACCESS_DURATION_MS);
-  }
-  get recentAudit() { return [...(this.session?.audit ?? [])].reverse().slice(0, 8); }
+  get validExtensionExpiry(): number | null { return Number.isFinite(this.extensionExpiry) ? this.extensionExpiry : null; }
 
-  loadActivities(reset = false): void {
-    if (!this.deviceId || this.loadingActivities) return;
-    const version = this.contextVersion;
-    const deviceId = this.deviceId;
-    const accountContext = this.access.contextKey;
-    const page = reset ? 1 : this.page + 1;
-    this.loadingActivities = true; this.activityError = '';
-    this.activitiesRequest = this.activityApi.getActivities({ pagesize: 50, pagenumber: page,
-      filters: [{ key: 'deviceId', value: deviceId, operator: 'equals' }] }).pipe(timeout(15_000)).subscribe({
-      next: response => {
-        if (version !== this.contextVersion) return;
-        if (accountContext !== this.access.contextKey) { this.activities = []; this.loadingActivities = false; return; }
-        const rows = response?.data?.pageData;
-        if (!Array.isArray(rows)) { this.activityError = 'The activity response could not be read. Retry before linking a scheduled visit.'; this.loadingActivities = false; return; }
-        const valid = rows.filter((a: Activity) => Number(a.deviceId) === deviceId && Number(a.id) > 0);
-        const previousIds = new Set(this.activities.map(a => a.id));
-        const combined = reset ? valid : [...this.activities, ...valid.filter((a: Activity) => !previousIds.has(a.id))];
-        this.activities = combined; this.page = page;
-        this.moreActivities = rows.length === 50 && (reset || combined.length > previousIds.size);
-        this.loadingActivities = false;
-      },
-      error: () => { if (version === this.contextVersion) { this.loadingActivities = false; this.activityError = 'Scheduled activities could not be loaded. Retry, or explicitly create an unscheduled visit.'; } }
-    });
-  }
-  /** Called only by the optional action on this site's Scheduled Activities card. */
+  /** Only scheduled work orders can open the Start form. No free-text creation path. */
   selectActivity(activity: Activity): void {
-    if (this.active || this.busy || !this.canManage || Number(activity.deviceId) !== this.deviceId || !activity.id || activity.isActive === false) return;
-    if (!this.activities.some(a => a.id === activity.id)) this.activities = [activity, ...this.activities];
-    this.openGrant(); this.selectedActivityId = String(activity.id); this.onActivityChange();
-    this.host.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (this.busy || !this.canManage || !this.allowedDeviceIds.includes(Number(activity.deviceId)) || !activity.id) return;
+    const existing = this.access.getByActivity(activity.deviceId, activity.id);
+    this.resetForm();
+    if (existing) { this.selectedSessionId = existing.id; this.scrollToPanel(); return; }
+    const restriction = startRestriction(activity, Date.now(), this.access.canOverrideSchedule());
+    if (restriction) { this.error = restriction; return; }
+    this.selectedActivity = { ...activity }; this.action = 'start';
+    const window = workOrderWindow(activity)!;
+    this.expiresLocal = this.toLocal(window.end > this.now ? Math.min(window.end, this.now + MAX_ACCESS_DURATION_MS) : this.now + 60 * 60_000);
+    this.scrollToPanel();
   }
-  openGrant(): void {
-    if (!this.canManage || this.active || this.busy) return;
-    this.action = 'grant'; this.error = ''; this.teamVerified = false;
-    this.selectedActivityId = 'manual'; this.activityName = ''; this.team = ''; this.persons = 1;
-    this.reason = ''; this.setDuration(60);
-  }
-  onActivityChange(): void {
-    const activity = this.selectedActivity;
-    this.activityName = activity?.name ?? ''; this.team = activity?.team ?? '';
-    this.persons = Math.max(1, Number(activity?.persons) || 1);
-    this.reason = String(activity?.description ?? '').slice(0, 500);
-    this.teamVerified = false; this.setDuration(60);
-    // The existing activity API has a local date + wall-clock time, not a timezone.
-    // Suggest the scheduled end only if it is still future and within this session's cap.
-    const date = String(activity?.date ?? '').slice(0, 10);
-    const time = String(activity?.endTime ?? '').slice(0, 8);
-    const end = Date.parse(`${date}T${time}`);
-    if (Number.isFinite(end) && end >= Date.now() + 60_000 && end <= Date.now() + MAX_ACCESS_DURATION_MS) this.expiresLocal = this.toLocal(end);
-  }
-  setDuration(minutes: number): void { this.expiresLocal = this.toLocal(Date.now() + minutes * 60_000); }
-  openExtend(): void {
-    if (!this.active || !this.session || !this.canManage || this.busy) return;
-    this.operationSession = this.session; this.action = 'extend'; this.error = ''; this.reason = '';
+  openAction(action: Exclude<WorkAction, 'none' | 'start'>, session: SiteAccessSession): void {
+    if (!this.canManage || this.busy || session.endedAt !== null) return;
+    this.resetForm(); this.operationSession = session; this.selectedSessionId = session.id; this.action = action;
     this.extensionMinutes = 30; this.extensionCustom = false;
-    this.expiresLocal = this.toLocal(this.session.expiresAt + 30 * 60_000);
+    this.expiresLocal = this.toLocal(action === 'extend' ? session.expiresAt + 30 * 60_000 : Math.max(session.expiresAt, this.now + 60 * 60_000));
+    this.scrollToForm();
   }
-  openEnd(): void {
-    if (!this.active || !this.session || !this.canManage || this.busy) return;
-    this.operationSession = this.session; this.action = 'end'; this.error = '';
-    this.reason = 'Team departed; site checked.'; this.departureConfirmed = false;
-  }
-  cancel(): void { if (!this.busy) { this.action = 'none'; this.error = ''; this.operationSession = null; } }
-
-  async submitGrant(): Promise<void> {
-    if (this.busy || this.action !== 'grant') return;
-    const version = this.contextVersion;
-    const key = this.siteKey;
-    const accountContext = this.access.contextKey;
-    const deviceId = this.deviceId;
+  cancel(): void { if (!this.busy) this.resetForm(); }
+  async submit(): Promise<void> {
+    if (this.busy || this.action === 'none') return;
     this.error = '';
-    if (!this.canManage || !key || !deviceId) { this.error = 'The site or your permission is not ready. Reload the site.'; return; }
-    if (!this.teamVerified) { this.error = 'Confirm the team and whole-site authorization before granting access.'; return; }
-    const expiresAt = this.parseLocal(this.expiresLocal);
-    const persons = Number(this.persons), reason = this.reason;
-    const siteLabel = this.siteLabel || `Device ${deviceId}`;
-    const selectedId = this.selectedActivityId;
-    let activity: AccessActivity = { id: null, deviceId, name: this.activityName.trim(), team: this.team.trim(),
-      persons, date: '', startTime: '', endTime: '' };
-    if (!activity.name || !activity.team || !reason.trim() || !Number.isInteger(persons) || persons < 1 || persons > 999) {
-      this.error = 'Enter the activity, team, actual team size (1-999), and authorization reason.'; return;
-    }
-    if (!Number.isFinite(expiresAt) || expiresAt < Date.now() + 60_000 || expiresAt > Date.now() + MAX_ACCESS_DURATION_MS) {
-      this.error = 'Choose an expiry between one minute and 24 hours from now.'; return;
-    }
+    if (!this.canManage) { this.error = 'Site identity or permission is unavailable.'; return; }
+    if (!this.reason.trim() || this.reason.trim().length > 500) { this.error = 'Enter a reason or verification note (maximum 500 characters).'; return; }
+    if (this.needsTeamCheck && !this.teamVerified) { this.error = 'Verify the team and review the site alarms before authorizing.'; return; }
+    if (this.action === 'end' && !this.departureConfirmed) { this.error = 'Confirm this team has departed before closing its visit.'; return; }
+    const version = this.contextVersion, account = this.access.contextKey, action = this.action;
+    const session = this.operationSession;
+    const valid = () => !this.destroyed && version === this.contextVersion && account === this.access.contextKey;
     this.busy = true;
     try {
-      if (selectedId !== 'manual') {
-        // Re-read the selected activity before granting, so deleted/changed records are not blindly reused.
-        const response = await firstValueFrom(this.activityApi.getActivityById(selectedId).pipe(timeout(15_000)));
-        const current: Activity = response?.data ?? response;
-        if (!current || Number(current.id) !== Number(selectedId) || Number(current.deviceId) !== deviceId || current.isActive === false) {
-          throw new Error('The scheduled activity is no longer available for this device. Refresh the list.');
-        }
-        if (String(current.name).trim() !== activity.name || String(current.team).trim() !== activity.team) {
-          throw new Error('The activity or team changed. Refresh and verify the updated activity before granting access.');
-        }
-        activity = { ...activity, id: Number(current.id), date: current.date, startTime: current.startTime, endTime: current.endTime };
+      if (action === 'start') {
+        const activity = this.selectedActivity;
+        if (!activity?.id) throw new Error('Choose an existing work order from Scheduled Activities.');
+        await this.access.grant({ siteKey: this.siteKey, siteLabel: this.siteLabel || `Device ${this.deviceId}`,
+          activity: { ...activity, id: Number(activity.id) }, expiresAt: this.parseLocal(this.expiresLocal),
+          reason: this.reason, teamVerified: this.teamVerified, scheduleOverride: this.scheduleOverride }, this.allowedDeviceIds, valid);
+      } else {
+        if (!session) throw new Error('Select the current work session first.');
+        if (action === 'confirm') await this.access.confirm(session, this.reason, valid);
+        else if (action === 'extend') await this.access.extend(session, this.extensionExpiry, this.reason, valid);
+        else if (action === 'resume') await this.access.resume(session, this.parseLocal(this.expiresLocal), this.reason, valid);
+        else if (action === 'suspend') await this.access.suspend(session, this.reason, valid);
+        else await this.access.end(session, this.reason, valid);
       }
-      if (this.destroyed || version !== this.contextVersion || key !== this.siteKey) return;
-      if (accountContext !== this.access.contextKey) throw new Error('The account or customer changed. Reload the site before granting access.');
-      await this.access.grant({ siteKey: key, siteLabel, activity, expiresAt, reason, teamVerified: true });
-      if (version !== this.contextVersion || this.destroyed) return;
-      this.action = 'none'; toast.success('Activity access granted', 'The site is Approved Access until the authorization deadline.');
-    } catch (error) { if (version === this.contextVersion && !this.destroyed) this.error = this.message(error); }
-    finally { if (version === this.contextVersion && !this.destroyed) { this.busy = false; this.sync(); } }
-  }
-  async submitExtend(): Promise<void> {
-    if (this.busy || this.action !== 'extend' || !this.operationSession) return;
-    await this.saveOperation(() => this.access.extend(this.operationSession!, this.extensionExpiry, this.reason), 'Activity access extended');
-  }
-  async submitEnd(): Promise<void> {
-    if (this.busy || this.action !== 'end' || !this.operationSession) return;
-    if (!this.departureConfirmed) { this.error = 'Confirm that the team has left before ending access.'; return; }
-    await this.saveOperation(() => this.access.end(this.operationSession!, this.reason), 'Access ended; intrusion monitoring re-armed');
-  }
-  private async saveOperation(save: () => Promise<SiteAccessSession>, success: string): Promise<void> {
-    const version = this.contextVersion; this.busy = true; this.error = '';
-    try { await save(); if (version === this.contextVersion && !this.destroyed) { this.action = 'none'; toast.success(success); } }
-    catch (error) { if (version === this.contextVersion && !this.destroyed) this.error = this.message(error); }
-    finally { if (version === this.contextVersion && !this.destroyed) { this.busy = false; this.sync(); } }
+      if (version !== this.contextVersion || this.destroyed || account !== this.access.contextKey) return;
+      const title = action === 'start' ? 'Work order started' : action === 'confirm' ? 'Presence confirmed for 15 minutes' :
+        action === 'extend' ? 'Work deadline extended; presence check unchanged' : action === 'resume' ? 'Team approval resumed' :
+        action === 'suspend' ? 'Team approval suspended' : 'Team visit closed';
+      this.resetForm(); this.sync(); toast.success(title);
+    } catch (error) {
+      if (version === this.contextVersion && !this.destroyed && account === this.access.contextKey)
+        this.error = error instanceof Error ? error.message : 'The action failed. No approval change was confirmed.';
+    } finally { if (version === this.contextVersion && !this.destroyed) { this.busy = false; this.sync(); } }
   }
   private sync(): void {
-    const previouslyActive = this.active;
-    this.now = Date.now(); this.session = this.access.getLatest(this.siteKey);
-    if (!this.active && !this.busy && (this.action === 'extend' || this.action === 'end')) {
-      this.action = 'none'; this.error = 'Access has ended or expired. Monitoring is re-armed.';
-    }
-    if (this.active && this.session && this.warning) {
-      const level = this.remainingMs <= 300_000 ? '5' : '10';
-      const key = `${this.session.id}:${this.session.revision}:${level}`;
-      if (!this.notices.has(key)) { this.notices.add(key); toast.warning('Activity access expiring', this.warning); }
-    }
-    if (previouslyActive && !this.active && this.session && this.session.endedAt === null) {
-      toast.warning('Activity access expired', 'New detections will be treated as intrusions.');
-    }
+    if (this.destroyed) return;
+    this.now = Date.now();
+    if (this.account !== this.access.contextKey) { this.account = this.access.contextKey; this.contextVersion++; this.resetForm(); }
+    this.sessions = this.siteKey ? this.access.getAll(this.siteKey) : [];
+    this.summary = this.access.getSummary(this.siteKey);
+  }
+  private resetForm(): void {
+    this.action = 'none'; this.selectedActivity = null; this.operationSession = null; this.error = ''; this.reason = '';
+    this.teamVerified = false; this.departureConfirmed = false; this.scheduleOverride = false; this.busy = false;
+  }
+  private scrollToPanel(): void {
+    this.host.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  private scrollToForm(): void {
+    setTimeout(() => { if (!this.destroyed) this.host.nativeElement.querySelector<HTMLElement>('.access-form')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
   }
   private toLocal(ms: number): string {
-    const d = new Date(ms);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const date = new Date(ms); return new Date(ms - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
   }
   private parseLocal(value: string): number { return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) ? new Date(value).getTime() : NaN; }
-  private message(error: unknown): string { return error instanceof Error ? error.message : 'The action could not be completed. No access change was confirmed.'; }
 }
