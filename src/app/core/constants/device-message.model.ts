@@ -402,6 +402,28 @@ export interface RawDeviceDataEvent {
   normalizedHexPayload?: string;
 }
 
+export interface RadarTarget {
+  radarId: 1 | 2;
+  slot: 1 | 2 | 3;
+  angleDeg: number;
+  distanceMm: number;
+  speedCmps: number;
+}
+
+export interface RadarDetectionEvent {
+  deviceId: number;
+  topic: string;
+  receivedAt: string;
+  packetSignature: number;
+  protocolVersion: number;
+  messageType: number;
+  radarStatus: number;
+  sequence: number;
+  radarAOnline: boolean;
+  radarBOnline: boolean;
+  targets: RadarTarget[];
+}
+
 export interface RawVisionDecodedPayload {
   deviceId: number;
   topic: string;

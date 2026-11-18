@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import {
   DecodedPayload,
   DeviceDataEvent,
   mapDecodedPayload,
   mapVisionDecodedPayload,
+  RadarDetectionEvent,
   RawDeviceDataEvent,
   RawVisionDecodedPayload,
   VisionDecodedPayload
@@ -20,10 +21,12 @@ export class SignalrService {
   private connected$ = new BehaviorSubject<boolean>(false);
   private deviceData$ = new BehaviorSubject<DeviceDataEvent | null>(null);
   private visionDetection$ = new BehaviorSubject<VisionDecodedPayload | null>(null);
+  private readonly radarDetection$ = new Subject<RadarDetectionEvent>();
 
   isConnected$ = this.connected$.asObservable();
   onDeviceData$ = this.deviceData$.asObservable();
   onVisionDetection$ = this.visionDetection$.asObservable();
+  readonly onRadarDetection$ = this.radarDetection$.asObservable();
 
   constructor() {
     this.start();
@@ -80,6 +83,15 @@ export class SignalrService {
       const visionPayload: VisionDecodedPayload = mapVisionDecodedPayload(data);
       console.log('VisionDetectionReceived', visionPayload);
       this.visionDetection$.next(visionPayload);
+    });
+
+    this.hubConnection.on('RadarDetectionReceived', (data: RadarDetectionEvent) => {
+      console.log('RadarDetectionReceived', data);
+      if (!data || !Number.isInteger(data.deviceId) || !Array.isArray(data.targets)) {
+        console.warn('[SignalR] Ignoring invalid radar frame', data);
+        return;
+      }
+      this.radarDetection$.next(data);
     });
 
     this.startPromise = this.hubConnection.start()

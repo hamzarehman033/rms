@@ -5,7 +5,7 @@
   </div>
 
   <div class="radar-screen" role="img"
-       [attr.aria-label]="hasActiveIntrusion ? 'Intrusion alert; pulses indicate detection, not a target position' : 'Radar scanning; no active intrusion'">
+       [attr.aria-label]="(hasActiveIntrusion ? 'Intrusion alert. ' : '') + 'Radar display: ' + dots.length + ' live targets shown.'">
     <!-- The grid, needle and alarm pulses share exactly the same SVG origin. -->
     <svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
       <defs>
@@ -34,6 +34,12 @@
         </g>
       </g>
       <circle class="radar-origin" cx="180" cy="190" r="3"/>
+      @for (dot of dots; track dot.radarId + ':' + dot.slot) {
+        <circle class="radar-target" [class.radar-target-b]="dot.radarId === 2"
+                [attr.cx]="dot.x" [attr.cy]="dot.y" r="4">
+          <title>Radar {{ dot.radarId === 1 ? 'A' : 'B' }}, slot {{ dot.slot }}: {{ dot.angleDeg }} degrees, {{ dot.distanceMm }} mm, {{ dot.speedCmps }} cm/s</title>
+        </circle>
+      }
     </svg>
 
     <div *ngIf="hasActiveIntrusion" class="radar-intrusion-label">

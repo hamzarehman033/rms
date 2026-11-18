@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
+import { RadarDetectionEvent, RawVisionDecodedPayload, mapVisionDecodedPayload, VisionDecodedPayload } from '../../../core/constants/device-message.model';
 import { DeviceCameraPayload, DevicesService } from '../../../core/services/devices.service';
 import { AiVisionPacketApiModel, VisionService } from '../../../core/services/vision.service';
 import { SignalrService } from '../../../core/services/signalr.service';
@@ -26,6 +26,7 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
   selectedTimeSpan: '1d' | '1w' | '1m' = '1d';
   selectedDeviceDetails: any = null;
   latestVisionPayload: VisionDecodedPayload | null = null;
+  latestRadarFrame: RadarDetectionEvent | null = null;
   evidenceImageSrc: string | null = null;
   deviceId: number = 0;
   selectedAlertId: number | null = null;
@@ -63,8 +64,22 @@ export class SecurityDeviceDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(payload => this.applyLiveVisionPacket(payload));
 
+    this.signalrService.onRadarDetection$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(frame => {
+        if (frame.deviceId === this.deviceId) this.latestRadarFrame = frame;
+      });
+
+    this.signalrService.isConnected$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(connected => {
+        if (!connected) this.latestRadarFrame = null;
+      });
+
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      this.deviceId = Number(params['id']);
+      const deviceId = Number(params['id']);
+      if (deviceId !== this.deviceId) this.latestRadarFrame = null;
+      this.deviceId = deviceId;
       this.syncSecurityState();
 
       if (this.deviceId) {

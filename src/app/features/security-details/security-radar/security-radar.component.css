@@ -43,6 +43,8 @@
   to { transform: rotate(88deg); }
 }
 .radar-origin { fill: #94ffaf; }
+.radar-target { fill: #94ffaf; stroke: #061910; stroke-width: 1; }
+.radar-target-b { fill: #67d8ff; }
 .has-intrusion .radar-origin {
   fill: #ff7777;
   filter: drop-shadow(0 0 5px #f64242);
