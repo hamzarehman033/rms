@@ -1,50 +1,64 @@
 <div class="security-radar-card" [class.has-intrusion]="hasActiveIntrusion">
   <div class="radar-heading">
-    <span class="radar-heading-label"><i class="pi pi-compass"></i> Security Radar</span>
-    <span class="radar-status" [class.alert]="hasActiveIntrusion">{{ hasActiveIntrusion ? 'DETECTION' : 'SCANNING' }}</span>
+    <span class="radar-heading-label"><i class="pi pi-compass" aria-hidden="true"></i> Security Radar</span>
+    <span class="radar-status" [class.alert]="hasActiveIntrusion">
+      <span class="radar-status-dot" aria-hidden="true"></span>
+      {{ hasActiveIntrusion ? 'INTRUSION' : 'SCANNING' }}
+    </span>
   </div>
 
   <div class="radar-screen" role="img"
-       [attr.aria-label]="(hasActiveIntrusion ? 'Intrusion alert. ' : '') + 'Radar display: ' + dots.length + ' live targets shown.'">
-    <!-- The grid, needle and alarm pulses share exactly the same SVG origin. -->
-    <svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+       [attr.aria-label]="(hasActiveIntrusion ? 'Intrusion alert. ' : '') + '360 degree radar. Radar A above the centre, Radar B below. ' + dots.length + ' live targets shown. Maximum range 8 metres.'">
+    <!-- All geometry shares the centre of the full circle; the sweep is decorative. -->
+    <svg viewBox="0 0 360 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
       <defs>
-        <radialGradient id="securityRadarGlow" gradientUnits="userSpaceOnUse" cx="180" cy="190" r="174">
+        <radialGradient [id]="gradientId" gradientUnits="userSpaceOnUse" cx="180" cy="180" r="160">
           <stop offset="0%" stop-color="#14532d" stop-opacity="0.56"/>
           <stop offset="100%" stop-color="#06140d" stop-opacity="0.08"/>
         </radialGradient>
-        <clipPath id="securityRadarClip" clipPathUnits="userSpaceOnUse">
-          <path d="M6 190 A174 174 0 0 1 354 190 Z"/>
-        </clipPath>
       </defs>
 
-      <path d="M6 190 A174 174 0 0 1 354 190 Z" fill="url(#securityRadarGlow)" stroke="#2f9b53" stroke-width="1.5"/>
-      <path d="M47 190 A133 133 0 0 1 313 190 M89 190 A91 91 0 0 1 271 190 M133 190 A47 47 0 0 1 227 190" fill="none" stroke="#256a3e" stroke-width="1"/>
-      <path d="M6 190 H354 M180 16 V190 M56 67 L180 190 M304 67 L180 190 M94 39 L180 190 M266 39 L180 190" stroke="#27693d" stroke-width="0.8"/>
-
-      <g clip-path="url(#securityRadarClip)">
-        <g class="radar-sweep">
-          <path d="M180 190 L138 21 A174 174 0 0 1 180 16 Z" fill="rgba(83, 238, 139, 0.12)"/>
-          <line class="radar-needle" x1="180" y1="190" x2="180" y2="16"/>
-        </g>
-        <!-- Expanding semicircles communicate an alarm, never a measured location. -->
-        <g *ngIf="hasActiveIntrusion" class="radar-origin-alert">
-          <circle class="radar-alert-wave" cx="180" cy="190" r="174" vector-effect="non-scaling-stroke"/>
-          <circle class="radar-alert-wave radar-alert-wave-delayed" cx="180" cy="190" r="174" vector-effect="non-scaling-stroke"/>
-        </g>
+      <circle cx="180" cy="180" r="160" [attr.fill]="'url(#' + gradientId + ')'" class="radar-rim"/>
+      <g class="radar-grid">
+        <circle cx="180" cy="180" r="120"/>
+        <circle cx="180" cy="180" r="80"/>
+        <circle cx="180" cy="180" r="40"/>
+        <path d="M180 20 V340 M67 67 L293 293 M67 293 L293 67"/>
       </g>
-      <circle class="radar-origin" cx="180" cy="190" r="3"/>
+      <path class="radar-divider" d="M20 180 H340"/>
+
+      <g class="radar-sweep">
+        <path d="M180 180 L125 30 A160 160 0 0 1 180 20 Z" fill="rgba(83, 238, 139, 0.12)"/>
+        <line class="radar-needle" x1="180" y1="180" x2="180" y2="20"/>
+      </g>
+
+      <!-- Preserve the camera-only/retained alert cue without inventing a target location. -->
+      @if (hasActiveIntrusion && dots.length === 0) {
+        <g class="radar-origin-alert">
+          <circle class="radar-alert-wave" cx="180" cy="180" r="160"/>
+          <circle class="radar-alert-wave radar-alert-wave-delayed" cx="180" cy="180" r="160"/>
+        </g>
+      }
+
+      <!-- These labels identify sensor sectors, not compass headings. -->
+      <g class="radar-sector-labels">
+        <text x="18" y="29">RADAR A</text>
+        <text x="18" y="342">RADAR B</text>
+        <text x="342" y="29" text-anchor="end" class="radar-range-label">8 m</text>
+      </g>
+      <circle class="radar-origin" cx="180" cy="180" r="3"/>
+
+      <!-- Targets keep their exact coordinates; only their alarm treatment changes on review. -->
       @for (dot of dots; track dot.radarId + ':' + dot.slot) {
-        <circle class="radar-target" [class.radar-target-b]="dot.radarId === 2"
-                [attr.cx]="dot.x" [attr.cy]="dot.y" r="4">
+        <g class="radar-target" [attr.data-target]="(dot.radarId === 1 ? 'A' : 'B') + dot.slot"
+           [attr.transform]="'translate(' + dot.x + ' ' + dot.y + ')'">
           <title>Radar {{ dot.radarId === 1 ? 'A' : 'B' }}, slot {{ dot.slot }}: {{ dot.angleDeg }} degrees, {{ dot.distanceMm }} mm, {{ dot.speedCmps }} cm/s</title>
-        </circle>
+          <circle class="radar-target-halo" r="10"/>
+          <circle class="radar-target-dot" r="4.5"/>
+          <text class="radar-target-label" [attr.x]="dot.x > 300 ? -9 : 9" y="-8"
+                [attr.text-anchor]="dot.x > 300 ? 'end' : 'start'">{{ dot.radarId === 1 ? 'A' : 'B' }}{{ dot.slot }}</text>
+        </g>
       }
     </svg>
-
-    <div *ngIf="hasActiveIntrusion" class="radar-intrusion-label">
-      <i class="pi pi-exclamation-triangle"></i>
-      INTRUSION ALERT
-    </div>
   </div>
 </div>

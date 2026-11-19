@@ -1,11 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { VisionDecodedPayload } from '../constants/device-message.model';
+import { RadarDetectionEvent, VisionDecodedPayload } from '../constants/device-message.model';
 import { AiVisionPacketApiModel } from './vision.service';
 import { CustomerService } from './customer.service';
 import { SignalrService } from './signalr.service';
 import { SiteAccessService } from './site-access.service';
 import { SiteAccessSession, SiteAccessSummary } from './site-access.model';
+import { getValidRadarTargets, isValidRadarFrame } from './radar-frame';
 
 export type SecuritySiteCategory = 'healthy' | 'intruder' | 'approved-access' | 'guard';
 export type SecurityReviewCategory = 'guard';
@@ -28,6 +29,16 @@ type SecurityVisionEvent = Partial<Pick<VisionDecodedPayload,
   'eventIdHash' | 'activityZone' | 'activityZoneLabel' | 'isHeaderCrcValid'
 >> & { receivedAtUtc?: string };
 
+type SecurityDetection = {
+  deviceId: number;
+  occurredAt: number;
+  sourceTime: number;
+  eventKey: string;
+  cameraId?: number;
+  zone?: string;
+  radar?: boolean;
+};
+
 /**
  * Browser-side security incident state. This is NOT an authoritative backend record.
  * A future backend endpoint must own classification, operator audit and shared expiry.
@@ -43,6 +54,9 @@ export class SecurityIncidentService implements OnDestroy {
   private scope = '';
   private readonly previouslyExpiredKeys = new Set<string>();
   private readonly expiryTimer: ReturnType<typeof setInterval>;
+  private radarPersistTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly latestRadarFrames = new Map<number, { receivedAt: number; key: string }>();
+  private readonly onPageHide = (): void => this.flushRadarPersistence();
 
   private readonly onStorage = (event: StorageEvent): void => {
     if (event.key === this.storageKey()) {
@@ -61,8 +75,10 @@ export class SecurityIncidentService implements OnDestroy {
     this.subscriptions.add(this.customers.activeCustomer$.subscribe(customer => {
       const nextScope = String(customer?.id || 'default');
       if (nextScope !== this.scope) {
+        this.flushRadarPersistence();
         this.scope = nextScope;
         this.deviceSiteKeys.clear();
+        this.latestRadarFrames.clear();
         this.statesSubject.next(this.readStorage());
       }
     }));
@@ -73,19 +89,24 @@ export class SecurityIncidentService implements OnDestroy {
       }
     }));
 
+    this.subscriptions.add(this.signalr.onRadarDetection$.subscribe(frame => this.acceptRadarEvent(frame)));
+
     // Recompute views on Grant, Extend, End, expiry and changes from another tab.
     this.subscriptions.add(this.siteAccess.changes$.subscribe(() => {
       this.statesSubject.next(this.statesSubject.value);
     }));
 
     window.addEventListener('storage', this.onStorage);
+    window.addEventListener('pagehide', this.onPageHide);
     this.expiryTimer = setInterval(() => this.expireIncidents(), 2000);
     this.expireIncidents();
   }
 
   ngOnDestroy(): void {
+    this.flushRadarPersistence();
     clearInterval(this.expiryTimer);
     window.removeEventListener('storage', this.onStorage);
+    window.removeEventListener('pagehide', this.onPageHide);
     this.subscriptions.unsubscribe();
   }
 
@@ -184,6 +205,32 @@ export class SecurityIncidentService implements OnDestroy {
     if (next) this.publish(next);
   }
 
+  private acceptRadarEvent(frame: RadarDetectionEvent): void {
+    if (!isValidRadarFrame(frame)) return;
+    const now = Date.now();
+    const parsedAt = Date.parse(String(frame.receivedAt ?? ''));
+    const occurredAt = Number.isFinite(parsedAt) ? parsedAt : 0;
+    // Sequence is only eight bits. Timestamp + device disambiguates sequence wraps.
+    const eventKey = `radar:${frame.deviceId}:${occurredAt || now}:${frame.sequence}`;
+    const lastFrame = this.latestRadarFrames.get(frame.deviceId);
+    if (lastFrame && (lastFrame.key === eventKey || (occurredAt > 0 && occurredAt < lastFrame.receivedAt))) return;
+    if (occurredAt > now + 60_000 || (occurredAt > 0 && occurredAt < now - this.intrusionWindowMs)) return;
+    this.latestRadarFrames.set(frame.deviceId, { receivedAt: occurredAt, key: eventKey });
+    if (!getValidRadarTargets(frame).length) return;
+
+    const siteKey = this.siteKeyForDevice(frame.deviceId);
+    const saved = this.statesSubject.value[siteKey];
+    const previousKey = saved?.eventKeys.find(key => key.startsWith(`radar:${frame.deviceId}:`));
+    if (previousKey && occurredAt > 0 && occurredAt < Number(previousKey.split(':')[2])) return;
+    const next = this.updateFromDetection(this.statesSubject.value, {
+      deviceId: frame.deviceId, occurredAt, sourceTime: occurredAt, eventKey, radar: true
+    }, false);
+    if (next) {
+      // Publish the first alarm immediately; batch only subsequent storage writes.
+      this.publish(next, !!saved && saved.expiresAt > now && saved.lastDetectedAt > this.siteAccess.rearmAfter(siteKey));
+    }
+  }
+
   private updateFromEvent(
     state: Record<string, SecuritySiteIncident>,
     event: SecurityVisionEvent,
@@ -198,20 +245,33 @@ export class SecurityIncidentService implements OnDestroy {
 
     const now = Date.now();
     const occurredAt = this.eventTime(event);
+    const rawTime = Number(event.timestampUtc ?? 0);
+    const timestamp = rawTime > 1e12 ? rawTime : rawTime * 1000;
+    const sourceTime = Number.isFinite(timestamp) && timestamp > 0 && timestamp <= now + 60_000
+      ? timestamp : occurredAt;
+    return this.updateFromDetection(state, {
+      deviceId: id, occurredAt, sourceTime, eventKey: this.eventKey(id, event),
+      cameraId: Number(event.cameraId), zone: String(event.activityZoneLabel ?? '').trim()
+    }, historical);
+  }
+
+  private updateFromDetection(
+    state: Record<string, SecuritySiteIncident>,
+    detection: SecurityDetection,
+    historical: boolean
+  ): Record<string, SecuritySiteIncident> | null {
+    const now = Date.now();
+    const { occurredAt, sourceTime, eventKey } = detection;
     // Ignore stale history/replayed events. The receipt moment starts a live window.
     if (historical && (occurredAt < now - this.intrusionWindowMs || occurredAt > now + 60_000)) return null;
     if (!historical && occurredAt > 0 && occurredAt < now - this.intrusionWindowMs) return null;
 
     const eventAt = historical ? occurredAt : now;
-    const siteKey = this.siteKeyForDevice(id);
+    const siteKey = this.siteKeyForDevice(detection.deviceId);
     // This affects classification only. The detail page still receives every alert
     // and retains camera evidence through the existing Vision handlers.
     if (this.siteAccess.getActive(siteKey)) return null;
     const rearmAfter = this.siteAccess.rearmAfter(siteKey);
-    const rawTime = Number(event.timestampUtc ?? 0);
-    const timestamp = rawTime > 1e12 ? rawTime : rawTime * 1000;
-    const sourceTime = Number.isFinite(timestamp) && timestamp > 0 && timestamp <= now + 60_000
-      ? timestamp : occurredAt;
     // Late history/replays from a completed authorization must not reopen it.
     if (rearmAfter && Number.isFinite(sourceTime) && sourceTime > 0 && sourceTime <= rearmAfter) return null;
     if (Number.isFinite(sourceTime) && sourceTime > 0 && this.siteAccess.wasAuthorized(siteKey, sourceTime)) return null;
@@ -222,7 +282,6 @@ export class SecurityIncidentService implements OnDestroy {
     // from reopening the same, already-reviewed incident after its expiry.
     if (historical && saved?.reviewedAt && saved.expiresAt <= now && eventAt <= saved.expiresAt) return null;
     const previous = saved?.expiresAt > now && saved.lastDetectedAt > rearmAfter ? saved : null;
-    const eventKey = this.eventKey(id, event);
     // Also ignore duplicate MQTT deliveries after a reviewed incident expires,
     // while its short-lived deduplication record remains in storage.
     if (saved?.eventKeys.includes(eventKey)) return null;
@@ -233,13 +292,17 @@ export class SecurityIncidentService implements OnDestroy {
     const expiresAt = previous?.category !== 'intruder' && previous
       ? previous.expiresAt
       : eventAt + this.intrusionWindowMs;
-    const cameraId = Number(event.cameraId);
+    const cameraId = detection.cameraId ?? 0;
     const cameraIds = previous ? [...previous.cameraIds] : [];
     if (Number.isInteger(cameraId) && cameraId > 0 && !cameraIds.includes(cameraId)) {
       cameraIds.push(cameraId);
     }
 
-    const zone = String(event.activityZoneLabel ?? '').trim();
+    const zone = detection.zone ?? '';
+    // Keep one radar key per device: high-rate target frames must not evict camera deduplication keys.
+    const eventKeys = detection.radar
+      ? (previous?.eventKeys ?? []).filter(key => !key.startsWith(`radar:${detection.deviceId}:`))
+      : previous?.eventKeys ?? [];
     const next: SecuritySiteIncident = {
       siteKey,
       category: previous?.category ?? 'intruder',
@@ -248,7 +311,7 @@ export class SecurityIncidentService implements OnDestroy {
       expiresAt,
       cameraIds: cameraIds.sort((a, b) => a - b),
       lastZone: zone || previous?.lastZone || '',
-      eventKeys: [...(previous?.eventKeys ?? []), eventKey].slice(-120),
+      eventKeys: [...eventKeys, eventKey].slice(-120),
       ...(previous?.reviewedAt ? { reviewedAt: previous.reviewedAt } : {})
     };
     return { ...state, [siteKey]: next };
@@ -328,10 +391,32 @@ export class SecurityIncidentService implements OnDestroy {
     if (changed) this.publish(retained);
   }
 
-  private publish(state: Record<string, SecuritySiteIncident>): void {
+  private publish(state: Record<string, SecuritySiteIncident>, deferPersistence = false): void {
     this.statesSubject.next(state);
+    if (deferPersistence) {
+      if (this.radarPersistTimer === null) {
+        this.radarPersistTimer = setTimeout(() => {
+          this.radarPersistTimer = null;
+          this.persistState();
+        }, 1000);
+      }
+      return;
+    }
+    if (this.radarPersistTimer !== null) clearTimeout(this.radarPersistTimer);
+    this.radarPersistTimer = null;
+    this.persistState();
+  }
+
+  private flushRadarPersistence(): void {
+    if (this.radarPersistTimer === null) return;
+    clearTimeout(this.radarPersistTimer);
+    this.radarPersistTimer = null;
+    this.persistState();
+  }
+
+  private persistState(): void {
     try {
-      localStorage.setItem(this.storageKey(), JSON.stringify(state));
+      localStorage.setItem(this.storageKey(), JSON.stringify(this.statesSubject.value));
     } catch {
       // A blocked/full browser cache does not prevent live monitoring in this tab.
     }

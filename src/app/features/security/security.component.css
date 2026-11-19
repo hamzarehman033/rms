@@ -352,6 +352,39 @@ select:focus {
 }
 .security-status-card.selected { border-color:var(--primary); }
 .security-status-card:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+/* Keep the count readable while the active intrusion card gives a gentle alarm cue. */
+.security-intruder-card.intrusion-active {
+  border-color: #f85149;
+  background: linear-gradient(135deg, rgba(248, 81, 73, .12), rgba(248, 81, 73, .03)), var(--card);
+  animation: security-intruder-card-pulse 2.6s ease-in-out infinite;
+}
+.security-intruder-card.intrusion-active .s-lbl {
+  color: var(--foreground);
+  font-weight: 700;
+}
+.security-intruder-card.intrusion-active .s-lbl i { color: #f85149; font-size: 12px; }
+.security-intruder-card .s-sub { display: flex; align-items: center; gap: 6px; }
+.security-intruder-card.intrusion-active .s-sub { color: var(--foreground); }
+.intruder-alert-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: #f85149;
+  animation: security-intruder-dot-pulse 2.6s ease-in-out infinite;
+}
+@keyframes security-intruder-card-pulse {
+  0%, 100% { box-shadow: var(--shadow-card), 0 0 0 1px rgba(248, 81, 73, .08), 0 0 8px rgba(248, 81, 73, .06); }
+  50% { box-shadow: var(--shadow-card), 0 0 0 1px rgba(248, 81, 73, .28), 0 0 20px rgba(248, 81, 73, .18); }
+}
+@keyframes security-intruder-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, .35); }
+  50% { box-shadow: 0 0 0 4px rgba(248, 81, 73, .08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .security-intruder-card.intrusion-active, .intruder-alert-dot { animation: none; }
+  .security-intruder-card.intrusion-active { box-shadow: var(--shadow-card), 0 0 0 1px rgba(248, 81, 73, .2); }
+}
 /* Same outlined .badge shape as Connectivity, with each security category's color. */
 .security-status-pill { white-space: nowrap; }
 .security-status-pill.healthy {

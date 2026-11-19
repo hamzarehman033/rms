@@ -1,9 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { VisionDecodedPayload } from '../constants/device-message.model';
+import { RadarDetectionEvent, VisionDecodedPayload } from '../constants/device-message.model';
 import { AiVisionPacketApiModel } from './vision.service';
 import { CustomerService } from './customer.service';
 import { SignalrService } from './signalr.service';
+import { isValidRadarFrame } from './radar-frame';
 
 export type SecurityConnectivityStatus = 'online' | 'offline';
 
@@ -13,13 +14,14 @@ type PresenceRecord = { lastSeenMs: number; timeoutMs: number; heartbeatObserved
  * Security/AI connectivity only. RMS telemetry and stopped browser video players
  * do not prove whether the AI edge device is connected.
  *
- * A live heartbeat (messageType=2) or alert (messageType=1) is evidence of life.
+ * A live heartbeat (messageType=2), alert (messageType=1), or radar frame
+ * (messageType=3, including an empty target list) is evidence of gateway life.
  * The UI has two states: ONLINE while fresh AI evidence is available, otherwise
  * OFFLINE (also when the realtime hub is unavailable). Offline is a browser-level
  * indication, not proof that the physical gateway has lost power or network.
  * Previously observed devices expire after 3 heartbeat periods (60-300s).
- * The hub must forward Vision heartbeats for an idle but online device to be
- * continuously reported online. This is browser-observed status, not server SLA.
+ * The hub must forward heartbeats or radar frames for an idle but online device
+ * to remain online. This is browser-observed status, not server SLA.
  */
 @Injectable({ providedIn: 'root' })
 export class SecurityConnectivityService implements OnDestroy {
@@ -53,6 +55,7 @@ export class SecurityConnectivityService implements OnDestroy {
     this.subscriptions.add(this.signalr.onVisionDetection$.subscribe(packet => {
       if (packet) this.observe(packet);
     }));
+    this.subscriptions.add(this.signalr.onRadarDetection$.subscribe(frame => this.observeRadar(frame)));
     this.timer = setInterval(() => this.notify(), 10_000);
   }
 
@@ -112,7 +115,17 @@ export class SecurityConnectivityService implements OnDestroy {
     this.record(id, seenAt, Number(packet.heartbeatIntervalSec), packet.messageType === 2);
   }
 
-  private record(id: number, receivedAtMs: number, heartbeatIntervalSeconds: number, isHeartbeat: boolean): void {
+  private observeRadar(frame: RadarDetectionEvent): void {
+    if (!isValidRadarFrame(frame)) return;
+    const parsedAt = Date.parse(String(frame.receivedAt ?? ''));
+    const receivedAt = Number.isFinite(parsedAt) ? parsedAt : Date.now();
+    const wasOnline = this.getDeviceStatus(frame.deviceId) === 'online';
+    // A frame proves the MQTT gateway is alive even when both sensors report offline.
+    // Preserve any observed heartbeat timeout, using the existing 120s fallback.
+    this.record(frame.deviceId, receivedAt, NaN, false, !wasOnline);
+  }
+
+  private record(id: number, receivedAtMs: number, heartbeatIntervalSeconds: number, isHeartbeat: boolean, notify = true): void {
     const now = Date.now();
     const previous = this.seen.get(id);
     if (!Number.isInteger(id) || id <= 0 || receivedAtMs > now + 120_000 ||
@@ -126,7 +139,7 @@ export class SecurityConnectivityService implements OnDestroy {
       timeoutMs,
       heartbeatObserved: isHeartbeat || previous?.heartbeatObserved === true
     });
-    this.notify();
+    if (notify) this.notify();
   }
 
   private notify(): void {

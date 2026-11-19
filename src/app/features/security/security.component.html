@@ -79,12 +79,21 @@
               <div class="s-num" style="color:#d29922">{{ getAiGuardCount() }}</div>
               <div class="s-sub">Verified guard presence</div>
             </button>
-            <button type="button" class="s-card online-card status-link security-status-card"
-              [class.selected]="selectedTab === 6" (click)="selectSecurityCard(6)">
+            @let intruderCount = getAiIntruderCount();
+            <button type="button" class="s-card online-card status-link security-status-card security-intruder-card"
+              [class.selected]="selectedTab === 6" [class.intrusion-active]="intruderCount > 0"
+              [attr.aria-pressed]="selectedTab === 6"
+              [attr.aria-label]="intruderCount > 0
+                ? 'Intrusion alert: ' + intruderCount + (intruderCount === 1 ? ' site requires' : ' sites require') + ' attention. Show intruder sites.'
+                : 'Intruders: 0 active sites. Show intruder sites.'"
+              (click)="selectSecurityCard(6)">
               <div class="s-card-bar" style="background:#f85149"></div>
-              <div class="s-lbl">Intruders</div>
-              <div class="s-num" style="color:#f85149">{{ getAiIntruderCount() }}</div>
-              <div class="s-sub">Active unverified sites</div>
+              <div class="s-lbl"><i *ngIf="intruderCount > 0" class="pi pi-exclamation-triangle" aria-hidden="true"></i>Intruders</div>
+              <div class="s-num" style="color:#f85149">{{ intruderCount }}</div>
+              <div class="s-sub">
+                <span *ngIf="intruderCount > 0" class="intruder-alert-dot" aria-hidden="true"></span>
+                {{ intruderCount > 0 ? 'Attention required' : 'Active unverified sites' }}
+              </div>
             </button>
           </div>
         </div>

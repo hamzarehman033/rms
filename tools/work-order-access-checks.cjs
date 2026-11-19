@@ -73,7 +73,7 @@ function environment(sharedStorage) {
   const api = { getActivityById(id) { const value=rows.get(Number(id)); return value ? observable({data:value}) : observable(() => Promise.reject({status:404})); },
     getActivities(query) { const values=[...rows.values()].filter(a => a.deviceId === query.filters[0].value); const offset=(query.pagenumber-1)*query.pagesize; return observable({data:{pageData:values.slice(offset,offset+query.pagesize)}}); } };
   const access = new (load(serviceFile).SiteAccessService)(customers, auth, api);
-  const signalr = {onVisionDetection$: new Subject()};
+  const signalr = {onVisionDetection$: new Subject(), onRadarDetection$: new Subject()};
   const incidents = new (load(incidentFile).SecurityIncidentService)(signalr, customers, access);
   incidents.registerDevices([{id:1,siteId:100},{id:2,siteId:100},{id:3,siteId:200}]);
   const request = (overrides = {}) => ({ siteKey:'site:100',siteLabel:'G7 ISB',activity:rows.get(17),expiresAt:now+2*60*60_000,reason:'Team verified by phone and camera; site alarms reviewed',teamVerified:true,...overrides });

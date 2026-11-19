@@ -12,77 +12,64 @@
   display: flex;
   flex-direction: column;
 }
-.radar-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+.radar-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .radar-heading-label { font-size: 13px; font-weight: 700; }
 .radar-heading-label i { color: #38b66e; margin-right: 4px; }
-.radar-status { color: #43cd80; border: 1px solid #245b3e; background: #102a1c; padding: 4px 7px; font-size: 9px; font-weight: 700; border-radius: 20px; letter-spacing: .06em; white-space: nowrap; }
-.radar-status.alert { color: #ff7777; background: #381817; border-color: #ae3333; }
+.radar-status { display: inline-flex; align-items: center; gap: 5px; color: #7ce5a4; border: 1px solid #245b3e; background: #102a1c; padding: 4px 7px; font-size: 9px; font-weight: 700; border-radius: 20px; letter-spacing: .06em; white-space: nowrap; }
+.radar-status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.radar-status.alert { color: #ff969b; background: #381817; border-color: #ae3333; }
 .radar-screen {
   position: relative;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 100%, #0b3620 0%, #061910 58%, #06130d 100%);
+  background: radial-gradient(circle at center, #0b3620 0%, #061910 58%, #06130d 100%);
   border-radius: 9px;
   border: 1px solid #175a33;
   width: 100%;
-  /* Match the SVG proportions instead of stretching to the camera row. */
-  aspect-ratio: 360 / 200;
+  max-width: 400px;
+  align-self: center;
+  aspect-ratio: 1;
   min-height: 0;
   flex: 0 0 auto;
 }
 .radar-screen svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-/* SVG coordinates, not percentages of the surrounding card: the pivot cannot drift. */
+.radar-rim { stroke: #388f58; stroke-width: 1.5; }
+.radar-grid { fill: none; stroke: #256a3e; stroke-width: .8; }
+.radar-divider { stroke: #4b9865; stroke-width: 1; stroke-dasharray: 4 4; }
+/* SVG coordinates keep the sweep pivot exactly at the shared radar origin. */
 .radar-sweep {
   transform-box: view-box;
-  transform-origin: 180px 190px;
-  animation: security-radar-scan 5.5s ease-in-out infinite alternate;
+  transform-origin: 180px 180px;
+  animation: security-radar-scan 8s linear infinite;
   pointer-events: none;
 }
-.radar-needle { stroke: #8afab1; stroke-width: 1.7; filter: drop-shadow(0 0 3px rgba(77, 236, 135, .5)); }
-@keyframes security-radar-scan {
-  from { transform: rotate(-88deg); }
-  to { transform: rotate(88deg); }
+.radar-needle { stroke: #8afab1; stroke-width: 1.5; filter: drop-shadow(0 0 3px rgba(77, 236, 135, .5)); }
+@keyframes security-radar-scan { to { transform: rotate(360deg); } }
+.radar-origin { fill: #b0fbc8; }
+.radar-sector-labels { fill: #9bc5aa; font-size: 11px; font-weight: 700; letter-spacing: .09em; }
+.radar-range-label { fill: #82af93; font-weight: 500; letter-spacing: 0; }
+.radar-target-dot { fill: #9bebb8; stroke: #072515; stroke-width: 1; }
+.radar-target-halo { fill: #9bebb8; fill-opacity: .08; stroke: #9bebb8; stroke-opacity: .35; stroke-width: 1; }
+.radar-target-label { fill: #cef4dc; font-size: 10px; font-weight: 700; paint-order: stroke; stroke: #061910; stroke-width: 3px; stroke-linejoin: round; }
+.has-intrusion .radar-target-dot {
+  fill: #ff626b;
+  stroke: #ffd6d9;
+  stroke-width: .8;
+  filter: drop-shadow(0 0 4px rgba(255, 62, 77, .7));
+  animation: security-target-pulse 1.8s ease-in-out infinite;
 }
-.radar-origin { fill: #94ffaf; }
-.radar-target { fill: #94ffaf; stroke: #061910; stroke-width: 1; }
-.radar-target-b { fill: #67d8ff; }
-.has-intrusion .radar-origin {
-  fill: #ff7777;
-  filter: drop-shadow(0 0 5px #f64242);
-  animation: security-origin-pulse 1.8s ease-in-out infinite alternate;
-}
-.radar-alert-wave {
-  fill: none;
-  stroke: #ff6262;
-  stroke-width: 2;
-  transform-box: view-box;
-  transform-origin: 180px 190px;
-  animation: security-origin-wave 2.6s ease-out infinite;
-  pointer-events: none;
-}
+.has-intrusion .radar-target-halo { fill: #ff5260; stroke: #ff7882; animation: security-target-halo 1.8s ease-in-out infinite; }
+.has-intrusion .radar-target-label { fill: #ffbfc5; }
+.has-intrusion .radar-rim { stroke: #bc6666; }
+.has-intrusion .radar-status-dot { animation: security-target-pulse 1.8s ease-in-out infinite; }
+.radar-alert-wave { fill: none; stroke: #ff777f; stroke-width: 1.5; transform-box: view-box; transform-origin: 180px 180px; pointer-events: none; animation: security-origin-wave 2.6s ease-out infinite; }
 .radar-alert-wave-delayed { animation-delay: -1.3s; }
-@keyframes security-origin-wave {
-  0% { transform: scale(.04); opacity: 0; }
-  12% { opacity: .95; }
-  100% { transform: scale(1); opacity: 0; }
-}
-@keyframes security-origin-pulse { from { opacity: .55; } to { opacity: 1; } }
-.radar-intrusion-label {
-  position: absolute;
-  top: 18px;
-  left: 8px;
-  right: 8px;
-  text-align: center;
-  color: #ff7777;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .09em;
-  text-shadow: 0 0 9px #a52121, 0 1px 2px #051109;
-  pointer-events: none;
-}
-.radar-intrusion-label i { margin-right: 5px; }
+@keyframes security-origin-wave { 0% { transform: scale(.08); opacity: 0; } 15% { opacity: .55; } 100% { transform: scale(1); opacity: 0; } }
+/* Keep the target visible throughout the flash, including the dimmest phase. */
+@keyframes security-target-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes security-target-halo { 0%, 100% { opacity: .9; } 50% { opacity: .18; } }
 @media (prefers-reduced-motion: reduce) {
-  .radar-sweep, .radar-alert-wave, .has-intrusion .radar-origin { animation: none; }
+  .radar-sweep, .radar-alert-wave, .has-intrusion .radar-target-dot, .has-intrusion .radar-target-halo, .has-intrusion .radar-status-dot { animation: none; }
   .radar-sweep { transform: rotate(25deg); }
-  .radar-alert-wave { transform: scale(.5); opacity: .7; }
-  .radar-alert-wave-delayed { transform: scale(.85); opacity: .45; }
+  .radar-alert-wave { transform: scale(.55); opacity: .45; }
+  .radar-alert-wave-delayed { transform: scale(.85); opacity: .25; }
 }
