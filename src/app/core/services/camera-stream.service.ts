@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { HttpBackend, HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom, timeout } from 'rxjs';
 import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
@@ -44,18 +44,23 @@ interface CameraStreamSession {
   audioRequest: AudioRequest | null;
   signalQueue: Promise<void>;
   pendingIce: RTCIceCandidateInit[];
+  publisherFingerprint?: string;
   callbacks: CameraStreamCallbacks;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CameraStreamService {
+  private readonly iceHttp: HttpClient;
   private readonly sessions = new Map<string, CameraStreamSession>();
 
   constructor(
-    private http: HttpClient,
+    backend: HttpBackend,
     private authService: AuthService,
     private zone: NgZone
-  ) {}
+  ) {
+    // An optional relay lookup must not trigger a global error toast or log other sessions out.
+    this.iceHttp = new HttpClient(backend);
+  }
 
   async start(
     deviceId: number,
@@ -95,6 +100,7 @@ export class CameraStreamService {
     this.createPeer(session);
 
     connection.on('PublisherJoined', () => {
+      if (!session.peer || this.sessions.get(key) !== session) return;
       this.closePeer(session, true);
       this.createPeer(session);
       void this.requestOffer(session).catch((error) => {
@@ -102,6 +108,7 @@ export class CameraStreamService {
       });
     });
     connection.on('PublisherLeft', () => {
+      if (!session.peer || this.sessions.get(key) !== session) return;
       this.closePeer(session, true);
       this.createPeer(session);
     });
@@ -109,6 +116,7 @@ export class CameraStreamService {
       void this.handleSignal(session, message);
     });
     connection.onreconnected(() => {
+      if (!session.peer || this.sessions.get(key) !== session) return;
       this.closePeer(session, true);
       this.createPeer(session);
       void this.joinViewer(session).catch((error) => {
@@ -127,7 +135,7 @@ export class CameraStreamService {
         connectionState: connection.state
       });
     } catch (error) {
-      this.sessions.delete(key);
+      if (this.sessions.get(key) === session) this.sessions.delete(key);
       this.closePeer(session, false);
       await connection.stop().catch(() => undefined);
       throw error;
@@ -266,28 +274,57 @@ export class CameraStreamService {
     await session.connection.invoke('RequestOffer', session.deviceId, session.cameraIndex);
   }
 
+  private async getIceConfiguration(): Promise<RTCConfiguration> {
+    const read = (token: string | null) => firstValueFrom(
+      this.iceHttp.get<RTCConfiguration>(environment.baseUrl + '/camera/ice', {
+        headers: token ? { Authorization: 'Bearer ' + token } : {}
+      }).pipe(timeout(3000))
+    );
+    try {
+      return await read(this.authService.getAccessToken());
+    } catch (error) {
+      if (!(error instanceof HttpErrorResponse) || error.status !== 401 || !this.authService.getRefreshToken()) {
+        throw error;
+      }
+      let token: string;
+      try {
+        token = await firstValueFrom(this.authService.refreshToken().pipe(timeout(3000)));
+      } catch {
+        throw error;
+      }
+      return read(token);
+    }
+  }
+
   private createPeer(session: CameraStreamSession): void {
-    const peer = new RTCPeerConnection();
+    const peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
     session.peer = peer;
     session.audioSender = null;
     session.signalQueue = Promise.resolve();
     session.pendingIce = [];
+    session.publisherFingerprint = undefined;
     session.audio.muted = true;
 
     let checkVideoFrame: (() => void) | undefined;
     peer.oniceconnectionstatechange = () => {
       if (session.peer !== peer) return;
-      if (peer.iceConnectionState === 'failed' || peer.iceConnectionState === 'disconnected') {
-        const message = peer.iceConnectionState === 'failed'
-          ? 'Media connection failed. Stop and restart the camera.'
-          : 'Media connection interrupted';
-        this.zone.run(() => session.callbacks.onWaiting?.(message));
+      if (peer.iceConnectionState === 'failed') {
+        this.failPeer(session, peer, 'Media connection failed. Click Stop, then Play to retry.');
+      } else if (peer.iceConnectionState === 'disconnected') {
+        this.zone.run(() => session.callbacks.onWaiting?.('Media connection interrupted'));
       } else if (peer.iceConnectionState === 'connected' || peer.iceConnectionState === 'completed') {
         checkVideoFrame?.();
       }
     };
 
+    peer.onconnectionstatechange = () => {
+      if (peer.connectionState === 'failed') {
+        this.failPeer(session, peer, 'Media connection failed. Click Stop, then Play to retry.');
+      }
+    };
+
     peer.ontrack = (event) => {
+      if (session.peer !== peer) return;
       this.zone.run(() => {
         if (event.track.kind === 'audio') {
           session.audio.srcObject = new MediaStream([event.track]);
@@ -306,6 +343,12 @@ export class CameraStreamService {
             this.zone.run(() => session.callbacks.onTrack?.());
           }
         };
+        const markWaiting = () => {
+          if (session.peer === peer && session.video.srcObject === stream &&
+              peer.iceConnectionState !== 'failed' && peer.iceConnectionState !== 'disconnected') {
+            this.zone.run(() => session.callbacks.onWaiting?.());
+          }
+        };
         checkVideoFrame = () => {
           if (typeof session.video.requestVideoFrameCallback === 'function') {
             session.video.requestVideoFrameCallback(markPlaying);
@@ -314,16 +357,22 @@ export class CameraStreamService {
           }
         };
         session.video.onplaying = checkVideoFrame;
+        session.video.onwaiting = markWaiting;
+        track.onmute = markWaiting;
+        track.onended = markWaiting;
         track.onunmute = checkVideoFrame;
         session.video.srcObject = stream;
         void session.video.play().catch((error) => {
+          if (session.peer !== peer || session.video.srcObject !== stream) return;
           console.error('[CameraStream] Video playback failed', error);
+          session.video.controls = true;
+          this.zone.run(() => session.callbacks.onWaiting?.('Tap the video play button.'));
         });
       });
     };
 
     peer.onicecandidate = (event) => {
-      if (!event.candidate) {
+      if (!event.candidate || session.peer !== peer) {
         return;
       }
 
@@ -336,15 +385,26 @@ export class CameraStreamService {
     };
   }
 
+  private failPeer(session: CameraStreamSession, peer: RTCPeerConnection, message: string): void {
+    if (session.peer !== peer) return;
+    this.closePeer(session, false);
+    this.zone.run(() => session.callbacks.onWaiting?.(message));
+    // Each camera owns its hub connection. Disconnecting releases this viewer's firmware slot.
+    void session.connection.stop().catch(error => console.warn('[CameraStream] Failed to close viewer', error));
+  }
+
   private closePeer(session: CameraStreamSession, notifyWaiting: boolean): void {
     this.finishAudioRequest(session, new Error('Camera stream is no longer active'));
     const hadLocalAudio = !!session.localAudioStream;
     session.localAudioStream?.getTracks().forEach((track) => track.stop());
     session.localAudioStream = null;
-    session.peer?.close();
+    const peer = session.peer;
     session.peer = null;
+    peer?.close();
     session.audioSender = null;
     session.video.onplaying = null;
+    session.video.onwaiting = null;
+    session.video.controls = false;
     session.video.srcObject = null;
     session.audio.srcObject = null;
     session.audio.muted = true;
@@ -381,8 +441,17 @@ export class CameraStreamService {
       return;
     }
 
-    const peer = session.peer;
     const payload = message.payload;
+    // Preserve the publisher's original fingerprint. Browsers may normalize hashes in remoteDescription.
+    const fingerprint = payload?.type === 'offer'
+      ? payload.sdp?.match(/^a=fingerprint:sha-256 ([^\r\n]+)/im)?.[1].trim().toUpperCase()
+      : undefined;
+    if (session.peer && session.publisherFingerprint && fingerprint && fingerprint !== session.publisherFingerprint) {
+      // A Linux source rebuild creates a new peer with the same viewer ID.
+      this.closePeer(session, true);
+      this.createPeer(session);
+    }
+    const peer = session.peer;
     if (!peer || !payload) {
       return;
     }
@@ -402,21 +471,37 @@ export class CameraStreamService {
       if (payload.type === 'offer' && payload.sdp) {
         // Fetch fresh credentials for a new peer, including after a long wait for its publisher.
         if (!peer.remoteDescription) {
-          const config = await firstValueFrom(this.http.get<RTCConfiguration>(environment.baseUrl + '/camera/ice'));
+          let config: RTCConfiguration | undefined;
+          try {
+            config = await this.getIceConfiguration();
+            if (session.peer !== peer) return;
+            if (!config?.iceServers?.length) throw new Error('Missing ICE servers');
+            peer.setConfiguration(config);
+          } catch (error) {
+            if (session.peer !== peer) return;
+            if (error instanceof HttpErrorResponse && [401, 403].includes(error.status)) {
+              const detail = error.status === 401 ? 'Sign in again to start the camera.' : 'Camera access denied.';
+              this.failPeer(session, peer, detail);
+              return;
+            }
+            if (config?.iceTransportPolicy === 'relay' ||
+                (error instanceof HttpErrorResponse && error.error?.iceTransportPolicy === 'relay')) {
+              this.failPeer(session, peer, 'Camera relay configuration is unavailable.');
+              return;
+            }
+            console.warn('[CameraStream] ICE settings unavailable. Using default STUN.');
+          }
           if (session.peer !== peer) return;
-          peer.setConfiguration(config);
         }
         await peer.setRemoteDescription({ type: 'offer', sdp: payload.sdp });
         if (session.peer !== peer) {
           return;
         }
+        session.publisherFingerprint = fingerprint;
         const audio = peer.getTransceivers().find((transceiver) =>
           transceiver.receiver.track.kind === 'audio');
         if (audio) {
           audio.direction = 'sendrecv';
-        }
-        for (const candidate of session.pendingIce.splice(0)) {
-          await peer.addIceCandidate(candidate);
         }
         const answer = await peer.createAnswer();
         await peer.setLocalDescription(answer);
@@ -425,12 +510,16 @@ export class CameraStreamService {
         }
         session.audioSender = audio?.currentDirection === 'sendrecv' ? audio.sender : null;
         await this.sendSignal(session, { type: 'answer', sdp: answer.sdp });
+        if (session.peer !== peer) return;
+        for (const candidate of session.pendingIce.splice(0)) {
+          await this.addRemoteCandidate(peer, candidate);
+        }
         return;
       }
 
       if (payload.type === 'ice' && payload.candidate) {
         if (peer.remoteDescription) {
-          await peer.addIceCandidate(payload.candidate);
+          await this.addRemoteCandidate(peer, payload.candidate);
         } else {
           session.pendingIce.push(payload.candidate);
         }
@@ -439,12 +528,21 @@ export class CameraStreamService {
       console.error('[CameraStream] Failed to handle signal', error);
       if (session.peer === peer) {
         if (payload.type === 'offer') {
-          this.zone.run(() => session.callbacks.onWaiting?.('Camera negotiation failed. Stop and retry.'));
+          this.failPeer(session, peer, 'Camera negotiation failed. Click Stop, then Play to retry.');
         }
         this.finishAudioRequest(session, new Error('Camera audio signaling failed. Reconnect the stream and retry.'));
       }
     });
     await session.signalQueue;
+  }
+
+  private async addRemoteCandidate(peer: RTCPeerConnection, candidate: RTCIceCandidateInit): Promise<void> {
+    try {
+      await peer.addIceCandidate(candidate);
+    } catch (error) {
+      // A stale or unsupported candidate must not discard the other usable routes.
+      if (peer.signalingState !== 'closed') console.warn('[CameraStream] Remote ICE candidate rejected', error);
+    }
   }
 
   private finishAudioRequest(session: CameraStreamSession, error?: Error): void {
