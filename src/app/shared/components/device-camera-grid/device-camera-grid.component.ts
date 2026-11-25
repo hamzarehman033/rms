@@ -22,6 +22,7 @@ interface LiveCamera {
   isStreaming: boolean;
   isBusy: boolean;
   hasVideo: boolean;
+  connectionMessage?: string;
   isAudioConnected: boolean;
   isAudioBusy: boolean;
 }
@@ -117,7 +118,7 @@ export class DeviceCameraGridComponent implements OnDestroy {
     }
 
     if (camera.isStreaming) {
-      return camera.hasVideo ? 'Live' : 'Waiting';
+      return camera.hasVideo ? 'Live' : (camera.connectionMessage ? 'Connection issue' : 'Waiting');
     }
 
     return 'Stopped';
@@ -133,7 +134,7 @@ export class DeviceCameraGridComponent implements OnDestroy {
     }
 
     if (camera.isStreaming) {
-      return camera.hasVideo ? 'Live' : 'Waiting for remote stream';
+      return camera.hasVideo ? 'Live' : (camera.connectionMessage || 'Waiting for remote stream');
     }
 
     return 'Stream stopped';
@@ -167,13 +168,14 @@ export class DeviceCameraGridComponent implements OnDestroy {
           name: camera.name,
           isEnabled: camera.isEnabled
         });
+        camera.connectionMessage = undefined;
         await this.cameraStreamService.start(
           this.deviceId,
           camera.cameraIndex,
           video,
           audio,
-          () => { camera.hasVideo = true; },
-          () => { camera.hasVideo = false; },
+          () => { camera.hasVideo = true; camera.connectionMessage = undefined; },
+          (message) => { camera.hasVideo = false; camera.connectionMessage = message; },
           (enabled) => { camera.isAudioConnected = enabled; },
           (message) => { toast.error(message); }
         );

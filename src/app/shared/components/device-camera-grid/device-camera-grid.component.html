@@ -3,7 +3,7 @@
     <div class="hstack justify-between items-start mb-2">
       <div class="font-medium">{{ camera.name }}</div>
       <div class="hstack items-center gap-2">
-        <span *ngIf="showStatusBadge" class="badge" [class.online]="camera.isStreaming" [class.offline]="!camera.isStreaming">
+        <span *ngIf="showStatusBadge" class="badge" [class.online]="camera.hasVideo" [class.offline]="!camera.hasVideo">
           ● {{ cameraStatusLabel(camera) }}
         </span>
         <button
