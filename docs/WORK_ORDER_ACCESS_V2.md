@@ -12,15 +12,13 @@ The camera grid, radar component, alert/evidence layout, hardware command servic
 ## Agreed policy
 
 - Work orders must already exist. There is no free-text/unscheduled Grant Access path on the Security page.
-- The old Mark Approved Access action is removed. Mark Guard remains a separate, existing ten-minute incident review; it does not start a work session.
+- The old Mark Approved Access action is removed. Mark Guard remains a separate one-minute incident review; it does not start a work session.
 - A scheduled clock time NEVER starts approval automatically.
 - An eligible job can be started up to one hour early, including exactly the one-hour boundary. Starting even earlier is blocked.
 - Early and late starts keep the original scheduled end unless an Admin/SysAdmin explicitly approves a revised initial deadline.
 - An initial start after the scheduled end requires Admin/SysAdmin and an explicit deadline override. Managers cannot silently revive a past scheduled window.
-- Every started team must be positively confirmed every 15 minutes. A warning is shown when at most five minutes remain.
-- Extension changes the work deadline, NOT the presence-confirmation deadline.
-- Presence confirmation changes the confirmation deadline, NOT the work deadline.
-- The earliest of those deadlines determines current approval.
+- The NOC receives a presence reminder every 15 minutes after start or confirmation. Confirming the team resets the reminder. Missing it leaves approval in effect.
+- Extension changes the work deadline. The next presence reminder stays on its existing schedule.
 - Multiple work orders can run at one physical site. Each work order has its own team, session, timer, audit and controls. One existing work order cannot be used to create multiple visits; a new visit needs a new work order.
 - The existing 24-hour maximum per actual visit is retained, including all extensions.
 
@@ -28,11 +26,9 @@ The current roles remain Manager, Admin and SysAdmin with Security-module access
 
 ## Multiple-team rule
 
-A site is Approved Access only when at least one unfinished work session exists AND every unfinished session at that site is currently authorized.
+A site has Approved Access while any eligible visit is active. A visit starts with NOC authorization and ends its coverage at departure, the work deadline, explicit suspension, or invalidation of the linked work order. The latest eligible deadline determines how long overlapping visits cover the site.
 
-If any team misses its check, reaches its deadline, or is explicitly suspended, whole-site approval pauses. Another still-valid team cannot hide the problem. No camera intrusion is fabricated: without an actual intrusion, the security category returns to its normal state, while the page clearly shows the work-order review warning.
-
-Ending one team's visit does not end another team's session. Closing the last unfinished visit removes the access override. A genuinely new intrusion after that point can be classified immediately. Closing a blocking team's visit requires NOC to confirm departure and review remaining site activity; valid remaining teams can then retain approval.
+Each team has its own controls. Ending, expiring or suspending one visit leaves other eligible visits active. Without an eligible visit, a new qualifying camera or radar detection can raise an intrusion.
 
 Approval is site-wide, NOT person recognition. A site with authorized teams can still contain an unauthorized person; keep cameras, evidence and NOC review operational.
 
@@ -56,21 +52,19 @@ Start Activity / Start Early opens a confirmation form referencing the existing 
 | --- | --- |
 | Confirm Team Still On Site | Requires verification note and checked confirmation; resets that team's check to now + 15 minutes. |
 | Extend | Requires a reason; +30, +60, +120 minutes or explicit end. Does not renew the presence check. |
-| Suspend Approval | Removes that team's approval immediately, which pauses whole-site approval. Does not claim departure. |
-| Review / Resume | For suspended, overdue or expired approval. Revalidates the linked work order and requires fresh team/site review. Resumes NOW; no backdating. |
+| Suspend Approval | Immediately suspends that team's approval. The visit remains open for review or closure. |
+| Review / Resume | For suspended or expired approval. Revalidates the linked work order and requires fresh team/site review. Resumes NOW; no backdating. |
 | End This Team Visit | Requires departure confirmation and note. Can close an active, expired or suspended session. Never closes another team's visit. |
 
 The UI reads the selected work order again before Start, Confirm, Extend or Resume. A deleted, disabled or changed work order cannot be blindly reused. A changed team or schedule requires reconciliation of that original record, or closure and a new work order for a different visit.
 
 ## Early departure without a call
 
-The frontend cannot prove that a team physically departed. Approval lasts at most until the earlier of its work deadline and 15 minutes after the last positive confirmation. Missed confirmation suspends approval and raises a warning; it does not mark the work complete or claim the team left.
-
-A team leaving just after a check can still leave nearly a 15-minute risk window. No-person detections, generic person detections, heartbeats and stopped video players are NOT used to automatically confirm presence or departure.
+The frontend relies on NOC to confirm departure and end the visit. An unreported departure can leave approval active until the work deadline. Presence reminders prompt verification and do not grant an extension.
 
 ## Existing incident behavior
 
-The ten-minute intrusion/Guard rules outside work approval are retained. Work-order approval uses its own timers. Camera evidence and original event history remain available throughout.
+Outside work approval, a qualifying intrusion lasts one minute from the latest qualifying detection. Mark Guard lasts one minute from review. Work-order eligibility follows the approved visit deadline. Camera and radar detections during authorized intervals remain available as evidence.
 
 A deliberate NOC team/site review acknowledges earlier site classification. Authorization intervals are recorded. A delayed event known to have occurred inside an authorized interval does not reopen the old incident. An event during an unapproved gap is not retrospectively authorized by a later extension or resume. Missing live timestamps are treated conservatively as new arrivals; exact ordering still needs a trustworthy backend/device timestamp.
 
@@ -80,7 +74,9 @@ Summary cards use the same aggregate site classification. Multiple teams do not 
 
 The existing per-customer key `mobigence.security.site-access.v1.<customer>` is retained; the data envelope becomes version 2. This allows the old data to be read rather than discarded.
 
-Old linked sessions are preserved but suspended until reviewed under the new policy. Old unlinked sessions remain visible for closure/history but cannot be reauthorized; use a valid scheduled work order. Previously saved standalone Approved Access incident classifications no longer bypass the work-order requirement. Guard is preserved.
+Open v2 visits that previously capped their latest interval at the presence reminder use the approved work deadline for that interval. Earlier suspended or expired gaps and closed visit history are preserved.
+
+Legacy v1 linked sessions are preserved but suspended until reviewed under the new policy. Old unlinked sessions remain visible for closure/history but cannot be reauthorized; use a valid scheduled work order. Previously saved standalone Approved Access incident classifications no longer bypass the work-order requirement. Guard is preserved.
 
 Reload or close older tabs before testing. Do not clear site storage to simulate deployment: that would erase local history. When storage is corrupt/unavailable or cannot save, the page reports failure and does not claim approval. Existing stored records are not silently overwritten with an empty store.
 
@@ -135,11 +131,11 @@ For ZIP application, copy the included `src`, `tools` and `docs` paths into the 
 2. Before start, confirm that the schedule alone leaves the site unapproved. More than one hour early must be disabled; within one hour Start Early must be available.
 3. Start Team A after NOC verification. The site/summary becomes Approved Access and the radar has no intrusion indication. Start Team B independently.
 4. Confirm Team A only; check that Team B's countdown is unchanged. Extend a work deadline and verify the presence-check deadline is unchanged.
-5. Allow one confirmation to pass: approval pauses for the whole site and the unfinished work is shown as requiring review, not completed.
-6. Deliver a new test intrusion through the existing test path: it must be classified as Intruder. Review/Resume after verification restores approval only when all unfinished teams are valid.
+5. Allow one presence reminder to pass. The site should still show Approved Access and the affected team should have a reminder.
+6. Let one team's work deadline pass. Verify its visit needs review while the other authorized team still covers the site.
 7. End one team with departure confirmation: the other valid team's session remains. End the final team and then deliver a fresh intrusion: it must be classified normally.
 8. Refresh the browser, open a second same-origin tab, test a stale form, and confirm the Offline list row still has a blank Status cell.
-9. Edit/delete a linked work order from Activities and verify local approval pauses. A suspended session must still permit explicit closure.
+9. Edit/delete a linked work order from Activities and verify that team’s approval pauses. A suspended session must still permit explicit closure.
 10. Confirm cameras, radar location, alert/evidence history and the four hardware buttons have not moved or changed.
 
 ## Verification performed

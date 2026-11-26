@@ -1,14 +1,14 @@
 <div class="access-card" [attr.aria-busy]="busy">
   <div class="access-header">
     <div class="access-heading"><i class="pi pi-shield" aria-hidden="true"></i><span>Work Order Access</span></div>
-    <span class="access-state" [class.is-active]="summary.approved" [class.is-expiring]="summary.attention.length">{{ stateLabel }}</span>
+    <span class="access-state" [class.is-active]="summary.approved" [class.is-expiring]="!summary.approved && summary.attention.length">{{ stateLabel }}</span>
   </div>
-  <p class="access-intro">Start from a scheduled work order above. Each team's presence must be confirmed every 15 minutes.</p>
+  <p class="access-intro">Start from a scheduled work order above. Each team has a 15-minute presence reminder. Approval runs until the work deadline or an earlier suspension or departure.</p>
   <div *ngIf="access.storageError" class="access-error" role="alert">{{ access.storageError }}</div>
   <p *ngIf="!siteKey" class="access-hint">Resolving physical site identity...</p>
   <p *ngIf="siteKey && !access.canManage()" class="access-hint">An Admin, Manager or SysAdmin with Security permission can operate these controls.</p>
   <div *ngIf="summary.attention.length" class="access-warning" role="status">
-    <strong>Whole-site approval is paused.</strong> {{ summary.attention.length }} unfinished work order(s) need review. Other teams cannot override a missed confirmation.
+    {{ summary.attention.length }} unfinished work order(s) need review.
   </div>
   <div class="access-overview" *ngIf="openSessions.length"><span>{{ openSessions.length }} open work order(s)</span><span>{{ summary.authorized.length }} team(s) verified</span></div>
   <p *ngIf="!openSessions.length && action === 'none'" class="access-hint">No active visit. Select <strong>Start Activity</strong> or <strong>Start Early</strong> on an existing work order. A schedule by itself never authorizes entry.</p>
@@ -20,7 +20,7 @@
     <div class="access-activity-name">{{ current.activity.name }}</div>
     <p class="access-team">{{ current.activity.team }} &middot; {{ current.activity.persons }} persons</p>
     <div *ngIf="state(current) === 'active'" class="access-countdown" [class.is-expiring]="!!warning(current)">
-      <span class="access-eyebrow">{{ current.expiresAt <= current.confirmationDueAt ? 'WORK DEADLINE IN' : 'TEAM CONFIRMATION DUE IN' }}</span>
+      <span class="access-eyebrow">WORK DEADLINE IN</span>
       <strong role="timer">{{ remaining(current) }}</strong>
       <span>Confirmation never extends the work deadline.</span>
     </div>
@@ -66,11 +66,11 @@
         <p class="access-hint" *ngIf="validExtensionExpiry as end">New deadline: <strong>{{ end | date:'dd MMM y, HH:mm' }}</strong>. The next presence check is unchanged.</p>
       </ng-container>
       <p *ngIf="action === 'resume'" class="access-warning">Verify the team and current alarms again. Any gap in authorization remains recorded; approval resumes now, not retroactively.</p>
-      <p *ngIf="action === 'suspend'" class="access-warning">This immediately pauses whole-site approval, but does not record a departure or complete the work order.</p>
+      <p *ngIf="action === 'suspend'" class="access-warning">This immediately suspends approval for this team. Other authorized visits continue.</p>
       <p *ngIf="action === 'end'" class="access-hint">Only this team's visit will end. Other valid work sessions remain open. No door, siren or camera command is sent.</p>
       <label for="wo-reason">{{ action === 'confirm' ? 'How did you verify the team?' : action === 'end' ? 'Departure / closure note' : 'Reason / verification note' }}</label>
       <textarea id="wo-reason" name="reason" [(ngModel)]="reason" maxlength="500" rows="3" required></textarea>
-      <label *ngIf="needsTeamCheck" class="access-check"><input name="teamVerified" type="checkbox" [(ngModel)]="teamVerified" required><span>I verified this team and reviewed current site alarms. This grants site-wide approval only while all unfinished teams meet their confirmation deadlines.</span></label>
+      <label *ngIf="needsTeamCheck" class="access-check"><input name="teamVerified" type="checkbox" [(ngModel)]="teamVerified" required><span>I verified this team and reviewed current site alarms.</span></label>
       <label *ngIf="action === 'end'" class="access-check"><input name="departed" type="checkbox" [(ngModel)]="departureConfirmed" required><span>I confirmed this team has departed and reviewed any remaining activity on site.</span></label>
       <div class="access-actions"><button type="submit" class="access-button" [class.access-danger]="action === 'end' || action === 'suspend'" [class.access-primary]="action !== 'end' && action !== 'suspend'" [disabled]="!canManage || busy || (needsTeamCheck && !teamVerified) || (action === 'end' && !departureConfirmed)">{{ busy ? 'Verifying & saving...' : submitLabel }}</button><button type="button" class="access-button" (click)="cancel()">Cancel</button></div>
     </fieldset>

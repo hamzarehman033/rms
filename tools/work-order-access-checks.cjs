@@ -105,19 +105,78 @@ test('Work order cannot have duplicate concurrent visits',run(async e=>{await e.
 test('Two different work orders may run concurrently at one site',run(async e=>{await e.access.grant(e.request(),[1]);await e.access.grant(e.request({activity:e.rows.get(18)}),[1]);assert.equal(e.access.getSummary('site:100').authorized.length,2);assert.equal(e.incidents.getCategory(2),'approved-access');}));
 test('End one team keeps another valid team approved',run(async e=>{const a=await e.access.grant(e.request(),[1]);await e.access.grant(e.request({activity:e.rows.get(18)}),[1]);await e.access.end(a,'Team A departed; Team B checked');assert.equal(e.access.getSummary('site:100').authorized.length,1);assert.equal(e.incidents.getCategory(1),'approved-access');}));
 test('A completed work order cannot be reused for a new visit',run(async e=>{const a=await e.access.grant(e.request(),[1]);await e.access.end(a,'Team departed');await assert.rejects(e.access.grant(e.request(),[1]),/already has a visit/);}));
-test('15-minute confirmation boundary is exclusive',run(async e=>{await e.access.grant(e.request(),[1]);e.advance(15*60_000-1);assert.ok(e.access.getSummary('site:100').approved);e.advance(1);assert.equal(e.access.getSummary('site:100').approved,false);assert.equal(e.access.getSummary('site:100').attention.length,1);}));
-test('One overdue team pauses whole-site approval even with another valid team',run(async e=>{await e.access.grant(e.request(),[1]);e.advance(10*60_000);await e.access.grant(e.request({activity:e.rows.get(18),expiresAt:new Date('2026-11-16T12:00:00+05:00').getTime()}),[1]);e.advance(5*60_000);assert.equal(e.access.getSummary('site:100').approved,false);assert.equal(e.access.getSummary('site:100').authorized.length,1);e.emit();assert.equal(e.incidents.getCategory(1),'intruder');}));
-test('A presence confirmation renews only that team',run(async e=>{const a=await e.access.grant(e.request(),[1]);await e.access.grant(e.request({activity:e.rows.get(18)}),[1]);e.advance(10*60_000);await e.access.confirm(a,'Camera and phone verification');e.advance(5*60_000);assert.equal(e.access.getSummary('site:100').approved,false);}));
+test('Presence reminder at 15 minutes leaves access and deadline countdown intact',run(async e=>{
+  const visit=await e.access.grant(e.request(),[1]);
+  e.advance(15*60_000);
+  assert.equal(e.access.getSummary('site:100').validUntil,visit.expiresAt);
+  assert.equal(e.comp.remaining(visit),'01:45:00');
+  assert.equal(e.comp.stateLabel,'APPROVED ACCESS');
+  assert.match(e.comp.warning(visit),/Presence reminder due/);
+}));
+test('One expired team needs review while a second team still authorizes the site',run(async e=>{
+  const first=await e.access.grant(e.request({expiresAt:e.now+20*60_000}),[1]);
+  const second=await e.access.grant(e.request({activity:e.rows.get(18)}),[1]);
+  e.advance(20*60_000);
+  const summary=e.access.getSummary('site:100');
+  assert.equal(summary.validUntil,second.expiresAt);
+  assert.equal(summary.attention[0].id,first.id);
+  assert.equal(e.comp.stateLabel,'APPROVED ACCESS');
+  e.emit();
+  assert.equal(e.incidents.getCategory(1),'approved-access');
+  assert.ok(e.access.wasAuthorized('site:100',e.now));
+  e.setNow(second.expiresAt);
+  assert.equal(e.access.getSummary('site:100').approved,false);
+}));
+test('An overdue presence reminder can be confirmed without resuming or extending',run(async e=>{
+  const first=await e.access.grant(e.request(),[1]);
+  const second=await e.access.grant(e.request({activity:e.rows.get(18)}),[1]);
+  e.advance(18*60_000);
+  const updated=await e.access.confirm(first,'Camera and phone verification');
+  assert.equal(updated.confirmationDueAt,e.now+15*60_000);
+  assert.equal(updated.expiresAt,first.expiresAt);
+  assert.equal(e.access.getByActivity(1,18).confirmationDueAt,second.confirmationDueAt);
+  assert.equal(e.access.getSummary('site:100').authorized.length,2);
+}));
 test('Confirmation does not extend the work deadline',run(async e=>{const a=await e.access.grant(e.request({expiresAt:e.now+12*60_000}),[1]);e.advance(10*60_000);const b=await e.access.confirm(a,'Team checked');assert.equal(b.expiresAt,a.expiresAt);e.advance(2*60_000);assert.equal(e.access.getSummary('site:100').approved,false);}));
-test('Extension does not reset the confirmation clock',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(10*60_000);const b=await e.access.extend(a,a.expiresAt+30*60_000,'Additional repair time');assert.equal(b.confirmationDueAt,a.confirmationDueAt);e.advance(5*60_000);assert.equal(e.access.getSummary('site:100').approved,false);}));
-test('Expired confirmation cannot be fixed by Extend',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(15*60_000);await assert.rejects(e.access.extend(a,a.expiresAt+60_000,'More work'),/Resume/);}));
-test('Resume requires fresh verification and restores approval now',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(16*60_000);e.emit();assert.equal(e.incidents.getCategory(1),'intruder');const b=await e.access.resume(a,a.expiresAt,'NOC reverified team and all alarms');assert.equal(b.lastConfirmedAt,e.now);assert.equal(e.incidents.getCategory(1),'approved-access');}));
-test('Resume preserves the historical unauthorized gap',run(async e=>{const a=await e.access.grant(e.request(),[1]);const gap=e.now+15*60_000+1000;e.advance(16*60_000);await e.access.resume(a,a.expiresAt,'Team reverified');assert.equal(e.access.wasAuthorized('site:100',gap),false);assert.equal(e.access.wasAuthorized('site:100',e.now),true);}));
+test('Extension after a reminder retains coverage until the new deadline',run(async e=>{
+  const visit=await e.access.grant(e.request({expiresAt:e.now+20*60_000}),[1]);
+  e.advance(16*60_000);
+  const updated=await e.access.extend(visit,visit.expiresAt+30*60_000,'Additional repair time');
+  assert.equal(updated.confirmationDueAt,visit.confirmationDueAt);
+  assert.ok(e.access.wasAuthorized('site:100',updated.expiresAt-1));
+  e.setNow(updated.expiresAt);
+  assert.equal(e.access.getSummary('site:100').approved,false);
+  assert.equal(e.access.wasAuthorized('site:100',e.now),false);
+}));
+test('Expired work deadline cannot be fixed by Extend',run(async e=>{
+  const a=await e.access.grant(e.request({expiresAt:e.now+15*60_000}),[1]);e.setNow(a.expiresAt);
+  await assert.rejects(e.access.extend(a,a.expiresAt+60_000,'More work'),/Resume/);
+}));
+test('Resume requires fresh verification after manual suspension',run(async e=>{
+  const a=await e.access.grant(e.request(),[1]);
+  const suspended=await e.access.suspend(a,'Recheck team');
+  e.advance(16*60_000);e.emit();assert.equal(e.incidents.getCategory(1),'intruder');
+  const b=await e.access.resume(suspended,a.expiresAt,'NOC reverified team and alarms');
+  assert.equal(b.lastConfirmedAt,e.now);assert.equal(e.incidents.getCategory(1),'approved-access');
+}));
+test('Resume preserves the historical gap after a work deadline',run(async e=>{
+  const a=await e.access.grant(e.request({expiresAt:e.now+17*60_000}),[1]);
+  e.advance(19*60_000);await e.access.resume(a,e.now+30*60_000,'Team reverified');
+  assert.ok(e.access.wasAuthorized('site:100',a.expiresAt-1));
+  assert.equal(e.access.wasAuthorized('site:100',a.expiresAt),false);
+  assert.equal(e.access.wasAuthorized('site:100',e.now-1),false);
+  assert.ok(e.access.wasAuthorized('site:100',e.now));
+}));
 test('Suspend does not claim completion or departure',run(async e=>{const a=await e.access.grant(e.request(),[1]);const b=await e.access.suspend(a,'Unexpected movement');assert.equal(b.endedAt,null);assert.equal(e.model.accessSessionState(b,e.now),'suspended');}));
 test('Suspended/expired sessions can still be explicitly closed',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(3*60*60_000);const b=await e.access.end(a,'Team departure independently confirmed');assert.equal(b.endedAt,e.now);}));
 test('New detection after the final departure immediately becomes Intruder',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(60_000);await e.access.end(a,'Team departed');e.advance(1000);e.emit();assert.equal(e.incidents.getCategory(1),'intruder');}));
 test('Delayed alert from an authorized interval does not reopen an intrusion',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(60_000);const at=e.now;e.advance(60_000);await e.access.end(a,'Team departed');e.advance(1000);e.emit({timestampUtc:at/1000});assert.equal(e.incidents.getCategory(1),'healthy');}));
-test('Detection during a missed-confirmation gap is not ignored',run(async e=>{await e.access.grant(e.request(),[1]);e.advance(15*60_000+1000);e.emit();assert.equal(e.incidents.getCategory(1),'intruder');}));
+test('A detection after a missed reminder is covered, even on later replay',run(async e=>{
+  const a=await e.access.grant(e.request(),[1]);e.advance(17*60_000);const at=e.now;e.emit();
+  assert.equal(e.incidents.getCategory(1),'approved-access');
+  e.advance(60_000);await e.access.end(a,'Departure confirmed');e.advance(60_000);
+  e.emit({timestampUtc:at/1000});assert.equal(e.incidents.getCategory(1),'healthy');
+}));
 test('Guard review remains available; ad hoc Approved Access is rejected',run(e=>{e.emit();assert.equal(e.incidents.classifySite(1,'approved-access'),false);assert.equal(e.incidents.classifySite(1,'guard'),true);assert.equal(e.incidents.getCategory(1),'guard');}));
 test('A new work-order start clears old reviewed incidents when all teams are valid',run(async e=>{e.emit();await e.access.grant(e.request(),[1]);e.advance(60_000);await e.access.end(e.access.getAll('site:100')[0],'Departure checked');assert.equal(e.incidents.getCategory(1),'healthy');}));
 test('Alarm deduplication remains unchanged outside work sessions',run(e=>{const packet=e.packet();e.signalr.onVisionDetection$.next(packet);const expiry=e.incidents.getIncident(1).expiresAt;e.advance(1000);e.signalr.onVisionDetection$.next(packet);assert.equal(e.incidents.getIncident(1).expiresAt,expiry);}));
@@ -134,13 +193,23 @@ test('Changed work order suspends before any extension',run(async e=>{const a=aw
 test('Catalog reconciliation does not close another device at the same site',run(async e=>{await e.access.grant(e.request(),[1]);await e.access.reconcile('site:100',[],[2],e.access.contextKey);assert.ok(e.access.getSummary('site:100').approved);}));
 test('Catalog pagination reads past a server-clamped page size',run(async e=>{const values=Array.from({length:12},(_,i)=>e.activity({id:i+1}));const api={getActivities:q=>observable({data:{pageData:values.slice((q.pagenumber-1)*5,q.pagenumber*5)}})};const catalog=await e.load(catalogFile).loadWorkOrderCatalog(api,[1]);assert.equal(catalog.items.length,12);assert.equal(catalog.complete,true);}));
 test('Repeated pagination is reported as incomplete, not authoritative',run(async e=>{const catalog=await e.load(catalogFile).loadWorkOrderCatalog({getActivities:()=>observable({data:{pageData:[e.activity()]}})},[1]);assert.equal(catalog.complete,false);}));
-test('Activities priority is attention, started, awaiting start, upcoming, history',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.advance(16*60_000);assert.equal(e.access.describeActivity(e.activity()).rank,0);assert.equal(e.access.describeActivity(e.activity({id:99})).label,'Awaiting NOC start');assert.equal(e.access.describeActivity(e.activity({id:100,startTime:'11:00:00'})).rank,3);}));
+test('Activities priority distinguishes suspensions from optional presence checks',run(async e=>{
+  const a=await e.access.grant(e.request(),[1]);e.advance(16*60_000);
+  assert.equal(e.access.describeActivity(e.activity()).rank,1);
+  await e.access.suspend(a,'NOC reviewing');assert.equal(e.access.describeActivity(e.activity()).rank,0);
+  assert.equal(e.access.describeActivity(e.activity({id:99})).label,'Awaiting NOC start');
+  assert.equal(e.access.describeActivity(e.activity({id:100,startTime:'11:00:00'})).rank,3);
+}));
 test('Legacy active approvals import as suspended, including unscheduled visits',run(e=>{const row={id:'old',siteKey:'site:100',siteLabel:'Old site',activity:{...e.activity(),id:null},startedAt:e.now-60_000,expiresAt:e.now+60_000,endedAt:null,revision:1,grantedBy:e.actor,audit:[{action:'granted',at:e.now-60_000,operator:e.actor,reason:'Old',expiresAt:e.now+60_000}]};const store=e.model.parseAccessStore(JSON.stringify({version:1,sessions:{'site:100':[row]}}),e.now);assert.equal(e.model.siteAccessSummary(store,'site:100',e.now).approved,false);assert.equal(store.sessions['site:100'][0].activity.id,null);}));
 test('Malformed storage is rejected instead of overwriting it',run(e=>{assert.throws(()=>e.model.parseAccessStore('{broken'),/JSON|property|Expected/);assert.throws(()=>e.model.parseAccessStore('{"version":9,"sessions":{}}'),/invalid/);}));
 test('24-hour cap applies across extensions',run(async e=>{const a=await e.access.grant(e.request(),[1]);await assert.rejects(e.access.extend(a,a.startedAt+24*60*60_000+1,'Long work'),/24 hours/);}));
 test('Invalid dates and ambiguous overnight schedules cannot authorize',run(e=>{assert.equal(e.policy.workOrderWindow(e.activity({date:'2026-02-30'})),null);assert.equal(e.policy.workOrderWindow(e.activity({startTime:'23:00:00',endTime:'02:00:00'})),null);}));
 test('Presence warning is emitted once in the last five minutes',run(async e=>{await e.access.grant(e.request(),[1]);e.advance(10*60_000);const count=e.messages.filter(m=>m[1]==='Work-order check due soon').length;e.advance(1000);assert.equal(e.messages.filter(m=>m[1]==='Work-order check due soon').length,count);assert.equal(count,1);}));
-test('Missed confirmation emits a distinct approval-paused warning',run(async e=>{await e.access.grant(e.request(),[1]);e.advance(15*60_000);assert.ok(e.messages.some(m=>m[1]==='Site approval paused'));}));
+test('Missed check emits a reminder without a suspension notice',run(async e=>{
+  await e.access.grant(e.request(),[1]);e.advance(15*60_000);e.advance(1000);
+  assert.equal(e.messages.filter(m=>m[1]==='Team presence reminder').length,1);
+  assert.ok(!e.messages.some(m=>m[1]==='Site approval paused'));
+}));
 test('Component cannot submit a free-text instant work order',run(async e=>{assert.equal(typeof e.comp.openGrant,'undefined');e.comp.action='start';e.comp.reason='Test';e.comp.teamVerified=true;await e.comp.submit();assert.match(e.comp.error,/existing work order/);assert.equal(e.access.getAll('site:100').length,0);}));
 test('Component starts an existing selected work order',run(async e=>{e.comp.selectActivity(e.rows.get(17));e.comp.reason='Verified arrival';e.comp.teamVerified=true;await e.comp.submit();assert.equal(e.comp.summary.approved,true);assert.equal(e.comp.action,'none');}));
 test('Component requires departure confirmation before End',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.comp.openAction('end',a);e.comp.reason='Test';await e.comp.submit();assert.match(e.comp.error,/departed/);assert.equal(e.access.getSummary('site:100').sessions.length,1);}));
@@ -151,10 +220,23 @@ test('Local Activities deletion immediately suspends linked access',run(async e=
 test('Local Activities edit revalidates and suspends changed team',run(async e=>{await e.access.grant(e.request(),[1]);e.rows.set(17,{...e.rows.get(17),team:'Changed crew'});await e.access.recheckActivity(17);assert.equal(e.access.getSummary('site:100').approved,false);}));
 test('An unrelated Activities edit does not affect another visit',run(async e=>{await e.access.grant(e.request(),[1]);await e.access.recheckActivity(18,true);assert.ok(e.access.getSummary('site:100').approved);}));
 test('Storage failure during extension also pauses the displayed approval',run(async e=>{const a=await e.access.grant(e.request(),[1]);e.denyWrites();await assert.rejects(e.access.extend(a,a.expiresAt+60_000,'Extra time'));assert.equal(e.access.getSummary('site:100').authorized.length,0);assert.equal(e.comp.label(a),'Suspended');}));
-test('Presence expiry is recomputed after reload, without an open page timer',run(async e=>{await e.access.grant(e.request(),[1]);const second=environment(e.storage);try{second.advance(16*60_000);assert.equal(second.access.getSummary('site:100').approved,false);}finally{second.close();}}));
+test('Previous v2 open visit reloads through a missed reminder and preserves earlier gaps',run(async e=>{
+  const visit=await e.access.grant(e.request(),[1]);e.advance(5*60_000);
+  const suspended=await e.access.suspend(visit,'NOC reviewing');const stopped=e.now;
+  e.advance(3*60_000);const resumed=await e.access.resume(suspended,visit.expiresAt,'Reviewed');
+  const key='mobigence.security.site-access.v1.7';const store=JSON.parse(e.storage.get(key));
+  store.sessions['site:100'][0].windows.at(-1).until=resumed.confirmationDueAt;
+  e.storage.set(key,JSON.stringify(store));const other=environment(e.storage);
+  try{other.setNow(resumed.confirmationDueAt+60_000);assert.ok(other.access.getSummary('site:100').approved);
+    assert.equal(other.access.wasAuthorized('site:100',stopped+1),false);
+    assert.ok(other.access.wasAuthorized('site:100',other.now));}finally{other.close();}
+}));
 test('Same-profile storage refresh propagates another tab ending a session',run(async e=>{const a=await e.access.grant(e.request(),[1]);const second=environment(e.storage);try{assert.ok(second.access.getSummary('site:100').approved);await e.access.end(a,'Departure verified');second.storageEvent();assert.equal(second.access.getSummary('site:100').sessions.length,0);}finally{second.close();}}));
 test('Stored old Mark Approved Access cannot bypass the work-order rule',run(e=>{e.emit();const key='mobigence.security.incidents.v1.7';const state=JSON.parse(e.storage.get(key));state['site:100'].category='approved-access';state['site:100'].reviewedAt=e.now;e.storage.set(key,JSON.stringify(state));const other=environment(e.storage);try{assert.equal(other.incidents.getCategory(1),'intruder');}finally{other.close();}}));
-test('Expiration alone does not fabricate a camera intrusion',run(async e=>{await e.access.grant(e.request(),[1]);e.advance(15*60_000);assert.equal(e.incidents.getIncident(1),null);assert.equal(e.incidents.getCategory(1),'healthy');}));
+test('Work deadline alone does not fabricate a camera intrusion',run(async e=>{
+  const a=await e.access.grant(e.request(),[1]);e.setNow(a.expiresAt);
+  assert.equal(e.incidents.getIncident(1),null);assert.equal(e.incidents.getCategory(1),'healthy');
+}));
 
 // Source boundaries: do not hide errors using schemas or remove the offline blank-status rule.
 test('Templates retain known Angular component registration and offline blank status',()=>{

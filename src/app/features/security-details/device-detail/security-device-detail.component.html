@@ -92,10 +92,10 @@
       <span>Security Status</span>
       <strong class="security-category" [ngClass]="securityCategory">{{ securityCategoryLabel }}</strong>
       <small *ngIf="activeAccessSummary.approved">
-        {{ activeAccessSummary.authorized.length }} authorized work order(s) &middot; Next deadline {{ activeAccessSummary.validUntil | date:'shortTime' }}
+        {{ activeAccessSummary.authorized.length }} authorized work order(s) &middot; Site approval until {{ activeAccessSummary.validUntil | date:'shortTime' }}
       </small>
       <small *ngIf="activeAccessSummary.attention.length">
-        Work-order approval paused &middot; {{ activeAccessSummary.attention.length }} team(s) need review
+        {{ activeAccessSummary.attention.length }} work order(s) need review
       </small>
       <small *ngIf="activeSecurityIncident as incident">
         Expires {{ incident.expiresAt | date:'shortTime' }} · {{ incident.cameraIds.length }} camera(s)

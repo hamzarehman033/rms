@@ -210,13 +210,18 @@ export class SiteAccessService implements OnDestroy {
     for (const s of Object.values(this.store.sessions).flat()) {
       if (s.endedAt !== null) continue;
       const state = accessSessionState(s, now);
-      const due = Math.min(s.confirmationDueAt, s.expiresAt);
-      if (state === 'active' && due - now > PRESENCE_WARNING_MS) continue;
-      const token = `${this.scope}:${s.id}:${due}:${state}`;
+      const deadlineSoon = s.expiresAt - now <= PRESENCE_WARNING_MS;
+      const reminderDue = s.confirmationDueAt <= now;
+      if (state === 'active' && !deadlineSoon && s.confirmationDueAt - now > PRESENCE_WARNING_MS) continue;
+      const notice = state !== 'active' ? state : deadlineSoon ? 'deadline' : reminderDue ? 'reminder' : 'upcoming';
+      const token = `${this.scope}:${s.id}:${s.expiresAt}:${s.confirmationDueAt}:${notice}`;
       if (this.notices.has(token)) continue;
       this.notices.add(token);
-      if (state === 'active') toast.warning('Work-order check due soon', `${s.siteLabel} / ${s.activity.team}: verify presence or review the work deadline within 5 minutes.`);
-      else toast.warning('Site approval paused', `${s.siteLabel} / ${s.activity.team}: ${state.replace(/-/g, ' ')}. Intrusion classification is enabled.`);
+      const team = `${s.siteLabel} / ${s.activity.team}`;
+      if (state !== 'active') toast.warning('Work order needs review', `${team}: ${state}. Review this visit.`);
+      else if (deadlineSoon) toast.warning('Work deadline approaching', `${team}: extend the deadline or confirm departure.`);
+      else if (reminderDue) toast.warning('Team presence reminder', `${team}: confirm when available. Approval continues until the work deadline.`);
+      else toast.warning('Work-order check due soon', `${team}: presence reminder within 5 minutes.`);
     }
   }
   private notify(): void { this.changes.next(this.changes.value + 1); }

@@ -45,7 +45,7 @@ type SecurityDetection = {
  */
 @Injectable({ providedIn: 'root' })
 export class SecurityIncidentService implements OnDestroy {
-  readonly intrusionWindowMs = 10 * 60 * 1000;
+  readonly intrusionWindowMs = 60_000;
   private readonly storagePrefix = 'mobigence.security.incidents.v1.';
   private readonly statesSubject = new BehaviorSubject<Record<string, SecuritySiteIncident>>({});
   readonly states$ = this.statesSubject.asObservable();
@@ -98,7 +98,7 @@ export class SecurityIncidentService implements OnDestroy {
 
     window.addEventListener('storage', this.onStorage);
     window.addEventListener('pagehide', this.onPageHide);
-    this.expiryTimer = setInterval(() => this.expireIncidents(), 2000);
+    this.expiryTimer = setInterval(() => this.expireIncidents(), 1000);
     this.expireIncidents();
   }
 
@@ -167,9 +167,10 @@ export class SecurityIncidentService implements OnDestroy {
     const incident = this.getIncident(deviceId);
     if (category !== 'guard' || !key || !incident || incident.category !== 'intruder') return false;
 
+    const reviewedAt = Date.now();
     this.publish({
       ...this.statesSubject.value,
-      [key]: { ...incident, category, reviewedAt: Date.now() }
+      [key]: { ...incident, category, reviewedAt, expiresAt: reviewedAt + this.intrusionWindowMs }
     });
     return true;
   }
@@ -214,7 +215,7 @@ export class SecurityIncidentService implements OnDestroy {
     const eventKey = `radar:${frame.deviceId}:${occurredAt || now}:${frame.sequence}`;
     const lastFrame = this.latestRadarFrames.get(frame.deviceId);
     if (lastFrame && (lastFrame.key === eventKey || (occurredAt > 0 && occurredAt < lastFrame.receivedAt))) return;
-    if (occurredAt > now + 60_000 || (occurredAt > 0 && occurredAt < now - this.intrusionWindowMs)) return;
+    if (occurredAt > now + 60_000 || (occurredAt > 0 && occurredAt <= now - this.intrusionWindowMs)) return;
     this.latestRadarFrames.set(frame.deviceId, { receivedAt: occurredAt, key: eventKey });
     if (!getValidRadarTargets(frame).length) return;
 
@@ -263,10 +264,10 @@ export class SecurityIncidentService implements OnDestroy {
     const now = Date.now();
     const { occurredAt, sourceTime, eventKey } = detection;
     // Ignore stale history/replayed events. The receipt moment starts a live window.
-    if (historical && (occurredAt < now - this.intrusionWindowMs || occurredAt > now + 60_000)) return null;
-    if (!historical && occurredAt > 0 && occurredAt < now - this.intrusionWindowMs) return null;
+    if (historical && (occurredAt <= now - this.intrusionWindowMs || occurredAt > now + 60_000)) return null;
+    if (!historical && occurredAt > 0 && occurredAt <= now - this.intrusionWindowMs) return null;
 
-    const eventAt = historical ? occurredAt : now;
+    const eventAt = historical ? Math.min(occurredAt, now) : now;
     const siteKey = this.siteKeyForDevice(detection.deviceId);
     // This affects classification only. The detail page still receives every alert
     // and retains camera evidence through the existing Vision handlers.
@@ -278,20 +279,18 @@ export class SecurityIncidentService implements OnDestroy {
     // Missing/invalid live timestamps are treated as new receipt-time detections,
     // not silently ignored. A backend timestamp is needed for exact replay ordering.
     const saved = state[siteKey];
-    // Keep a short-lived reviewed tombstone to prevent a later history fetch
-    // from reopening the same, already-reviewed incident after its expiry.
-    if (historical && saved?.reviewedAt && saved.expiresAt <= now && eventAt <= saved.expiresAt) return null;
+    // A delayed packet from the reviewed interval cannot reopen the Guard incident.
+    if (saved?.category === 'guard' && saved.expiresAt <= now &&
+        (sourceTime > 0 ? sourceTime : eventAt) < saved.expiresAt) return null;
     const previous = saved?.expiresAt > now && saved.lastDetectedAt > rearmAfter ? saved : null;
     // Also ignore duplicate MQTT deliveries after a reviewed incident expires,
     // while its short-lived deduplication record remains in storage.
     if (saved?.eventKeys.includes(eventKey)) return null;
 
-    // A manual decision freezes the existing 10-minute window. Additional detections
-    // remain in event history but will NOT undo the decision or extend that window.
-    // An unreviewed intrusion extends the window with every NEW detection.
-    const expiresAt = previous?.category !== 'intruder' && previous
+    // Guard lasts from review. Older history must not shorten a newer intrusion.
+    const expiresAt = previous?.category === 'guard'
       ? previous.expiresAt
-      : eventAt + this.intrusionWindowMs;
+      : Math.max(eventAt, previous?.lastDetectedAt ?? 0) + this.intrusionWindowMs;
     const cameraId = detection.cameraId ?? 0;
     const cameraIds = previous ? [...previous.cameraIds] : [];
     if (Number.isInteger(cameraId) && cameraId > 0 && !cameraIds.includes(cameraId)) {
@@ -324,7 +323,7 @@ export class SecurityIncidentService implements OnDestroy {
   ): SecuritySiteIncident {
     if (!first) return { ...second, siteKey: key };
     const reviewed = [first, second]
-      .filter(item => item.reviewedAt)
+      .filter(item => item.category === 'guard' && item.expiresAt > Date.now())
       .sort((a, b) => (b.reviewedAt ?? 0) - (a.reviewedAt ?? 0))[0];
     return {
       siteKey: key,
@@ -428,24 +427,23 @@ export class SecurityIncidentService implements OnDestroy {
       const parsed: unknown = raw ? JSON.parse(raw) : {};
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
       const now = Date.now();
-      return Object.fromEntries(
-        Object.entries(parsed).filter((entry): entry is [string, SecuritySiteIncident] => {
-          const value = entry[1] as SecuritySiteIncident;
-          const keepUntil = value?.reviewedAt
-            ? Math.max(value.expiresAt, value.lastDetectedAt) + this.intrusionWindowMs
-            : value?.expiresAt;
-          return !!value && typeof value === 'object' &&
-            Number.isFinite(value.expiresAt) && Number.isFinite(keepUntil) && keepUntil > now &&
-            ['intruder', 'approved-access', 'guard'].includes(value.category) &&
-            Array.isArray(value.eventKeys) && Array.isArray(value.cameraIds);
-        }).map(([key, raw]) => {
-          const incident = raw as SecuritySiteIncident;
-          // Old standalone approvals cannot bypass the new work-order requirement.
-          if (incident.category !== 'approved-access') return [key, incident];
-          const { reviewedAt: _reviewedAt, ...rest } = incident;
-          return [key, { ...rest, category: 'intruder' as const }];
-        })
-      );
+      const state: Record<string, SecuritySiteIncident> = {};
+      for (const [key, incident] of Object.entries(parsed) as [string, SecuritySiteIncident][]) {
+        if (!incident || !Number.isFinite(incident.lastDetectedAt) || !Number.isFinite(incident.expiresAt) ||
+            !['intruder', 'guard', 'approved-access'].includes(incident.category) ||
+            !Array.isArray(incident.eventKeys) || !Array.isArray(incident.cameraIds)) continue;
+
+        // Recalculate legacy ten-minute records from their original detection or review.
+        const { reviewedAt, ...rest } = incident;
+        const guard = incident.category === 'guard' && reviewedAt !== undefined && Number.isFinite(reviewedAt);
+        const expiresAt = (guard ? reviewedAt : incident.lastDetectedAt) + this.intrusionWindowMs;
+        const keepUntil = guard ? Math.max(expiresAt, incident.lastDetectedAt) + this.intrusionWindowMs : expiresAt;
+        if (keepUntil > now) {
+          state[key] = guard ? { ...rest, category: 'guard', reviewedAt, expiresAt }
+            : { ...rest, category: 'intruder', expiresAt };
+        }
+      }
+      return state;
     } catch {
       return {};
     }

@@ -27,7 +27,7 @@ export interface GrantSiteAccess {
   siteKey: string; siteLabel: string; activity: AccessActivity; expiresAt: number;
   reason: string; teamVerified: boolean; scheduleOverride?: boolean;
 }
-export type AccessSessionState = 'active' | 'ended' | 'expired' | 'confirmation-overdue' | 'suspended';
+export type AccessSessionState = 'active' | 'ended' | 'expired' | 'suspended';
 export interface SiteAccessSummary {
   sessions: SiteAccessSession[]; authorized: SiteAccessSession[]; attention: SiteAccessSession[];
   approved: boolean; validUntil: number | null;
@@ -38,22 +38,21 @@ export function accessSessionState(s: SiteAccessSession, now: number): AccessSes
   if (s.endedAt !== null) return 'ended';
   if (s.suspendedAt !== null || s.legacy || s.startedAt > now) return 'suspended';
   if (s.expiresAt <= now) return 'expired';
-  if (s.confirmationDueAt <= now) return 'confirmation-overdue';
   return 'active';
 }
 export function siteAccessSummary(store: SiteAccessStore, key: string, now: number): SiteAccessSummary {
   const sessions = (store.sessions[key] ?? []).filter(s => s.endedAt === null);
   const authorized = sessions.filter(s => accessSessionState(s, now) === 'active');
   const attention = sessions.filter(s => accessSessionState(s, now) !== 'active');
-  const approved = authorized.length > 0 && attention.length === 0;
+  const approved = authorized.length > 0;
   return { sessions, authorized, attention, approved,
-    validUntil: approved ? Math.min(...authorized.map(s => Math.min(s.expiresAt, s.confirmationDueAt))) : null };
+    validUntil: approved ? Math.max(...authorized.map(s => s.expiresAt)) : null };
 }
-/** Compatibility accessor: only return a session when the WHOLE site is authorized. */
+/** Return the eligible visit that covers the latest deadline. */
 export function activeAccessSession(store: SiteAccessStore, key: string, now: number): SiteAccessSession | null {
   const summary = siteAccessSummary(store, key, now);
   return summary.approved ? [...summary.authorized].sort((a, b) =>
-    Math.min(a.expiresAt, a.confirmationDueAt) - Math.min(b.expiresAt, b.confirmationDueAt))[0] : null;
+    b.expiresAt - a.expiresAt)[0] : null;
 }
 export function latestAccessSession(store: SiteAccessStore, key: string): SiteAccessSession | null {
   return [...(store.sessions[key] ?? [])].sort((a, b) => b.startedAt - a.startedAt)[0] ?? null;
@@ -64,7 +63,7 @@ export function accessRearmAfter(store: SiteAccessStore, key: string, _now: numb
 /** Check recorded authorization at the event time. Gaps are NOT covered retroactively. */
 export function wasSiteAuthorized(store: SiteAccessStore, key: string, at: number): boolean {
   const relevant = (store.sessions[key] ?? []).filter(s => s.startedAt <= at && (s.endedAt === null || at < s.endedAt));
-  return relevant.length > 0 && relevant.every(s => s.windows.some(w => w.from <= at && at < w.until));
+  return relevant.some(s => s.windows.some(w => w.from <= at && at < w.until));
 }
 function text(value: string, label: string, max: number): string {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > max) throw new Error(`${label} is required (maximum ${max} characters).`);
@@ -103,7 +102,7 @@ function cutoff(windows: AuthorizationWindow[], now: number): AuthorizationWindo
   return windows.map(w => ({ ...w, until: Math.min(w.until, now) })).filter(w => w.until > w.from);
 }
 function renewed(s: SiteAccessSession, now: number, end = s.expiresAt): AuthorizationWindow[] {
-  return [...cutoff(s.windows, now), { from: now, until: Math.min(end, now + PRESENCE_INTERVAL_MS) }];
+  return [...cutoff(s.windows, now), { from: now, until: end }];
 }
 export function grantAccess(store: SiteAccessStore, request: GrantSiteAccess, operator: AccessOperator, now: number, id: string,
   supervisor = false): SiteAccessStore {
@@ -124,7 +123,7 @@ export function grantAccess(store: SiteAccessStore, request: GrantSiteAccess, op
   const session: SiteAccessSession = { id: text(id, 'Session ID', 100), siteKey: request.siteKey,
     siteLabel: text(request.siteLabel, 'Site name', 200), activity: a, startedAt: now, expiresAt: request.expiresAt,
     endedAt: null, revision: 1, grantedBy: owner, confirmationDueAt: now + PRESENCE_INTERVAL_MS, lastConfirmedAt: now,
-    suspendedAt: null, suspensionReason: '', windows: [{ from: now, until: Math.min(request.expiresAt, now + PRESENCE_INTERVAL_MS) }],
+    suspendedAt: null, suspensionReason: '', windows: [{ from: now, until: request.expiresAt }],
     audit: [{ action: 'granted', at: now, operator: owner, reason: text(request.reason, 'Start reason', 500), expiresAt: request.expiresAt }] };
   return replace(store, session, now, true);
 }
@@ -133,7 +132,7 @@ export function confirmAccess(store: SiteAccessStore, key: string, id: string, r
   const s = current(store, key, id, revision);
   if (accessSessionState(s, now) !== 'active') throw new Error('Approval has lapsed. Use Review / Resume and verify the team again.');
   return replace(store, record(s, 'confirmed', reason, operator, now, {
-    lastConfirmedAt: now, confirmationDueAt: now + PRESENCE_INTERVAL_MS, windows: renewed(s, now)
+    lastConfirmedAt: now, confirmationDueAt: now + PRESENCE_INTERVAL_MS
   }), now, true);
 }
 export function extendAccess(store: SiteAccessStore, key: string, id: string, revision: number, end: number,
@@ -142,7 +141,7 @@ export function extendAccess(store: SiteAccessStore, key: string, id: string, re
   if (accessSessionState(s, now) !== 'active') throw new Error('Approval has lapsed. Use Review / Resume instead of an extension.');
   validateExpiry(end, s.startedAt, now);
   if (end <= s.expiresAt) throw new Error('The new deadline must be later than the current deadline.');
-  const windows = s.windows.map((w, i) => i === s.windows.length - 1 ? { ...w, until: Math.min(end, s.confirmationDueAt) } : w);
+  const windows = s.windows.map((w, i) => i === s.windows.length - 1 ? { ...w, until: end } : w);
   // An extension never renews the 15-minute presence confirmation.
   return replace(store, record(s, 'extended', reason, operator, now, { expiresAt: end, windows }), now);
 }
@@ -220,6 +219,13 @@ export function parseAccessStore(raw: string | null, now = Date.now()): SiteAcce
         if (!a || !['granted','confirmed','extended','suspended','resumed','ended','migrated'].includes(a.action) || !Number.isFinite(a.at) || !Number.isFinite(a.expiresAt)) throw new Error('Invalid audit entry.');
         actor(a.operator); text(a.reason, 'Reason', 500);
       }
+      // Older v2 writers capped the open interval at the presence reminder. Keep earlier
+      // intervals (including suspension/resume gaps) and all closed visit history intact.
+      const tail = s.windows[s.windows.length - 1];
+      if (!s.legacy && s.endedAt === null && s.suspendedAt === null &&
+          tail && tail.until === s.confirmationDueAt && tail.until < s.expiresAt) {
+        tail.until = s.expiresAt;
+      }
       ids.add(s.id); return s;
     });
   }
@@ -230,8 +236,8 @@ export function workOrderPresentation(a: ScheduledWorkOrder, session: SiteAccess
   if (session) {
     const state = accessSessionState(session, now);
     if (state === 'ended') return { label: 'Completed', tone: 'info', rank: 5, sortAt: -(session.endedAt ?? 0) };
-    if (state !== 'active') return { label: state === 'confirmation-overdue' ? 'Confirmation overdue' : state === 'expired' ? 'Deadline reached' : 'Approval suspended', tone: 'warning', rank: 0, sortAt: Math.min(session.expiresAt, session.confirmationDueAt) };
-    return { label: 'NOC started', tone: 'online', rank: 1, sortAt: Math.min(session.expiresAt, session.confirmationDueAt) };
+    if (state !== 'active') return { label: state === 'expired' ? 'Deadline reached' : 'Approval suspended', tone: 'warning', rank: 0, sortAt: session.expiresAt };
+    return { label: 'NOC started', tone: 'online', rank: 1, sortAt: session.expiresAt };
   }
   if (a.isActive === false) return { label: 'Disabled', tone: 'offline', rank: 5, sortAt: -(window?.end ?? 0) };
   if (!window) return { label: 'Invalid schedule', tone: 'warning', rank: 5, sortAt: 0 };

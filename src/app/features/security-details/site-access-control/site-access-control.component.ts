@@ -52,22 +52,23 @@ export class SiteAccessControlComponent implements OnChanges, OnDestroy {
   get openSessions(): SiteAccessSession[] {
     return this.sessions.filter(s => s.endedAt === null).sort((a, b) =>
       Number(accessSessionState(a, this.now) === 'active') - Number(accessSessionState(b, this.now) === 'active') ||
-      Math.min(a.expiresAt, a.confirmationDueAt) - Math.min(b.expiresAt, b.confirmationDueAt));
+      a.expiresAt - b.expiresAt);
   }
   get closedSessions(): SiteAccessSession[] { return this.sessions.filter(s => s.endedAt !== null).sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0)); }
   get selectedVisitClosed(): boolean { return this.closedSessions.some(s => s.id === this.selectedSessionId); }
-  get stateLabel(): string { return this.summary.attention.length ? 'REVIEW REQUIRED' : this.summary.approved ? 'APPROVED ACCESS' : 'NO ACTIVE VISIT'; }
+  get stateLabel(): string { return this.summary.approved ? 'APPROVED ACCESS' : this.summary.attention.length ? 'REVIEW REQUIRED' : 'NO ACTIVE VISIT'; }
   state(s: SiteAccessSession) { return this.access.storageError && s.endedAt === null ? 'suspended' as const : accessSessionState(s, this.now); }
   label(s: SiteAccessSession): string {
     const state = this.state(s);
-    return state === 'active' ? 'Authorized' : state === 'ended' ? 'Completed' : state === 'expired' ? 'Deadline reached' : state === 'confirmation-overdue' ? 'Confirmation overdue' : 'Suspended';
+    return state === 'active' ? 'Authorized' : state === 'ended' ? 'Completed' : state === 'expired' ? 'Deadline reached' : 'Suspended';
   }
-  remaining(s: SiteAccessSession): string { return formatRemaining(Math.min(s.expiresAt, s.confirmationDueAt), this.now); }
+  remaining(s: SiteAccessSession): string { return formatRemaining(s.expiresAt, this.now); }
   warning(s: SiteAccessSession): string {
     if (this.access.storageError) return this.access.storageError;
-    if (this.state(s) !== 'active') return s.suspensionReason || (this.state(s) === 'expired' ? 'Work deadline reached. Review / Resume or confirm departure.' : 'Team confirmation missed. Approval is paused until NOC verifies this team.');
-    if (Math.min(s.expiresAt, s.confirmationDueAt) - this.now > PRESENCE_WARNING_MS) return '';
-    return s.expiresAt <= s.confirmationDueAt ? 'The work deadline is close. Extend or confirm departure.' : 'Presence check due within 5 minutes. Contact the team or verify the cameras.';
+    if (this.state(s) !== 'active') return s.suspensionReason || (this.state(s) === 'expired' ? 'Work deadline reached. Review / Resume or confirm departure.' : 'Approval suspended. Verify this team before resuming.');
+    if (s.expiresAt - this.now <= PRESENCE_WARNING_MS) return 'The work deadline is close. Extend or confirm departure.';
+    if (s.confirmationDueAt <= this.now) return 'Presence reminder due. Confirm when available.';
+    return s.confirmationDueAt - this.now <= PRESENCE_WARNING_MS ? 'Presence reminder due within 5 minutes.' : '';
   }
   trackSession(_index: number, session: SiteAccessSession): string { return session.id; }
   recentAudit(s: SiteAccessSession) { return [...s.audit].reverse(); }
@@ -138,7 +139,7 @@ export class SiteAccessControlComponent implements OnChanges, OnDestroy {
         else await this.access.end(session, this.reason, valid);
       }
       if (version !== this.contextVersion || this.destroyed || account !== this.access.contextKey) return;
-      const title = action === 'start' ? 'Work order started' : action === 'confirm' ? 'Presence confirmed for 15 minutes' :
+      const title = action === 'start' ? 'Work order started' : action === 'confirm' ? 'Team presence confirmed' :
         action === 'extend' ? 'Work deadline extended; presence check unchanged' : action === 'resume' ? 'Team approval resumed' :
         action === 'suspend' ? 'Team approval suspended' : 'Team visit closed';
       this.resetForm(); this.sync(); toast.success(title);

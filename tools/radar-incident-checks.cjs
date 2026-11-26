@@ -37,11 +37,11 @@ function environment(sharedStorage) {
 }
 const run = body => async () => { const e = environment(); try { await body(e); } finally { e.close(); } };
 
-test('Radar A target immediately creates a ten-minute Intruder incident', run(e => {
+test('Radar A target immediately creates a 60-second Intruder incident', run(e => {
   e.emitRadar(); const incident = e.incidents.getIncident(1);
   assert.equal(e.incidents.getCategory(1), 'intruder');
   assert.equal(incident.firstDetectedAt, e.now); assert.equal(incident.lastDetectedAt, e.now);
-  assert.equal(incident.expiresAt, e.now + 10 * MINUTE);
+  assert.equal(incident.expiresAt, e.now + MINUTE);
   assert.deepEqual([...incident.cameraIds], []); assert.ok(e.storage.has(STORAGE_KEY));
 }));
 test('Radar B also creates an intrusion with no Radar A target', run(e => {
@@ -78,22 +78,24 @@ test('Zero distance, edge bearings and maximum range are valid; slots are unique
   assert.equal(e.helpers.getValidRadarTargets(frame).length, 2);
   e.signalr.onRadarDetection$.next(frame); assert.equal(e.incidents.getCategory(1), 'intruder');
 }));
-test('The last fresh radar target renews the complete ten-minute incident window', run(e => {
-  e.emitRadar(); e.advance(9 * MINUTE); e.emitRadar();
-  assert.equal(e.incidents.getIncident(1).expiresAt, e.now + 10 * MINUTE);
-  e.advance(9 * MINUTE); assert.equal(e.incidents.getCategory(1), 'intruder');
-  e.advance(MINUTE); assert.equal(e.incidents.getCategory(1), 'healthy');
+test('The last fresh radar target renews the 60-second Intruder window', run(e => {
+  e.emitRadar(); e.advance(MINUTE - 1); e.emitRadar();
+  assert.equal(e.incidents.getIncident(1).expiresAt, e.now + MINUTE);
+  e.advance(MINUTE - 1); assert.equal(e.incidents.getCategory(1), 'intruder');
+  e.advance(1); assert.equal(e.incidents.getCategory(1), 'healthy');
 }));
 test('No-target and offline-radar frames do not clear or prolong the retained intrusion', run(e => {
   e.emitRadar(); const expiresAt = e.incidents.getIncident(1).expiresAt;
-  e.advance(MINUTE); e.emitRadar({ targets: [] }); e.advance(MINUTE); e.emitRadar({ radarAOnline: false });
+  e.advance(10_000); e.emitRadar({ targets: [] }); e.advance(20_000); e.emitRadar({ radarAOnline: false });
   assert.equal(e.incidents.getIncident(1).expiresAt, expiresAt);
   e.setNow(expiresAt); assert.equal(e.incidents.getCategory(1), 'healthy');
 }));
 test('Duplicate delivery does not renew the intrusion window', run(e => {
   const frame = e.emitRadar(); const end = e.incidents.getIncident(1).expiresAt;
-  e.advance(MINUTE); e.signalr.onRadarDetection$.next(frame);
+  e.advance(MINUTE - 1); e.signalr.onRadarDetection$.next(frame);
   assert.equal(e.incidents.getIncident(1).expiresAt, end);
+  e.advance(1); e.signalr.onRadarDetection$.next(frame);
+  assert.equal(e.incidents.getCategory(1), 'healthy');
 }));
 test('Eight-bit sequence wrap does not suppress a later real detection', run(e => {
   e.emitRadar({ sequence: 0 }); e.advance(52_000); e.emitRadar({ sequence: 0 });
@@ -104,7 +106,7 @@ test('Out-of-order target frames are ignored after a newer empty frame', run(e =
   e.signalr.onRadarDetection$.next(old); assert.equal(e.incidents.getCategory(1), 'healthy');
 }));
 test('Stale and far-future radar receipts do not create alarms', run(e => {
-  e.emitRadar({ receivedAt: new Date(e.now - 10 * MINUTE - 1).toISOString() });
+  e.emitRadar({ receivedAt: new Date(e.now - MINUTE - 1).toISOString() });
   e.emitRadar({ receivedAt: new Date(e.now + MINUTE + 1).toISOString() });
   assert.equal(e.incidents.getCategory(1), 'healthy');
 }));
@@ -142,20 +144,52 @@ test('A radar target after the final team departure re-arms immediately', run(as
 }));
 test('A delayed radar receipt from the authorized visit cannot reopen it', run(async e => {
   const visit = await e.access.grant(e.request(), [1]); e.advance(MINUTE); const delayed = e.frame();
-  e.advance(MINUTE); await e.access.end(visit, 'Departure verified'); e.advance(1000);
+  e.advance(10_000); await e.access.end(visit, 'Departure verified'); e.advance(1000);
   e.signalr.onRadarDetection$.next(delayed); assert.equal(e.incidents.getCategory(1), 'healthy');
 }));
-test('One overdue team permits a radar alarm even with another valid team present', run(async e => {
+test('Radar cannot interrupt Approved Access after presence checks come due', run(async e => {
   const first = await e.access.grant(e.request(), [1]); e.advance(MINUTE);
-  await e.access.grant(e.request({ activity: e.rows.get(18), expiresAt: first.expiresAt }), [1]); e.advance(14 * MINUTE); e.emitRadar();
+  await e.access.grant(e.request({ activity: e.rows.get(18), expiresAt: first.expiresAt }), [1]);
+  e.advance(14 * MINUTE); e.emitRadar();
+  assert.equal(e.incidents.getCategory(1), 'approved-access');
+  e.advance(2 * MINUTE); e.emitRadar();
+  assert.equal(e.incidents.getCategory(1), 'approved-access');
+  assert.equal(e.incidents.getIncident(1), null);
+  e.setNow(first.expiresAt);
+  assert.equal(e.incidents.getCategory(1), 'healthy');
+  e.advance(1000); e.emitRadar();
   assert.equal(e.incidents.getCategory(1), 'intruder');
 }));
-test('Guard review is preserved until its original expiry despite more radar targets', run(e => {
-  e.emitRadar(); const expiry = e.incidents.getIncident(1).expiresAt;
-  e.incidents.classifySite(1, 'guard'); e.advance(9 * MINUTE); e.emitRadar();
-  assert.equal(e.incidents.getCategory(1), 'guard'); assert.equal(e.incidents.getIncident(1).expiresAt, expiry);
-  e.setNow(expiry); assert.equal(e.incidents.getCategory(1), 'healthy'); e.emitRadar();
-  assert.equal(e.incidents.getCategory(1), 'intruder');
+test('Guard gets 60 seconds from review and continuous radar targets cannot extend it', run(e => {
+  e.emitRadar(); e.advance(40_000);
+  assert.equal(e.incidents.classifySite(1, 'guard'), true);
+  const expiry = e.now + MINUTE;
+  assert.equal(e.incidents.getIncident(1).expiresAt, expiry);
+  for (let i = 0; i < 59; i++) {
+    e.advance(1000); e.emitRadar();
+    assert.equal(e.incidents.getCategory(1), 'guard');
+    assert.equal(e.incidents.getIncident(1).expiresAt, expiry);
+  }
+  e.setNow(expiry); assert.equal(e.incidents.getCategory(1), 'healthy');
+  e.emitRadar(); assert.equal(e.incidents.getCategory(1), 'intruder');
+  assert.equal(e.incidents.getIncident(1).expiresAt, expiry + MINUTE);
+}));
+test('Pre-expiry vision history cannot revive a Guard after the review window', run(e => {
+  e.emitRadar(); e.advance(5000); e.incidents.classifySite(1, 'guard');
+  const review = e.now;
+  e.advance(50_000);
+  const unseen = e.packet({ receivedAtUtc: new Date(e.now).toISOString() });
+  e.setNow(review + MINUTE + 1);
+  e.incidents.ingestHistory(1, [unseen]);
+  assert.equal(e.incidents.getCategory(1), 'healthy');
+}));
+test('Out-of-order history cannot shorten a fresh live radar intrusion', run(e => {
+  const earlier = e.packet({ receivedAtUtc: new Date(e.now).toISOString() });
+  e.advance(20_000); e.emitRadar();
+  const liveAt = e.now;
+  e.advance(5000); e.incidents.ingestHistory(1, [earlier]);
+  assert.equal(e.incidents.getIncident(1).lastDetectedAt, liveAt);
+  assert.equal(e.incidents.getIncident(1).expiresAt, liveAt + MINUTE);
 }));
 test('Persisted radar incidents restore and reject replayed older target frames', run(e => {
   e.emitRadar(); e.advance(1000); const latest = e.emitRadar(); e.advance(1000);
@@ -166,6 +200,37 @@ test('Persisted radar incidents restore and reject replayed older target frames'
     other.signalr.onRadarDetection$.next(latest); assert.equal(other.incidents.getIncident(1).expiresAt, expiry);
     other.emitRadar({ receivedAt: new Date(e.now - 1500).toISOString() });
     assert.equal(other.incidents.getIncident(1).expiresAt, expiry);
+  } finally { other.close(); }
+}));
+test('Reload discards an old Intruder whose saved ten-minute expiry is still in the future', run(e => {
+  e.emitRadar();
+  const snapshot = JSON.parse(e.storage.get(STORAGE_KEY));
+  const incident = snapshot['site:100'];
+  incident.firstDetectedAt = incident.lastDetectedAt = e.now - 2 * MINUTE;
+  incident.expiresAt = incident.lastDetectedAt + 10 * MINUTE;
+  e.storage.set(STORAGE_KEY, JSON.stringify(snapshot));
+  const other = environment(e.storage);
+  try {
+    assert.equal(other.incidents.getCategory(1), 'healthy');
+  } finally { other.close(); }
+}));
+test('Reload recalculates a legacy Guard from its review even when detection continued afterward', run(e => {
+  e.emitRadar();
+  const snapshot = JSON.parse(e.storage.get(STORAGE_KEY));
+  const incident = snapshot['site:100'];
+  incident.firstDetectedAt = e.now - 80_000;
+  incident.reviewedAt = e.now - 45_000;
+  incident.lastDetectedAt = e.now - 2000;
+  incident.category = 'guard';
+  incident.expiresAt = incident.firstDetectedAt + 10 * MINUTE;
+  e.storage.set(STORAGE_KEY, JSON.stringify(snapshot));
+  const other = environment(e.storage);
+  try {
+    const expiry = incident.reviewedAt + MINUTE;
+    assert.equal(other.incidents.getCategory(1), 'guard');
+    assert.equal(other.incidents.getIncident(1).expiresAt, expiry);
+    other.setNow(expiry);
+    assert.equal(other.incidents.getCategory(1), 'healthy');
   } finally { other.close(); }
 }));
 test('Radar persistence batches updates but keeps exact last detection in memory', run(e => {

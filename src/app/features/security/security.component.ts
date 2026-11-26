@@ -1298,8 +1298,8 @@ export class SecurityComponent implements OnInit {
   getAiSecurityStatusTitle(device: any): string {
     const id = this.toAiDeviceNumericId(device);
     const summary = id === null ? null : this.securityIncidents.getAccessSummary(id);
+    if (summary?.approved) return `${summary.authorized.length} authorized work order(s): ${summary.authorized.map(s => s.activity.team).join(', ')} | Site approval until ${new Date(summary.validUntil!).toLocaleString()}`;
     if (summary?.attention.length) return `Approval paused: ${summary.attention.length} work order(s) require NOC review. Intrusion monitoring is enabled.`;
-    if (summary?.approved) return `${summary.authorized.length} authorized work order(s): ${summary.authorized.map(s => s.activity.team).join(', ')} | Next deadline ${new Date(summary.validUntil!).toLocaleString()}`;
     return this.getAiSecurityStatusLabel(device);
   }
 
